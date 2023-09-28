@@ -30,8 +30,8 @@ for(i in names(markers.ls.t.1vAll)){
 
 #FDR<1e-2 and median > 0
 markers <- lapply(markers.ls.t.1vAll,function(x){
-    subset(x[["1"]],
-           subset=(summary.stats > 0 & FDR < 1e-2 & non0Median == TRUE))
+    as.data.frame(subset(x[["1"]],
+                         subset=(summary.stats > 0 & FDR < 1e-2 & non0Median == TRUE)))
 })
 
 #How many genes make up each set? 
@@ -71,5 +71,64 @@ as.matrix(lapply(markers,FUN = nrow))
 # TT.IG.SH_Ex.F 1615
 # Ventr_In.B    585 
 
-#Now mouse genes need to be mapped to their homologs in the human genome
+#Map the ensembl gene ids to entrez gene IDs
+#There is a bug in the biomart code that only allows this function to work
+#with the dec2021 ensembl archive. This shouldn't be an issue. 
+hs_mart <- biomaRt::useMart("ensembl", 
+                            dataset="hsapiens_gene_ensembl",
+                            host = "https://dec2021.archive.ensembl.org")
+mm_mart <- biomaRt::useMart("ensembl",
+                            dataset="mmusculus_gene_ensembl",
+                            host = "https://dec2021.archive.ensembl.org") 
+
+markers_hom <- lapply(markers,function(x){
+    biomaRt::getLDS(attributes  = "ensembl_gene_id",
+                    mart        = mm_mart,
+                    values      = x$Ensembl_gene_id,
+                    filters     = "ensembl_gene_id",
+                    martL       = hs_mart,
+                    attributesL = "ensembl_gene_id")
+})
+
+
+#How many genes make up each set following homology mapping? 
+as.matrix(lapply(markers_hom,FUN = nrow))
+# [,1]
+# Astro         467 
+# Chol_Ex.D     561 
+# ChP           1179
+# Endo          838 
+# Ependymal     1342
+# IoC_In.E      535 
+# LS_In.C       963 
+# LS_In.D       1557
+# LS_In.M       927 
+# LS_In.N       334 
+# LS_In.O       473 
+# LS_In.P       1292
+# LS_In.Q       393 
+# LS_In.R       935 
+# Micro         435 
+# MS_In.J       869 
+# MS_In.K       1323
+# Mural         227 
+# Oligo         359 
+# OPC           549 
+# OPC_COP       486 
+# Sept_In.G     689 
+# Sept_In.I     1433
+# Str_In.A      923 
+# Str_In.F      1506
+# Str_In.H      568 
+# Str_In.L      349 
+# Thal_Ex.B     1669
+# TNoS_Ex.A     721 
+# TT.IG.SH_Ex.C 1072
+# TT.IG.SH_Ex.E 407 
+# TT.IG.SH_Ex.F 1523
+# Ventr_In.B    553 
+
+
+
+
 
