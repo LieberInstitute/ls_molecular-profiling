@@ -41,30 +41,30 @@ SCZ=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profili
 
 ## Step 3 
 #AD
-magma --gene-results $AD/AD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SNP_DATA/AD
+magma --gene-results $AD/AD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $AD/AD
 
 #ADHD
-magma --gene-results $ADHD/adhd.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SNP_DATA/ADHD
+magma --gene-results $ADHD/adhd.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $ADHD/ADHD
 
 #ASD
-magma --gene-results $ASD/ASD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SNP_DATA/ASD
+magma --gene-results $ASD/ASD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $ASD/ASD
 
 #BIP
-magma --gene-results $BIP/BIP.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SNP_DATA/BIP
+magma --gene-results $BIP/BIP.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $BIP/BIP
 
 #CUD
-magma --gene-results $CUD/CUD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SNP_DATA/CUD
+magma --gene-results $CUD/CUD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $CUD/CUD
 
 #OUD
-magma --gene-results $OUD/ODvsEX_AA.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SNP_DATA/ODvsEx_AA
-magma --gene-results $OUD/ODvsEX_EA.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SNP_DATA/ODvsEx_EA
-magma --gene-results $OUD/ODvsEX_Trans.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SNP_DATA/ODvsEx_Trans
+magma --gene-results $OUD/ODvsEX_AA.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $OUD/ODvsEx_AA
+magma --gene-results $OUD/ODvsEX_EA.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $OUD/ODvsEx_EA
+magma --gene-results $OUD/ODvsEX_Trans.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $OUD/ODvsEx_Trans
 
 #PD
-magma --gene-results $PD/PD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SNP_DATA/PD
+magma --gene-results $PD/PD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $PD/PD
 
 #SCZ
-magma --gene-results $SCZ/SCZ.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SNP_DATA/SCZ
+magma --gene-results $SCZ/SCZ.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SCZ/SCZ
 
 
 echo "**** Job ends ****"
