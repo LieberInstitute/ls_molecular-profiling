@@ -8,7 +8,8 @@ library(sessioninfo)
 
 
 #Load the medianNon0 list and the DEGs 
-load(here("mouse",
+load(here("MAGMA",
+          "mouse_analysis",
           "markers-stats_LS-n4_findMarkers_33cellTypes.rda"),
      verbose = TRUE)
 
@@ -18,13 +19,15 @@ length(unique(expressed_genes))
 #[1] 27751
 
 #Pull the two ensembl marts. 
+#Sep 2019 is ensembl release 98, which was used for alinging mouse snRNA-seq data. 
 hs_mart <- biomaRt::useMart("ensembl", 
                             dataset="hsapiens_gene_ensembl",
                             host = "https://sep2019.archive.ensembl.org")
 mm_mart <- biomaRt::useMart("ensembl",
                             dataset="mmusculus_gene_ensembl",
                             host = "https://sep2019.archive.ensembl.org") 
-
+#getLDS() pulls information from two linked datasets
+#From the help page: In Ensembl this translates to homology mapping.
 expressed_hom <- biomaRt::getLDS(attributes  = "ensembl_gene_id",
                                  mart        = mm_mart,
                                  values      = expressed_genes,
@@ -34,38 +37,69 @@ expressed_hom <- biomaRt::getLDS(attributes  = "ensembl_gene_id",
                                                  "external_gene_name",
                                                  "entrezgene_id"))
 length(unique(expressed_hom$NCBI.gene.ID))
-# [1] 17121
-#This number seems low.
+#[1] 17121
 
+colnames(expressed_hom) <- c("Mouse_ensembl","Human_ensembl",
+                             "Gene_Symbol","Entrez_gene_id")
+#Ensembl release 98 contains GRCH38/Hg38 gene coordinates. These coordinates are 
+#needed for the MDD and OUD GWAS. 
 #Downloaded the gene loc file for hg19, now just need to merge the two dataframes. 
-hg19_magma <- read.delim(file = here("mouse","NCBI37","NCBI37.3.gene.loc"),header = FALSE)
+hg38_magma <- read.delim(file = here("MAGMA",
+                                     "mouse_analysis",
+                                     "NCBI38",
+                                     "NCBI38.gene.loc"),
+                         header = FALSE)
+nrow(hg38_magma)
+#[1] 20137
+#20k annotations in hg38
+#Subset hg38_magma for expressed genes. 
+hg38_magma_homs <- hg38_magma[which(hg38_magma$V1 %in% expressed_hom$Entrez_gene_id),]
+nrow(hg38_magma_homs)
+#[1] 16954
+#Moving forward with 16,954 genes that are expresseed (human homologs of mouse genes)
+
+#Write out the file which will be the gene loc file for MAGMA analyses.
+#Specifically those with Hg38 gene coordinates. 
+write.table(x         = hg38_magma_homs,
+            file      = here("MAGMA",
+                             "mouse_analysis",
+                             "mouse_expressing_hg38_homs.gene.loc"),
+            col.names = FALSE,
+            row.names = FALSE,
+            sep       = "\t",
+            quote     = FALSE)
+
+#Now do the same thing for hg19
+#Downloaded the gene loc file for hg19, now just need to merge the two dataframes. 
+hg19_magma <- read.delim(file = here("MAGMA",
+                                     "mouse_analysis",
+                                     "NCBI37",
+                                     "NCBI37.3.gene.loc"),
+                         header = FALSE)
 
 nrow(hg19_magma)
 # [1] 19427
-#17k might not be too bad with only 19k genes annotated within the gene loc file. 
 
 #Subset hg19_magma for the expressed genes
-hg19_magma_homs <- hg19_magma[match(expressed_hom$NCBI.gene.ID,hg19_magma$V1),]
-hg19_magma_homs <- hg19_magma_homs[!is.na(hg19_magma_homs$V1),]
-hg19_magma_homs <- unique(hg19_magma_homs)
+hg19_magma_homs <- hg19_magma[which(hg19_magma$V1 %in% expressed_hom$Entrez_gene_id),]
 nrow(hg19_magma_homs)
 #[1] 16892
-#Moving forward with 16,893 genes that are expressed. 
-#Seems low. Will need to think about more direct ways to convert between the two. 
 
 #Write out the file which will be the gene loc file for MAGMA analyses.
 write.table(x         = hg19_magma_homs,
-            file      = here("mouse","mouse_expressing_hg19_homs.gene.loc"),
+            file      = here("MAGMA",
+                             "mouse_analysis",
+                             "mouse_expressing_hg19_homs.gene.loc"),
             col.names = FALSE,
             row.names = FALSE,
             sep       = "\t",
             quote     = FALSE)
 
 Sys.time()
-#[1] "2023-09-29 15:02:11 EDT"
+# [1] "2023-10-03 13:50:24 EDT"
 options(width = 120)
-# session_info()
-# ─ Session info ─────────────────────────────────────────────────────────────
+session_info()
+# ─ Session info ───────────────────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -75,10 +109,10 @@ options(width = 120)
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-09-29
+# date     2023-10-03
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ─────────────────────────────────────────────────────────────────
+# ─ Packages ───────────────────────────────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # AnnotationDbi          1.62.2    2023-07-02 [2] Bioconductor
@@ -188,4 +222,4 @@ options(width = 120)
 # [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
-# ────────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────────────────────────────────────
