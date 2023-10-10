@@ -5,10 +5,10 @@
 #SBATCH --error=magma_step3_mouse.err
 #
 # Number of CPUs allocated to each task.
-#SBATCH --cpus-per-task=5
+#SBATCH --cpus-per-task=1
 #
 # Mimimum memory required per allocated  CPU  in  MegaBytes.
-#SBATCH --mem-per-cpu=5G
+#SBATCH --mem-per-cpu=10G
 #
 # Send mail to the email address when the job fails
 #SBATCH --mail-type=FAIL
@@ -23,48 +23,33 @@ module load magma/1.10
 #Variables for paths and such
 setcol=1
 genecol=2
-model="snp-wise"
-BFILE=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/g1000_eur/g1000_eur
-ANNO=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/mouse/mouse_expressing_hg19_homs.gene.loc
-SNPDATA=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/mouse
-MOUSE=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/mouse/mouse_markers_human_homologs_1e-2.txt
-
-#Variables for genes.raw
-AD=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/AD
-ADHD=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ADHD
-ASD=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ASD
-BIP=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/BIP
-CUD=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/CUD
-OUD=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/OUD
-PD=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/PD
-SCZ=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ
+MOUSE=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/mouse_markers_human_homologs_1e-2.txt
+MAGMA_OUTPUT=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output
 
 ## Step 3 
 #AD
-magma --gene-results $AD/AD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $AD/AD
+magma --gene-results $MAGMA_OUTPUT/AD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $MAGMA_OUTPUT/AD
 
 #ADHD
-magma --gene-results $ADHD/adhd.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $ADHD/ADHD
+magma --gene-results $MAGMA_OUTPUT/adhd.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $MAGMA_OUTPUT/ADHD
 
 #ASD
-magma --gene-results $ASD/ASD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $ASD/ASD
+magma --gene-results $MAGMA_OUTPUT/ASD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $MAGMA_OUTPUT/ASD
 
 #BIP
-magma --gene-results $BIP/BIP.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $BIP/BIP
+magma --gene-results $MAGMA_OUTPUT/BIP.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $MAGMA_OUTPUT/BIP
 
 #CUD
-magma --gene-results $CUD/CUD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $CUD/CUD
+magma --gene-results $MAGMA_OUTPUT/CUD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $MAGMA_OUTPUT/CUD
+
+#MDD
+magma --gene-results $MAGMA_OUTPUT/MDD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $MAGMA_OUTPUT/MDD
 
 #OUD
-magma --gene-results $OUD/ODvsEX_AA.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $OUD/ODvsEx_AA
-magma --gene-results $OUD/ODvsEX_EA.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $OUD/ODvsEx_EA
-magma --gene-results $OUD/ODvsEX_Trans.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $OUD/ODvsEx_Trans
-
-#PD
-magma --gene-results $PD/PD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $PD/PD
+magma --gene-results $MAGMA_OUTPUT/OUD.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $MAGMA_OUTPUT/OUD
 
 #SCZ
-magma --gene-results $SCZ/SCZ.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $SCZ/SCZ
+magma --gene-results $MAGMA_OUTPUT/SCZ.genes.raw --set-annot $MOUSE gene-col=${genecol} set-col=${setcol} --out $MAGMA_OUTPUT/SCZ
 
 
 echo "**** Job ends ****"
