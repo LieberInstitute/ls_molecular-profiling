@@ -37,28 +37,28 @@ MDD=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profili
 
 ## Step 2 - Gene analysis (from SNP-wise summary stats) 
 #AD
-magma --bfile $BFILE --gene-annot $MOUSE/AD_Jansenetal_2019sept_mouse_homologs.genes.annot --pval $AD/AD_sumstats_Jansenetal_2019sept.txt use=SNP,P ncol=Nsum --gene-model ${model} --out $AD/AD
+magma --bfile $BFILE --gene-annot $MOUSE/AD_Jansenetal_2019sept_mouse_homologs.genes.annot --pval $AD/AD_sumstats_Jansenetal_2019sept.txt use=SNP,P ncol=Nsum --gene-model ${model} --out $MOUSE/AD
 
 #ADHD
-magma --bfile $BFILE --gene-annot $MOUSE/adhd_jul2017_mouse_homologs.genes.annot --pval $ADHD/adhd_jul2017.txt use=SNP,P N=55374 --gene-model ${model} --out $ADHD/adhd
+magma --bfile $BFILE --gene-annot $MOUSE/adhd_jul2017_mouse_homologs.genes.annot --pval $ADHD/adhd_jul2017.txt use=SNP,P N=55374 --gene-model ${model} --out $MOUSE/adhd
 
 #ASD
-magma --bfile $BFILE --gene-annot $MOUSE/iPSYCH-PGC_ASD_Nov2017_mouse_homologs.genes.annot --pval $ASD/iPSYCH-PGC_ASD_Nov2017.txt use=SNP,P N=46350 --gene-model ${model} --out $ASD/ASD
+magma --bfile $BFILE --gene-annot $MOUSE/iPSYCH-PGC_ASD_Nov2017_mouse_homologs.genes.annot --pval $ASD/iPSYCH-PGC_ASD_Nov2017.txt use=SNP,P N=46350 --gene-model ${model} --out $MOUSE/ASD
 
 #BIP
-magma --bfile $BFILE --gene-annot $MOUSE/BIP_PGC_2018_mouse_homologs.genes.annot --pval $BIP/PGC_BIP32b_withN.txt use=SNP,P ncol=Nca_Plus_Nco --gene-model ${model} --out $BIP/BIP
+magma --bfile $BFILE --gene-annot $MOUSE/BIP_PGC_2018_mouse_homologs.genes.annot --pval $BIP/PGC_BIP32b_withN.txt use=SNP,P ncol=Nca_Plus_Nco --gene-model ${model} --out $MOUSE/BIP
 
 #CUD
-magma --bfile $BFILE --gene-annot $MOUSE/CUD_iPSYCH_June2019_mouse_homologs.genes.annot --pval $CUD/CUD_GWAS_iPSYCH_June2019.txt use=SNP,P N=51372 --gene-model ${model} --out $CUD/CUD
+magma --bfile $BFILE --gene-annot $MOUSE/CUD_iPSYCH_June2019_mouse_homologs.genes.annot --pval $CUD/CUD_GWAS_iPSYCH_June2019.txt use=SNP,P N=51372 --gene-model ${model} --out $MOUSE/CUD
 
 #SCZ
-magma --bfile $BFILE --gene-annot $MOUSE/PGC_SCZ_mouse_homologs.genes.annot --pval $SCZ/PGC3_SCZ_wave3.european.autosome.public.v3.pval ncol=N --gene-model ${model} --out $SCZ/SCZ
+magma --bfile $BFILE --gene-annot $MOUSE/PGC_SCZ_mouse_homologs.genes.annot --pval $SCZ/PGC3_SCZ_wave3.european.autosome.public.v3.pval ncol=N --gene-model ${model} --out $MOUSE/SCZ
 
 #MDD
-magma --bfile $BFILE --gene-annot $MOUSE/MDD_pha005122_mouse_homologs.genes.annot --pval $MDD/MDD.phs001672.pha005122.pval N=1154267 --gene-model ${model} --out $MDD/MDD
+magma --bfile $BFILE --gene-annot $MOUSE/MDD_pha005122_mouse_homologs.genes.annot --pval $MDD/MDD.phs001672.pha005122.pval N=1154267 --gene-model ${model} --out $MOUSE/MDD
 
 #OUD
-magma --bfile $BFILE --gene-annot $MOUSE/OUD_pha004954_mouse_homologs.genes.annot --pval $OUD/OUD.phs001672.pha004954.txt N=639063 --gene-model ${model} --out $OUD/OUD
+magma --bfile $BFILE --gene-annot $MOUSE/OUD_pha004954_mouse_homologs.genes.annot --pval $OUD/OUD.phs001672.pha004954.txt use=SNP,P-value  N=639063 --gene-model ${model} --out $MOUSE/OUD
 
 echo "**** Job ends ****"
 date
