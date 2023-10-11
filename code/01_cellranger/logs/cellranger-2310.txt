@@ -1,0 +1,78 @@
+**** Job starts ****
+**** Job starts ****
+**** Job starts ****
+Wed Oct 11 10:05:47 AM EDT 2023
+Wed Oct 11 10:05:47 AM EDT 2023
+**** JHPCE info ****
+User: rmiller
+Job id: 363218
+Job name: lscellranger
+Hostname: 
+Task id: 1
+**** JHPCE info ****
+User: rmiller
+Job id: 363219
+Job name: lscellranger
+Hostname: 
+Task id: 2
+Wed Oct 11 10:05:47 AM EDT 2023
+**** JHPCE info ****
+User: rmiller
+Job id: 363217
+Job name: lscellranger
+Hostname: 
+Task id: 3
+Loading LIBD module for cellranger/7.0.0
+Reference files, for use with the '--transcriptome' argument, can be accessed
+or downloaded into /dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x. 
+Loading LIBD module for cellranger/7.0.0
+Reference files, for use with the '--transcriptome' argument, can be accessed
+or downloaded into /dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x. 
+Loading LIBD module for cellranger/7.0.0
+Reference files, for use with the '--transcriptome' argument, can be accessed
+or downloaded into /dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x. 
+
+Currently Loaded Modules:
+  1) JHPCE_ROCKY9_DEFAULT_ENV   3) ruby/3.2.2     5) cellranger/7.0.0
+  2) JHPCE_tools/3.0            4) rmate/1.5.10
+
+ 
+
+
+Currently Loaded Modules:
+  1) JHPCE_ROCKY9_DEFAULT_ENV   3) ruby/3.2.2     5) cellranger/7.0.0
+  2) JHPCE_tools/3.0            4) rmate/1.5.10
+
+ 
+
+
+Currently Loaded Modules:
+  1) JHPCE_ROCKY9_DEFAULT_ENV   3) ruby/3.2.2     5) cellranger/7.0.0
+  2) JHPCE_tools/3.0            4) rmate/1.5.10
+
+ 
+
+Processing sample 3c_LS_SCP
+Wed Oct 11 10:05:47 AM EDT 2023
+Processing sample 2c_LS_SCP
+/var/spool/slurm/d/job363217/slurm_script: line 34: cellranger: command not found
+Moving data to new location
+Processing sample 1c_LS_SCP
+Wed Oct 11 10:05:47 AM EDT 2023
+Wed Oct 11 10:05:47 AM EDT 2023
+Wed Oct 11 10:05:47 AM EDT 2023
+/var/spool/slurm/d/job363218/slurm_script: line 34: cellranger: command not found
+/var/spool/slurm/d/job363219/slurm_script: line 34: cellranger: command not found
+Moving data to new location
+Moving data to new location
+Wed Oct 11 10:05:47 AM EDT 2023
+Wed Oct 11 10:05:47 AM EDT 2023
+mv: cannot stat '3c_LS_SCP': No such file or directory
+**** Job ends ****
+mv: cannot stat '2c_LS_SCP': No such file or directory
+**** Job ends ****
+mv: cannot stat '1c_LS_SCP': No such file or directory
+**** Job ends ****
+Wed Oct 11 10:05:47 AM EDT 2023
+Wed Oct 11 10:05:47 AM EDT 2023
+Wed Oct 11 10:05:47 AM EDT 2023
