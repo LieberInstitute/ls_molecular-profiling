@@ -1,0 +1,232 @@
+**** Updating permissions for /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ ****
+Thu Oct 12 11:12:59 AM EDT 2023
+
+**** Note that warning/error messages are expected for files and directories that you are not the owner of.
+The expected warning/error messages are: 
+    'chgrp: changing group of ‘some_JHPCE_file_path’: Operation not permitted'
+ or 'chmod: changing permissions of ‘some_JHPCE_file_path’: Operation not permitted'.
+If for many files you are not the owner (creator of), you will get lots of these warning/error messages, this is expected!
+Error or warnings with another syntax are likely real. ****
+
+You will need to re-run this script anytime you upload files to JHPCE through Cyberduck / WinSCP as they break the ACLs.
+Every new team member on a given project will likely also need to run this script once.
+
+For more details about setting permissions at JHPCE using ACLs, please check https://lcolladotor.github.io/bioc_team_ds/organizing-your-work.html#setting-jhpce-file-permissions.
+
+This message will be displayed for 90 seconds before the script proceeds.
+That way you will have time enough to read it and/or copy it.
+
+**** Setting read (R), write (W), and execute (X) permissions for hickslab ****
+Thu Oct 12 11:14:34 AM EDT 2023
+
+**** Setting read (R), write (W), and execute (X) permissions for lieber_lcolladotor ****
+Thu Oct 12 11:18:56 AM EDT 2023
+
+**** Setting read (R), write (W), and execute (X) permissions for lieber_marmaypag ****
+Thu Oct 12 11:23:45 AM EDT 2023
+
+**** Running chgrp lieber_marmaypag ****
+Thu Oct 12 11:28:12 AM EDT 2023
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/processed-data/sce_raw.rda': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/tables/ls_molecular_profiling_sample_info.csv': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/tables': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/markers-stats_LS-n4_findMarkers_35cellTypes.rda': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/NCBI38/REPORT': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/NCBI38/README': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/NCBI38/NCBI38.gene.loc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/NCBI38': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/markers-stats_LS-n4_findMarkers_33cellTypes.rda': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/mouse_expressing_hg38_homs.gene.loc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/jobs_magma/magma_step2_mouse.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/jobs_magma/magma_step3_mouse.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/jobs_magma/magma_step3_mouse_homolgs.sh': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/jobs_magma/magma_mouse_homs.err': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/jobs_magma/magma_step2_mouse.err': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/jobs_magma/magma_step2_mouse_homologs.sh': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/jobs_magma/magma_step3_mouse.err': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/jobs_magma/magma_mouse_homs.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/jobs_magma/magma_step1_annotate_mouse_homologs.sh': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/jobs_magma': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/markers-stats_LS-n4_findMarkers_33PREfinalCellTypes.rda': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/markers-stats_LS-n4_findMarkers_27-LAR-LSbinned-cellTypes_Jun2023.rda': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/markers-stats_LS-n4_findMarkers_33cellTypes.broad.rda': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/mouse_expressing_hg19_homs.gene.loc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/mouse_markers_human_homologs_list.rda': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/sce_updated_LS.rda': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/OUD_pha004954_mouse_homologs.genes.annot': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/AD.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/MDD.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/AD.gsa.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/MDD.gsa.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/SCZ.gsa.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/adhd_jul2017_mouse_homologs.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/PGC_SCZ_mouse_homologs.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/adhd.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/OUD.gsa.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/adhd.log.suppl': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/ASD.gsa.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/SCZ.gsa.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/ADHD.gsa.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/BIP.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/SCZ.gsa.sets.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/MDD.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/mouse_hm.pdf': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/CUD.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/SCZ.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/BIP_PGC_2018_mouse_homologs.genes.annot': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/ADHD.gsa.sets.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/iPSYCH-PGC_ASD_Nov2017_mouse_homologs.genes.annot': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/CUD_iPSYCH_June2019_mouse_homologs.genes.annot': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/AD.gsa.sets.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/AD.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/CUD.gsa.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/AD_Jansenetal_2019sept_mouse_homologs.genes.annot': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/ASD.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/BIP.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/ADHD.gsa.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/CUD.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/OUD.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/OUD.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/AD.gsa.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/AD_Jansenetal_2019sept_mouse_homologs.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/AD.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/mouse_hm_new.pdf': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/CUD.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/SCZ.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/MDD_pha005122_mouse_homologs.genes.annot': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/MDD.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/BIP_PGC_2018_mouse_homologs.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/OUD.gsa.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/OUD.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/ASD.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/BIP.gsa.sets.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/iPSYCH-PGC_ASD_Nov2017_mouse_homologs.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/adhd_jul2017_mouse_homologs.genes.annot': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/SCZ.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/PGC_SCZ_mouse_homologs.genes.annot': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/BIP.gsa.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/OUD_pha004954_mouse_homologs.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/ADHD.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/adhd.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/BIP.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/adhd.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/CUD_iPSYCH_June2019_mouse_homologs.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/ASD.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/MDD_pha005122_mouse_homologs.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/BIP.gsa.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output/OUD.gsa.sets.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/magma_output': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/Violin_expression1.pdf': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/mouse_markers_human_homologs_1e-2.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/NCBI37/NCBI37.3.gene.loc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/NCBI37/REPORT': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/NCBI37/README': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis/NCBI37': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/mouse_analysis': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/g1000_eur/g1000_eur.bim': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/g1000_eur/README': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/g1000_eur/g1000_eur.fam': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/g1000_eur/g1000_eur.synonyms': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/g1000_eur/g1000_eur.bed': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/g1000_eur': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/PD/nallsetal2019_mapped.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/PD/nallsetal2019_PD.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/PD': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/AD/AD_sumstats_Jansenetal_2019sept.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/AD/AD.log.suppl': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/AD/AD.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/AD/AD.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/AD/AD.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/AD/AD_sumstats_Jansenetal_2019sept.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/AD/AD_sumstats_2019dec.readme.pdf': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/AD': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ASD/ASD.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ASD/iPSYCH-PGC_ASD_Nov2017_readme.pdf': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ASD/ASD.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ASD/ASD.log.suppl': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ASD/iPSYCH-PGC_ASD_Nov2017.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ASD/ASD.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ASD/iPSYCH-PGC_ASD_Nov2017.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ASD': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/CUD/CUD.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/CUD/CUD.log.suppl': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/CUD/CUD_GWAS_iPSYCH_June2019.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/CUD/CUD.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/CUD/CUD_GWAS_iPSYCH_June2019.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/CUD/README_CUD_GWAS.pdf': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/CUD/CUD.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/CUD': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/Alcohol_Tobacco/AgeofInitiation.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/Alcohol_Tobacco/DrinksPerWeek.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/Alcohol_Tobacco/CigsPerDay.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/Alcohol_Tobacco/AgeofInit.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/Alcohol_Tobacco/DrinksPerWeek.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/Alcohol_Tobacco/CigarettesPerDay.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/Alcohol_Tobacco': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/BIP/PGC_BIP32b.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/BIP/BIP.log.suppl': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/BIP/BIP.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/BIP/PGC_BIP32b_withN.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/BIP/BIP_2018_readme.pdf': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/BIP/BIP.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/BIP/BIP.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/BIP': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ADHD/adhd.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ADHD/adhd.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ADHD/adhd.log.suppl': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ADHD/adhd.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ADHD/adhd_jul2017.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ADHD/adhd_jul2017.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ADHD/adhd_jun2017.readme.pdf': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/ADHD': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ/PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ/SCZ.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ/PGC3_SCZ_wave3.european.autosome.public.v3.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ/PGC3_SCZ_wave3.european.autosome.public.v3.pval': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ/SCZ.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ/SCZ.log.suppl': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ/2014_SCZ/scz2.readme.pdf': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ/2014_SCZ/PGC_SCZ.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ/2014_SCZ/rall.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ/2014_SCZ': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ/SCZ.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/SCZ': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/MDD/MDD.phs001672.pha005122.pval': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/MDD/MDD.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/MDD/MDD.log.suppl': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/MDD/MDD.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/MDD/MDD.phs001672.pha005122.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/MDD/MDD.phs001672.pha005122.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/MDD/MDD.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/MDD': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/OUD/OUD.genes.out': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/OUD/OUD.log': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/OUD/OUD.phs001672.pha004954.txt': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/OUD/OUD.genes.raw': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/OUD/OUD.log.suppl': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/OUD/OUD.phs001672.pha004954.snploc': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables/OUD': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data/GWAS_Tables': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA/SNP_Data': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/MAGMA': Operation not permitted
+chgrp: changing group of '/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/magma.log': Operation not permitted
+
+**** Setting the group sticky bit ****
+Thu Oct 12 11:29:44 AM EDT 2023
+
+**** Checking the nfs4 (ACLs) settings ****
+Thu Oct 12 11:29:57 AM EDT 2023
+# file: /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/
+A::OWNER@:rwaDxtTcCy
+A::GROUP@:rwaDxtcy
+A:g:lieber_lcolladotor@cm.cluster:rwaDxtcy
+A:g:lieber_marmaypag@cm.cluster:rwaDxtcy
+A:g:hickslab@cm.cluster:rwaDxtcy
+A::EVERYONE@:tcy
+A:fdi:OWNER@:rwaDxtTcCy
+A:fdi:GROUP@:rwaDxtcy
+A:fdig:lieber_lcolladotor@cm.cluster:rwaDxtcy
+A:fdig:lieber_marmaypag@cm.cluster:rwaDxtcy
+A:fdig:hickslab@cm.cluster:rwaDxtcy
+A:fdi:EVERYONE@:tcy
+
