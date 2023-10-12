@@ -1,0 +1,1 @@
+cellranger count --id=1c_LS_SCP --transcriptome=/dcs04/lieber/lcolladotor/annotationFiles_LIBD001/10x/refdata-gex-GRCh38-2020-A --fastqs=/dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/raw-data/FASTQ/1c_LS_SCP --sample=1c_LS_SCP --jobmode=local --localcores=8 --localmem=64
