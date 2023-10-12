@@ -55,7 +55,7 @@ for(i in unique(sce$Sample)){
     set.seed(1234)
     print("Starting emptyDrops")
     Sys.time()
-    e.out <- DropletUtils::emptyDrops(sce_sample,
+    e.out <- DropletUtils::emptyDrops(sce_sub,
                                       niters = 30000,
                                       lower = knee_lower)
     print("Done - saving data")
