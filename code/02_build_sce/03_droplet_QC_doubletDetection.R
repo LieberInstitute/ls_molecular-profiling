@@ -9,6 +9,7 @@ library(ggplot2)
 library(here)
 library(purrr)
 library(dplyr)
+library(tidyr)
 
 #Where are the droplet QC files? 
 droplet_paths <- list.files(path = here("processed-data","02_build_sce","droplet_scores"),
@@ -71,4 +72,61 @@ write.csv(x = droplet_summary,
           quote = FALSE)
     
 
+#Make a barplot summarizing the number of empty and non-empty droplets. 
+droplet_barplot <- droplet_summary %>%
+    mutate(empty = total_drops - non_empty) %>%
+    select(-total_drops) %>%
+    select(-knee_lower) %>%
+    pivot_longer(!Sample,names_to = "drop_type",values_to = "number_drops") %>%
+    ggplot(aes(x = Sample,y=number_drops,fill = drop_type)) +
+    geom_col() +
+    scale_y_continuous(trans = "log10") +
+    labs(x = "Sample",
+         y = "Number of Droplets",
+         fill = "Droplet Status")
+
+ggsave(plot = droplet_barplot,filename = here("plots","droplet_barplot_per_sample.png"))
+
+#Load in the sce object
+load(here("processed-data","sce_raw.rda"),verbose = TRUE)
+
+sce
+# class: SingleCellExperiment 
+# dim: 36601 4909214 
+# metadata(1): Samples
+# assays(1): counts
+# rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
+# ENSG00000277196
+# rowData names(6): source type ... gene_name gene_type
+# colnames(4909214): 1_AAACCCAAGAAACCAT-1 1_AAACCCAAGAAACCCA-1 ...
+# 3_TTTGTTGTCTTTGCGC-1 3_TTTGTTGTCTTTGGAG-1
+# colData names(33): Sample Barcode ... Mean_Reads_per_Cell
+# Median_Genes_per_Cell
+# reducedDimNames(0):
+#     mainExpName: NULL
+# altExpNames(0):
+
+#### Eliminate empty droplets ####
+e.out.all <- do.call("rbind", e.out)[colnames(sce), ]
+sce <- sce[, which(e.out.all$FDR <= 0.001)]
+
+sce
+# class: SingleCellExperiment 
+# dim: 36601 11467 
+# metadata(1): Samples
+# assays(1): counts
+# rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
+# ENSG00000277196
+# rowData names(6): source type ... gene_name gene_type
+# colnames(11467): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
+# 3_TTTGTTGAGGCTCCCA-1 3_TTTGTTGTCCCGATCT-1
+# colData names(33): Sample Barcode ... Mean_Reads_per_Cell
+# Median_Genes_per_Cell
+# reducedDimNames(0):
+#     mainExpName: NULL
+# altExpNames(0):
+
+#11467 droplets containing cells a this point. 
+#Save object
+save()
 
