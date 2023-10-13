@@ -2,7 +2,7 @@
 #
 #SBATCH --job-name=emptyDrops
 #SBATCH --output=emptyDrops_dropletQC.out
-#SBATCH --error=mptyDrops_dropletQC.err
+#SBATCH --error=emptyDrops_dropletQC.err
 #
 # Number of CPUs allocated to each task.
 #SBATCH --cpus-per-task=5

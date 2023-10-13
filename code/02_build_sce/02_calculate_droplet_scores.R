@@ -5,10 +5,13 @@
 library(SingleCellExperiment)
 library(DropletUtils)
 library(scuttle)
-library(tidyverse)
 library(here)
 library(sessioninfo)
 library(ggplot2)
+library(tidyverse)
+
+#Print pwd
+here()
 
 #Load the sce object 
 load(here("processed-data","sce_raw.rda"),verbose = TRUE)
@@ -61,7 +64,7 @@ for(i in unique(sce$Sample)){
     print("Done - saving data")
     Sys.time()
     #save the droplet data. 
-    save(e.out,here("processed-data","02_build_sce","droplet_scores",paste0(i,"_droplet_scores",".Rdata")))
+    save(e.out,file = paste0("processed-data/02_build_sce/droplet_scores/",i,"_droplet_scores.Rdata"))
     
     #Generate plots to check the cutoff value. 
     FDR_cutoff <- 0.001
@@ -92,7 +95,7 @@ for(i in unique(sce$Sample)){
         labs(
             x = "Barcode Rank",
             y = "Total UMIs",
-            title = paste("Sample", sample_run),
+            title = paste("Sample", i),
             subtitle = n_cell_anno,
             color = paste("FDR <", FDR_cutoff)
         ) +
@@ -100,7 +103,7 @@ for(i in unique(sce$Sample)){
         theme(legend.position = "bottom")
     
     ggsave(droplet_elbow_plot, 
-           filename = here("plots","02_build_sce", "droplet_scores", paste0(i,"droplet_qc_",i,".png")))
+           filename = paste0("plots/02_build_sce/droplet_score/",i,"_droplet_qc.png"))
 }
 
 
