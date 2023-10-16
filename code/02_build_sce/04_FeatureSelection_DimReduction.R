@@ -125,5 +125,111 @@ ggsave(sample_TSNE,filename = here("plots","Dim_Red","sample_TSNE.png"))
 #Will need to run MNN to fix this. 
 #save uncorrected object. 
 save(sce_uncorrected,file = here("processed-data","sce_uncorrected.rda"))
+#Stopping point
+
+#Load the uncorrected sce file that contains 
+load(file = here("processed-data","sce_uncorrected.rda"))
+
+sce_uncorrected
+# class: SingleCellExperiment 
+# dim: 36601 9883 
+# metadata(1): Samples
+# assays(2): counts binomial_deviance_residuals
+# rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
+# ENSG00000277196
+# rowData names(7): source type ... gene_type binomial_deviance
+# colnames(9883): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
+# 3_TTTGTTGAGGCTCCCA-1 3_TTTGTTGTCCCGATCT-1
+# colData names(44): Sample Barcode ... discard_auto doubletScore
+# reducedDimNames(3): GLMPCA_approx UMAP TSNE
+# mainExpName: NULL
+# altExpNames(0):
+
+glmpca_mnn <- batchelor::reducedMNN(reducedDim(sce_uncorrected, "GLMPCA_approx"),
+                                    batch=as.factor(sce_uncorrected$Sample))
+
+#Add mnn to the object
+reducedDim(sce_uncorrected,"mnn") <- glmpca_mnn$corrected
+
+#Rename object
+sce <- sce_uncorrected
+rm(sce_uncorrected)
+
+#Rerun umpa and tsne
+set.seed(1234)
+
+#umap
+sce <- runUMAP(sce,
+               dimred = "mnn",
+               name = "UMAP_mnn")
+
+pdf(here("plots","UMAP_corrected_by_sample.pdf"))
+plotReducedDim(sce,
+               dimred = "UMAP_mnn", 
+               colour_by = "Sample")
+dev.off()
+
+pdf(here("plots","Dim_Red","UMAP_corrected_mito.pdf"))
+plotReducedDim(sce,
+               dimred = "UMAP_mnn", colour_by = "subsets_Mito_percent",
+               point_alpha = 0.3)
+dev.off()
+
+pdf(here("plots","Dim_Red","UMAP_corrected_sum.pdf"))
+plotReducedDim(sce,
+               dimred = "UMAP_mnn", colour_by = "sum",
+               point_alpha = 0.3)
+dev.off()
+
+pdf(here("plots","Dim_Red","UMAP_corrected_detected.pdf"))
+plotReducedDim(sce,
+               dimred = "UMAP_mnn", colour_by = "Gad1")
+dev.off()
+
+#One cluster is dominated by Sample 1. Checking expression values to identify if this is a 
+#batch correction issue, or if this is due to the 
+
+#Comoute log counts to plot expression
+sce <- batchelor::multiBatchNorm(sce, batch = sce$Sample)
+
+genes <- c("SYT1","SNAP25", #pan neuron
+           "MBP","MOBP", #OLIGODENDROCYTE
+           "CD74", "CSF1R", "C3", #MICROGLIA
+           "GFAP", "TNC", "AQP4", "SLC1A2", #ASTROCYTEs
+           "GAD1","GAD2","SLC32A1",#Pan GABA
+           "SLC17A7", "SLC17A6", "SLC17A8",
+           "TRPC4","HOMER2","PTPN3", #Mouse LS markers
+           "ELAVL2", #Mouse LS markers
+           "CRHR1","CRHR2", 
+           "OXTR","AVPR1A", 
+           "DRD3")
+
+for(i in genes){
+    print(i)
+    x <- plotReducedDim(sce,
+                        dimred = "UMAP_mnn", 
+                        colour_by = i,
+                        swap_rownames = "gene_name") +
+        scale_color_gradientn(colours = c("lightgrey","red")) +
+        ggtitle(i) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(filename = paste0("plots/Expression_plots/",i,"_expression_umap.pdf"),
+           plot = x,
+           height = 8,width = 8)
+}
+
+
+
+
+
+
+for(i in genes){
+    pdf(paste0("plots/Expression_plots",i,"_UMAP.pdf"))
+    plotReducedDim(sce,
+                   dimred = "UMAP_mnn", 
+                   colour_by = i,
+                   swap_rownames = "gene_name")
+    dev.off()
+}
 
 
