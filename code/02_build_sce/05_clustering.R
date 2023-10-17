@@ -282,7 +282,9 @@ genes <- c("SYT1","SNAP25", #pan neuron
            "OXTR","AVPR1A", 
            "DRD3",
            "CLDN5", "FLT1", "VTN",#endothelial
-           "COL1A2", "TBX18", "RBPMS",
+           "COL1A2", "TBX18", "RBPMS",#Mural
+           "SKAP1", "ITK", "CD247", #Tcell
+           "CD163", "SIGLEC1", "F13A1",#Macrophage
            "PDGFRA", "VCAN", "CSPG4")#Polydendrocytes
 
 
@@ -291,15 +293,22 @@ Expression_dotplot <- plotDots(object = sce,
                                group = "k_50_louvain_1",swap_rownames = "gene_name") +
     scale_color_gradientn(colours = c("lightgrey","orange","red"))
 ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
-                                                 "post_k_50_louvain_1_clustering","general_dotplot.pdf"))
+                                                 "post_k_50_louvain_1_clustering","general_dotplot.pdf"),
+       height = 8)
 
-#Cluster 9 expresses Gad1/2 but no other markers. Does not express many genes/cell, suggesting not a neuronal cluster. 
-#Will run wilcox 1 vs all to see if that will help with cluster annotation. 
+#cluster 13 expresses Gad1/2 but not much else. 
+#Will run some basic DEG testing to try and figure out what it is.
 colLabels(sce) <- sce$k_50_louvain_1
 markers_1vALL <- scran::findMarkers(sce,pval.type = "all", direction = "up",test.type="t")
+#Pull out cluster 13 
 cluster_13 <- as.data.frame(subset(markers_1vALL[[13]],subset=(FDR <= 0.05)))
 cluster_13$gene_id <- row.names(cluster_13)
+#add in common gene name info
 cluster_13 <- dplyr::left_join(x = cluster_13,y = as.data.frame(rowData(sce)),by = "gene_id")
+nrow(cluster_13)
+#[1] 4
+#4 DEGs. 
+#DEGs are SNHG25, UCHL1, KIF2C, LENG8
 
 #Annotate clusters and remake the Expression dotplot. 
 annotation_df <- data.frame(cluster = c(1:16))
