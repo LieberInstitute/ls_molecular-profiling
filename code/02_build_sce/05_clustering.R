@@ -282,28 +282,38 @@ genes <- c("SYT1","SNAP25", #pan neuron
            "OXTR","AVPR1A", 
            "DRD3",
            "CLDN5", "FLT1", "VTN",#endothelial
-           "COL1A2", "TBX18", "RBPMS") #Mural
+           "COL1A2", "TBX18", "RBPMS",
+           "PDGFRA", "VCAN", "CSPG4")#Polydendrocytes
+
 
 Expression_dotplot <- plotDots(object = sce,
                                features = rev(genes),
                                group = "k_50_louvain_1",swap_rownames = "gene_name") +
-    scale_color_gradientn(colours = c("lightgrey","red"))
+    scale_color_gradientn(colours = c("lightgrey","orange","red"))
 ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
                                                  "post_k_50_louvain_1_clustering","general_dotplot.pdf"))
 
+#Cluster 9 expresses Gad1/2 but no other markers. Does not express many genes/cell, suggesting not a neuronal cluster. 
+#Will run wilcox 1 vs all to see if that will help with cluster annotation. 
+colLabels(sce) <- sce$k_50_louvain_1
+markers_1vALL <- scran::findMarkers(sce,pval.type = "all", direction = "up",test.type="t")
+cluster_13 <- as.data.frame(subset(markers_1vALL[[13]],subset=(FDR <= 0.05)))
+cluster_13$gene_id <- row.names(cluster_13)
+cluster_13 <- dplyr::left_join(x = cluster_13,y = as.data.frame(rowData(sce)),by = "gene_id")
+
 #Annotate clusters and remake the Expression dotplot. 
 annotation_df <- data.frame(cluster = c(1:16))
-annotation_df$CellType <- c("LS_GABA_1","LS_GABA_Drd3","Glutamatergic","GABA_undefined_1",
+annotation_df$CellType <- c("LS_GABA_1","LS_GABA_Drd3","Glutamatergic","Polydendrocyte",
                             "Microglia","Oligodendrocyte_1","Astrocyte_1","Oligodendrocyte_2",
                             "LS_GABA_2","MS_GABA_1","MS_GABA_2","MS_GABA_3",
-                            "GABA_undefined_2","Mural","Astrocyte_2","LS_GABA_3")
+                            "undefined","Mural","Astrocyte_2","LS_GABA_3")
 
 sce$CellType <- annotation_df$CellType[match(sce$k_50_louvain_1,annotation_df$cluster)]
 
 sce$CellType <- factor(x = sce$CellType,
                        levels = c("LS_GABA_1","LS_GABA_2","LS_GABA_3","LS_GABA_Drd3",
-                                  "MS_GABA_1","MS_GABA_2","MS_GABA_3","GABA_undefined_1",
-                                  "GABA_undefined_2","Glutamatergic","Astrocyte_1","Astrocyte_2",
+                                  "MS_GABA_1","MS_GABA_2","MS_GABA_3","Polydendrocyte",
+                                  "undefined","Glutamatergic","Astrocyte_1","Astrocyte_2",
                                   "Oligodendrocyte_1","Oligodendrocyte_2","Microglia","Mural"))
 
 Expression_dotplot <- plotDots(object = sce,
@@ -316,7 +326,10 @@ Expression_dotplot <- plotDots(object = sce,
                                                 "GFAP", "TNC", "AQP4", "SLC1A2",
                                                 "MBP","MOBP",
                                                 "CD74", "CSF1R", "C3",
-                                                "COL1A2", "TBX18", "RBPMS")),
+                                                "COL1A2", "TBX18", "RBPMS",
+                                                "PDGFRA", "VCAN", "CSPG4",
+                                                "SKAP1", "ITK", "CD247",
+                                                "CD163", "SIGLEC1", "F13A1")),
                                group = "CellType",swap_rownames = "gene_name") +
     theme(axis.text.x = element_text(angle = 45,hjust = 1)) +
     scale_color_gradientn(colours = c("lightgrey","orange","red")) 
@@ -330,28 +343,35 @@ annotated_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn",
                                  colour_by = "CellType",text_by = "CellType")
 ggsave(plot = annotated_umap,filename = here("plots","Dim_Red","Annotated_k_50_louvain_umap_50components.pdf"))
 
-#check doublet score per cluster. 
+#Remake violin plots with cluster information on the x axis
 #violin
 doublet_violin <- plotColData(object = sce,
-                              x = "k_50_louvain_1",
+                              x = "CellType",
                               y = "doubletScore",
-                              colour_by = "k_50_louvain_1") +
-    labs(x = "Cluster \n(jaccard + louvain k=50 + res=1)",
+                              colour_by = "CellType") +
+    labs(x = "CellType",
          y = "Doublet Score",
          title = "Doublet Score by Cluster") +
-    theme(plot.title = element_text(hjust=0.5),legend.position = "none") +
+    theme(plot.title = element_text(hjust=0.5),
+          legend.position = "none",
+          axis.text.x = element_text(angle=45,hjust=1)) +
     geom_hline(yintercept = 5)
-ggsave(doublet_violin,filename = here("plots","doublet_score_by_cluster_k50_louvain_violin.pdf"))
+ggsave(doublet_violin,filename = here("plots","Annotated_doublet_score_by_cluster_k50_louvain_violin.pdf"))
 
 #number of genes per cluster
 genes_violin <- plotColData(object = sce,
-                            x = "k_50_louvain_1",
+                            x = "CellType",
                             y = "detected",
-                            colour_by = "k_50_louvain_1") +
-    labs(x = "Cluster \n(jaccard + louvain k=50 + res=1)",
+                            colour_by = "CellType") +
+    labs(x = "CellType",
          y = "Number of genes/cell",
          title = "Number of Genes/Cell by Cluster") +
-    theme(plot.title = element_text(hjust=0.5),legend.position = "none")
-ggsave(genes_violin,filename = here("plots","Genes_by_cluster_k50_louvain_violin.pdf"))
+    theme(plot.title = element_text(hjust=0.5),
+          legend.position = "none",
+          axis.text.x = element_text(angle=45,hjust=1))
+ggsave(genes_violin,filename = here("plots","Annotated_Genes_by_cluster_k50_louvain_violin.pdf"))
+
+
+#GABA undefined 1 and 2 do not express as many genes as the other cells. 
 
 
