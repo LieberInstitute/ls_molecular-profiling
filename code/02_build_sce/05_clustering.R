@@ -241,8 +241,8 @@ table(sce$k_50_walktrap,sce$Sample)
 # 20        70         0         0
 #Preliminary explorration of distribution of expression of marker genes found that one cluster 
 #was dominated by Slc17a7 expression and only contained sample 1. This is not driven by batch effect
-#but rather biological. k=20 seems to contain several clusters dominated by one sample, while k=50
-#only has one cluster that is dominated by sample 1 (and is the cluster identified yesterday)
+#but rather biological (due to anatomy of section?). k=20 seems to contain several clusters dominated by one 
+#sample, while k=50 only has one cluster that is dominated by sample 1 (and is the cluster identified yesterday)
 #going to check expression profiles of k=50 louvain. 
 
 #check doublet score per cluster. 
@@ -290,4 +290,68 @@ Expression_dotplot <- plotDots(object = sce,
     scale_color_gradientn(colours = c("lightgrey","red"))
 ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
                                                  "post_k_50_louvain_1_clustering","general_dotplot.pdf"))
+
+#Annotate clusters and remake the Expression dotplot. 
+annotation_df <- data.frame(cluster = c(1:16))
+annotation_df$CellType <- c("LS_GABA_1","LS_GABA_Drd3","Glutamatergic","GABA_undefined_1",
+                            "Microglia","Oligodendrocyte_1","Astrocyte_1","Oligodendrocyte_2",
+                            "LS_GABA_2","MS_GABA_1","MS_GABA_2","MS_GABA_3",
+                            "GABA_undefined_2","Mural","Astrocyte_2","LS_GABA_3")
+
+sce$CellType <- annotation_df$CellType[match(sce$k_50_louvain_1,annotation_df$cluster)]
+
+sce$CellType <- factor(x = sce$CellType,
+                       levels = c("LS_GABA_1","LS_GABA_2","LS_GABA_3","LS_GABA_Drd3",
+                                  "MS_GABA_1","MS_GABA_2","MS_GABA_3","GABA_undefined_1",
+                                  "GABA_undefined_2","Glutamatergic","Astrocyte_1","Astrocyte_2",
+                                  "Oligodendrocyte_1","Oligodendrocyte_2","Microglia","Mural"))
+
+Expression_dotplot <- plotDots(object = sce,
+                               features = rev(c("SYT1","SNAP25",
+                                                "GAD1","GAD2","SLC32A1",
+                                                "TRPC4","HOMER2","PTPN3","DRD3",
+                                                "CRHR1","CRHR2","OXTR","AVPR1A",
+                                                "ELAVL2",
+                                                "SLC17A7", "SLC17A6", "SLC17A8",
+                                                "GFAP", "TNC", "AQP4", "SLC1A2",
+                                                "MBP","MOBP",
+                                                "CD74", "CSF1R", "C3",
+                                                "COL1A2", "TBX18", "RBPMS")),
+                               group = "CellType",swap_rownames = "gene_name") +
+    theme(axis.text.x = element_text(angle = 45,hjust = 1)) +
+    scale_color_gradientn(colours = c("lightgrey","orange","red")) 
+ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
+                                                 "post_k_50_louvain_1_clustering","general_dotplot_annotated.pdf"))
+
+
+#Make umap annotated
+#k=50 louvain
+annotated_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn",
+                                 colour_by = "CellType",text_by = "CellType")
+ggsave(plot = annotated_umap,filename = here("plots","Dim_Red","Annotated_k_50_louvain_umap_50components.pdf"))
+
+#check doublet score per cluster. 
+#violin
+doublet_violin <- plotColData(object = sce,
+                              x = "k_50_louvain_1",
+                              y = "doubletScore",
+                              colour_by = "k_50_louvain_1") +
+    labs(x = "Cluster \n(jaccard + louvain k=50 + res=1)",
+         y = "Doublet Score",
+         title = "Doublet Score by Cluster") +
+    theme(plot.title = element_text(hjust=0.5),legend.position = "none") +
+    geom_hline(yintercept = 5)
+ggsave(doublet_violin,filename = here("plots","doublet_score_by_cluster_k50_louvain_violin.pdf"))
+
+#number of genes per cluster
+genes_violin <- plotColData(object = sce,
+                            x = "k_50_louvain_1",
+                            y = "detected",
+                            colour_by = "k_50_louvain_1") +
+    labs(x = "Cluster \n(jaccard + louvain k=50 + res=1)",
+         y = "Number of genes/cell",
+         title = "Number of Genes/Cell by Cluster") +
+    theme(plot.title = element_text(hjust=0.5),legend.position = "none")
+ggsave(genes_violin,filename = here("plots","Genes_by_cluster_k50_louvain_violin.pdf"))
+
 
