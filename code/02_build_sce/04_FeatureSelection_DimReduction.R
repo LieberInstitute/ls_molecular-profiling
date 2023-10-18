@@ -14,21 +14,6 @@ library(here)
 #load(file = here("processed-data","sce_clean.rda"))
 load(file = here("processed-data","sce_clean_numeric_cutoffs.rda"))
 
-#sce
-# class: SingleCellExperiment 
-# dim: 36601 9883 
-# metadata(1): Samples
-# assays(1): counts
-# rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
-# ENSG00000277196
-# rowData names(6): source type ... gene_name gene_type
-# colnames(9883): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
-# 3_TTTGTTGAGGCTCCCA-1 3_TTTGTTGTCCCGATCT-1
-# colData names(44): Sample Barcode ... discard_auto doubletScore
-# reducedDimNames(0):
-#     mainExpName: NULL
-# altExpNames(0):
-
 sce
 # class: SingleCellExperiment 
 # dim: 36601 10000 
@@ -43,20 +28,6 @@ sce
 # reducedDimNames(0):
 #     mainExpName: NULL
 # altExpNames(0):
-#Run deviance feature selection with default parameters. 
-# sce <- devianceFeatureSelection(sce,
-#                                 assay = "counts",
-#                                 fam = "binomial",
-#                                 sorted = FALSE,
-#                                 batch = as.factor(sce$Sample))
-
-# pdf(here("plots","featureSelxn_binomialDeviance-byGene.pdf"))
-# plot(sort(rowData(sce)$binomial_deviance, decreasing = T),
-#      type = "l", xlab = "ranked genes",
-#      ylab = "binomial deviance"
-# )
-# abline(v = 2000,lty = 2, col = "red")
-# dev.off()
 
 sce <- devianceFeatureSelection(sce,
                                 assay = "counts",
@@ -91,10 +62,16 @@ sce <- nullResiduals(sce,
 #     sparse->dense coercion: allocating vector of size 1.0 GiB
 # 6: In sqrt(x@x) : NaNs produced
 #Not sure about warnings. sparse-->dense coercion doesn't seem to affect function. 
-#No binomical deviances are NAs and  #ull residual matrix seems to be alright. 
-#Need to figure out why NANs are being produced and why this could be happening? 
-#In the meantime, all values are accounted for. Will move forward. 
-
+#NaNs are produced when all count values for a specific gene are 0. 
+#This can be seen at https://github.com/kstreet13/scry/blob/master/R/nullResiduals.R line 87
+#To prove it 
+table(rowSums(counts(sce)) == 0)
+# FALSE  TRUE 
+# 33564  3037 
+table(rowSums(assay(sce,"binomial_deviance_residuals")) == 0)
+# FALSE  TRUE 
+# 33564  3037
+#Same number of true and false
 
 #Take top 2000 highly deviant genes
 hdgs <- rownames(sce)[order(rowData(sce)$binomial_deviance, decreasing = T)][1:2000]
@@ -107,85 +84,139 @@ sce_uncorrected <- runPCA(sce,
                           ncomponents = 100,
                           name = "GLMPCA_approx")
 
+#PCA plot of top 6 PCs
+PCA_plots <- plotReducedDim(sce_uncorrected,
+                            dimred = "GLMPCA_approx", 
+                            colour_by = "Sample",
+                            ncomponents = 6, 
+                            point_alpha = 0.3)
+#ggsave(PCA_plots,filename = here("plots","Dim_Red","multi_PCAs.png"))
+ggsave(PCA_plots,filename = here("plots","Dim_Red","multi_PCAs_numericCutoff.png"))
+
 # UMAP
+#With testing 15,20,25,and 50
+#50 dimensions as in Tran, Maynard et al Neuron
+set.seed(1234)
+sce_uncorrected <- runUMAP(sce_uncorrected,
+                           dimred = "GLMPCA_approx",
+                           n_dimred = 15, 
+                           name = "UMAP_15")
+#with 20 dimensions
+set.seed(1234)
+sce_uncorrected <- runUMAP(sce_uncorrected,
+                           dimred = "GLMPCA_approx",
+                           n_dimred = 20, 
+                           name = "UMAP_20")
+
+#with 25 dimensions
+set.seed(1234)
+sce_uncorrected <- runUMAP(sce_uncorrected,
+                           dimred = "GLMPCA_approx",
+                           n_dimred = 25, 
+                           name = "UMAP_25")
+
+#with 50 dimensions
 set.seed(1234)
 sce_uncorrected <- runUMAP(sce_uncorrected,
                            dimred = "GLMPCA_approx",
                            n_dimred = 50, 
-                           name = "UMAP")
+                           name = "UMAP_50")
+
+
 # t-SNE
+#with 15 dimensions
+set.seed(1234)
+sce_uncorrected <- runTSNE(sce_uncorrected,
+                           dimred = "GLMPCA_approx",
+                           n_dimred = 15, 
+                           name = "TSNE_15")
+
+#with 20 dimensions
+set.seed(1234)
+sce_uncorrected <- runTSNE(sce_uncorrected,
+                           dimred = "GLMPCA_approx",
+                           n_dimred = 20, 
+                           name = "TSNE_20")
+
+#with 25 dimensions
+set.seed(1234)
+sce_uncorrected <- runTSNE(sce_uncorrected,
+                           dimred = "GLMPCA_approx",
+                           n_dimred = 25, 
+                           name = "TSNE_25")
+
+#with 50 dimensions
 set.seed(1234)
 sce_uncorrected <- runTSNE(sce_uncorrected,
                            dimred = "GLMPCA_approx",
                            n_dimred = 50, 
-                           name = "TSNE")
-
-#PCA plot of top 10 PCs
-PCA_plots <- plotReducedDim(sce_uncorrected,
-               dimred = "GLMPCA_approx", 
-               colour_by = "Sample",
-               ncomponents = 6, 
-               point_alpha = 0.3)
-#ggsave(PCA_plots,filename = here("plots","Dim_Red","multi_PCAs.png"))
-ggsave(PCA_plots,filename = here("plots","Dim_Red","multi_PCAs_numericCutoff.png"))
+                           name = "TSNE_50")
 
 # UMAPs
 #Colored by sample, library size, and doublet score
 #Sample
-sample_umap <- plotReducedDim(sce_uncorrected,
-                              dimred = "UMAP", 
-                              colour_by = "Sample",
-                              point_alpha = 0.3)
-#ggsave(sample_umap,filename = here("plots","Dim_Red","sample_umap.png"))
-ggsave(sample_umap,filename = here("plots","Dim_Red","sample_umap_numericCutoffs.png"))
+for(i in c(15,20,25,50)){
+    x <- plotReducedDim(sce_uncorrected,
+                        dimred = paste0("UMAP_",i), 
+                        colour_by = "Sample",
+                        point_alpha = 0.3) +
+        ggtitle(paste(i,"Dimensions")) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(x,filename = here("plots",
+                             "Dim_Red",
+                             paste0("sample_umap_numericCutoffs_",i,"dims.png")))
+}
 
+#####
 #library size
-sum_umap <- plotReducedDim(sce_uncorrected,
-               dimred = "UMAP", colour_by = "sum",
-               point_alpha = 0.3)
-#ggsave(sum_umap,filename = here("plots","Dim_Red","sum_umap.png"))
-ggsave(sum_umap,filename = here("plots","Dim_Red","sum_umap_numericCutoffs.png"))
+#Sample
+for(i in c(15,20,25,50)){
+    x <- plotReducedDim(sce_uncorrected,
+                        dimred = paste0("UMAP_",i), 
+                        colour_by = "sum",
+                        point_alpha = 0.3) +
+        ggtitle(paste(i,"Dimensions")) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(x,filename = here("plots",
+                             "Dim_Red",
+                             paste0("sum_umap_numericCutoffs_",i,"dims.png")))
+}
 
+
+#####
 #Doublet score
-doublet_umap <- plotReducedDim(sce_uncorrected,
-                               dimred = "UMAP", 
-                               colour_by = "doubletScore")
-#ggsave(doublet_umap,filename = here("plots","Dim_Red","doublet_umap.png"))
-ggsave(doublet_umap,filename = here("plots","Dim_Red","doublet_umap_numericCutoffs.png"))
+for(i in c(15,20,25,50)){
+    x <- plotReducedDim(sce_uncorrected,
+                        dimred = paste0("UMAP_",i), 
+                        colour_by = "doubletScore",
+                        point_alpha = 0.3) +
+        ggtitle(paste(i,"Dimensions")) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(x,filename = here("plots",
+                             "Dim_Red",
+                             paste0("doublet_umap_numericCutoffs_",i,"dims.png")))
+}
 
+######
 # TSNE by sample
-sample_TSNE <- plotReducedDim(sce_uncorrected,
-                              dimred = "TSNE", 
-                              colour_by = "Sample")
-#ggsave(sample_TSNE,filename = here("plots","Dim_Red","sample_TSNE.png"))
-ggsave(sample_TSNE,filename = here("plots","Dim_Red","sample_TSNE_numericCutoffs.png"))
-
+for(i in c(15,20,25,50)){
+    x <- plotReducedDim(sce_uncorrected,
+                        dimred = paste0("TSNE_",i), 
+                        colour_by = "Sample")
+    ggsave(x,filename = here("plots",
+                             "Dim_Red",
+                             paste0("sample_tSNE_numericCutoffs_",i,"dims.png")))
+    
+}
 
 #batch effect results in cluster coming from a single sample. 
 #Will need to run MNN to fix this. 
 #save uncorrected object. 
 #save(sce_uncorrected,file = here("processed-data","sce_uncorrected.rda"))
 save(sce_uncorrected,file = here("processed-data","sce_uncorrected_numericCutoffs.rda"))
-#Stopping point
 
-#Load the uncorrected sce file that contains 
-load(file = here("processed-data","sce_uncorrected.rda"))
 
-sce_uncorrected
-# class: SingleCellExperiment 
-# dim: 36601 9883 
-# metadata(1): Samples
-# assays(2): counts binomial_deviance_residuals
-# rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
-# ENSG00000277196
-# rowData names(7): source type ... gene_type binomial_deviance
-# colnames(9883): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
-# 3_TTTGTTGAGGCTCCCA-1 3_TTTGTTGTCCCGATCT-1
-# colData names(44): Sample Barcode ... discard_auto doubletScore
-# reducedDimNames(3): GLMPCA_approx UMAP TSNE
-# mainExpName: NULL
-# altExpNames(0):
-
+#Run batch correction with mutual nearest neighbors. 
 glmpca_mnn <- batchelor::reducedMNN(reducedDim(sce_uncorrected, "GLMPCA_approx"),
                                     batch=as.factor(sce_uncorrected$Sample))
 
@@ -199,10 +230,13 @@ rm(sce_uncorrected)
 #Rerun umpa and tsne
 set.seed(1234)
 
-#umap
-sce <- runUMAP(sce,
-               dimred = "mnn",
-               name = "UMAP_mnn")
+#umap with 15,20,25,50 dimensions
+for(i in c(15,20,25,50)){
+    sce <- runUMAP(sce,
+                   dimred = "mnn",
+                   name = paste0("UMAP_mnn_",i))
+}
+
 
 # pdf(here("plots","UMAP_corrected_by_sample.pdf"))
 # plotReducedDim(sce,
