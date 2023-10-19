@@ -6,6 +6,7 @@ library(sessioninfo)
 library(rafalib)
 library(ggplot2)
 library(scater)
+library(dplyr)
 library(scran)
 library(here)
 
@@ -381,10 +382,38 @@ Expression_dotplot <- plotDots(object = sce,
 ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
                                                  "post_k_50_louvain_1_clustering","general_dotplot_annotated.pdf"),height = 8)
 
+table(sce$Sample,sce$CellType)
+#           LS_GABA_1 LS_GABA_2 LS_GABA_3 LS_GABA_Drd3 MS_GABA_1 MS_GABA_2
+# 1c_LS_SCP       753       470        19          646       161       310
+# 2c_LS_SCP       608       102        95           35        28       256
+# 3c_LS_SCP        69        71       182          444        37       415
+# 
+#           MS_GABA_3 Polydendrocyte Glutamatergic Astrocyte_1 Astrocyte_2
+# 1c_LS_SCP       198             55           362         323         229
+# 2c_LS_SCP        71             79             0         197         268
+# 3c_LS_SCP        81             63             0          25         140
+# 
+#           Oligodendrocyte_1 Oligodendrocyte_2 Microglia Mural undefined
+# 1c_LS_SCP                41               297       151    96       350
+# 2c_LS_SCP               595               267        75    26       168
+# 3c_LS_SCP               810                93        31    32       176
+
+#Plot to visualize data above
+sample_cellType_barplot <- as.data.frame(table(sce$Sample,sce$CellType)) %>%
+    rename(Sample=Var1,CellType=Var2,No_cells=Freq) %>%
+    ggplot(aes(x = CellType,y = No_cells,fill = Sample)) +
+    geom_bar(stat="identity",position = "dodge") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45,hjust=1)) +
+    labs(x = "Cell Type",
+         y = "Number of Cells") 
+ggsave(plot = sample_cellType_barplot,filename = here("plots","CellType_by_Sample_barplot.png"))
+
+#Undefined cluster contains cells from all samples. 
 
 #Make umap annotated
 #k=50 louvain
-annotated_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn",
+annotated_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn_50",
                                  colour_by = "CellType",text_by = "CellType")
 ggsave(plot = annotated_umap,filename = here("plots","Dim_Red","Annotated_k_50_louvain_umap_50components.pdf"))
 
