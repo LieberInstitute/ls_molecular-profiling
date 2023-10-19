@@ -119,6 +119,7 @@ ggsave(plot = droplet_barplot,filename = here("plots","droplet_barplot_per_sampl
 #Load in the sce object
 load(here("processed-data","sce_raw.rda"),verbose = TRUE)
 
+
 dim(sce)
 # [1]   36601 4909214
 
@@ -137,7 +138,25 @@ load(here("processed-data","sce_emptyDrops_removed.rda"))
 ####Begin QC
 sce <- scuttle::addPerCellQC(sce,subsets = list(Mito=which(seqnames(sce) == "chrM")))
 
-## High mito
+#Plot mitochondria vs detected
+#All samples together
+mito_vs_detected <- plotColData(object = sce,
+                                y = "subsets_Mito_percent",
+                                x = "detected",
+                                colour_by = "Sample")
+ggsave(filename = here("plots","mito_vs_detected_bySample.png"),plot = mito_vs_detected)
+
+#Now samples separately.
+for(i in unique(sce$Sample)){
+    x <- plotColData(object = sce[,sce$Sample == i],
+                     y = "subsets_Mito_percent",
+                     x = "detected",
+                     colour_by = "Sample")
+    ggsave(filename = here("plots",paste0("mito_vs_detected_",i,"_only.png")),
+           plot = x)
+}
+
+######## High mito
 ##Comment in https://github.com/LieberInstitute/10xPilot_snRNAseq-human/blob/51d15ef9f5f2c4c53f55e22e3fe467de1a724668/10x_all-FACS-n10_2021rev_step01_processing-QC_MNT.R#L4
 #suggests that MAD approach may unneccisarily throw out cells from samples in which the mito percentage  distribution is centered around 0
 # sce$high_mito <- isOutlier(sce$subsets_Mito_percent, nmads = 3, type = "higher", batch = sce$Sample)
@@ -148,7 +167,6 @@ sce <- scuttle::addPerCellQC(sce,subsets = list(Mito=which(seqnames(sce) == "chr
 # #       1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
 # # FALSE      4114      3469      2997
 # # TRUE        438       231       218
-
 # #Check to see if the cells being dropped have large mito percentages. 
 # mito_violin <- plotColData(sce, x = "Sample", y = "subsets_Mito_percent", colour_by = "high_mito") +
 #     ggtitle("Mito Precent") +
@@ -157,14 +175,17 @@ sce <- scuttle::addPerCellQC(sce,subsets = list(Mito=which(seqnames(sce) == "chr
 #     annotate(geom="text",label = "5% Mito",x = 0.75,y=6)
 # 
 # ggsave(mito_violin,file=here("plots","mito_percentage_violin.png"))
+#
+######
+# Numeric cutoffs
 table(sce$subsets_Mito_percent >= 5.0)
-# FALSE  TRUE 
-# 11062   405 
+# FALSE  TRUE
+# 11062   405
 sce$high_mito_numeric <- ifelse(sce$subsets_Mito_percent >= 5.0,
                                 TRUE,
                                 FALSE)
 table(sce$high_mito_numeric)
-# FALSE  TRUE 
+# FALSE  TRUE
 # 11062   405
 
 numeric_mito_violin <- plotColData(sce, x = "Sample", y = "subsets_Mito_percent",colour_by = "high_mito_numeric") +
@@ -174,20 +195,19 @@ numeric_mito_violin <- plotColData(sce, x = "Sample", y = "subsets_Mito_percent"
     annotate(geom="text",label = "5% Mito",x = 0.75,y=6)
 
 ggsave(numeric_mito_violin,file=here("plots","mito_percentage_violin_numericCutoff.png"))
+#MAD approach is fa
 
-
-#I think the MAD approach is appropriate here. 
-## low library size
-sce$low_lib <- isOutlier(sce$sum, log = TRUE, type = "lower", batch = sce$Sample)
-table(sce$low_lib)
-# FALSE  TRUE 
-# 11188   279 
-
-lib_size_violin <- plotColData(sce, x = "Sample", y = "sum", colour_by = "low_lib") +
-    scale_y_log10() +
-    ggtitle("Total UMIs")
-
-ggsave(lib_size_violin,file=here("plots","lib_size_violin.png"))
+# ## low library size
+# sce$low_lib <- isOutlier(sce$sum, log = TRUE, type = "lower", batch = sce$Sample)
+# table(sce$low_lib)
+# # FALSE  TRUE 
+# # 11188   279 
+# 
+# lib_size_violin <- plotColData(sce, x = "Sample", y = "sum", colour_by = "low_lib") +
+#     scale_y_log10() +
+#     ggtitle("Total UMIs")
+# 
+# ggsave(lib_size_violin,file=here("plots","lib_size_violin.png"))
 
 # ## low detected features
 # # sce$qc.detected
