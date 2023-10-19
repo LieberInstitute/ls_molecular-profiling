@@ -306,6 +306,17 @@ genes_violin <- plotColData(object = sce,
     theme(plot.title = element_text(hjust=0.5),legend.position = "none")
 ggsave(genes_violin,filename = here("plots","Genes_by_cluster_k50_louvain_violin.pdf"))
 
+#library size per cluster
+lib_violin <- plotColData(object = sce,
+                          x = "k_50_louvain_1",
+                          y = "sum",
+                          colour_by = "k_50_louvain_1") +
+    scale_y_log10() +
+    labs(x = "Cluster \n(jaccard + louvain k=50 + res=1)",
+         title = "Total UMIs") +
+    theme(plot.title = element_text(hjust=0.5),legend.position = "none")
+ggsave(lib_violin,filename = here("plots","lib_size_by_cluster_k50_louvain_violin.pdf"))
+
 
 genes <- c("SYT1","SNAP25", #pan neuron
            "MBP","MOBP", #OLIGODENDROCYTE
@@ -460,6 +471,7 @@ genes_violin <- plotColData(object = sce,
                             x = "CellType",
                             y = "detected",
                             colour_by = "CellType") +
+    geom_hline(yintercept = 500,lty=2) +
     labs(x = "CellType",
          y = "Number of genes/cell",
          title = "Number of Genes/Cell by Cluster") +
@@ -467,6 +479,20 @@ genes_violin <- plotColData(object = sce,
           legend.position = "none",
           axis.text.x = element_text(angle=45,hjust=1))
 ggsave(genes_violin,filename = here("plots","Annotated_Genes_by_cluster_k50_louvain_violin.pdf"))
+
+#number of genes per cluster
+lib_violin <- plotColData(object = sce,
+                          x = "CellType",
+                          y = "sum",
+                          colour_by = "CellType") +
+    scale_y_log10() +
+    labs(x = "CellType",
+         y = "Total UMIs",
+         title = "UMIs") +
+    theme(plot.title = element_text(hjust=0.5),
+          legend.position = "none",
+          axis.text.x = element_text(angle=45,hjust=1))
+ggsave(lib_violin,filename = here("plots","lib_size_by_cluster_k50_louvain_violin.pdf"))
 
 print("Reproducibility information:")
 Sys.time()
