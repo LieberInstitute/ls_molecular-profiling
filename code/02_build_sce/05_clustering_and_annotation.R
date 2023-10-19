@@ -409,7 +409,30 @@ sample_cellType_barplot <- as.data.frame(table(sce$Sample,sce$CellType)) %>%
          y = "Number of Cells") 
 ggsave(plot = sample_cellType_barplot,filename = here("plots","CellType_by_Sample_barplot.png"))
 
-#Undefined cluster contains cells from all samples. 
+#Calculate what proportion of each sample is made up of each cell type. 
+sample_split <- splitit(sce$Sample)
+sample_list <- lapply(X = sample_split,FUN = function(x){
+    as.data.frame(table(sce[,x]$CellType)/ncol(sce[,x])*100)
+})
+
+#Add sample name to each dataframe. 
+for(i in names(sample_split)){
+    sample_list[[i]]$Sample <- i
+}
+
+#combine into a single data frame. 
+sample_list_barplot <- do.call(what=rbind,sample_list) %>% 
+    rename(CellType=Var1,Pct_of_Cells_in_Sample=Freq) %>% 
+    ggplot(aes(x = CellType,y = Pct_of_Cells_in_Sample, fill = Sample)) +
+    geom_bar(stat = "identity",position = "dodge") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(x = "Cell Type",
+         y = "% of Cells in Sample")
+ggsave(filename = here("plots","Pct_cells_in_sample_vs_Celltype_bar.png"),plot = sample_list_barplot)
+
+#Undefined cluster contains cells from all samples.
+#About 6-7.5% of the cells in each sample are in the "undefined" cluster. 
 
 #Make umap annotated
 #k=50 louvain
