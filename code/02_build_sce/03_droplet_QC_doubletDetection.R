@@ -69,7 +69,6 @@ map(e.out, ~ addmargins(table(Signif = .x$FDR <= 0.001, Limited = .x$Limited)))
 # FALSE  3708    0 3708
 # TRUE    320 2895 3215
 # Sum    4028 2895 6923
-
 #Not losing any droplets due to number of iterations. Can move on to QC plots and metrics. 
 
 #Pull knee lower values
@@ -89,7 +88,7 @@ droplet_summary <- stack(map_int(e.out,nrow)) %>%
     rename(Sample=ind) %>%
     select(Sample,total_drops,non_empty,knee_lower=values)
 droplet_summary
-# Sample total_drops non_empty knee_lower
+#       Sample total_drops non_empty knee_lower
 # 1 1c_LS_SCP     2093387      4552        307
 # 2 2c_LS_SCP     1392235      3700        207
 # 3 3c_LS_SCP     1423592      3215        207
@@ -119,7 +118,6 @@ ggsave(plot = droplet_barplot,filename = here("plots","droplet_barplot_per_sampl
 #Load in the sce object
 load(here("processed-data","sce_raw.rda"),verbose = TRUE)
 
-
 dim(sce)
 # [1]   36601 4909214
 
@@ -134,7 +132,6 @@ dim(sce)
 #Save object
 save(sce,file = here("processed-data","sce_emptyDrops_removed.rda"))
 
-load(here("processed-data","sce_emptyDrops_removed.rda"))
 ####Begin QC
 sce <- scuttle::addPerCellQC(sce,subsets = list(Mito=which(seqnames(sce) == "chrM")))
 
@@ -156,155 +153,291 @@ for(i in unique(sce$Sample)){
            plot = x)
 }
 
-######## High mito
+#########################################
+############### High mito ###############
+#########################################
 ##Comment in https://github.com/LieberInstitute/10xPilot_snRNAseq-human/blob/51d15ef9f5f2c4c53f55e22e3fe467de1a724668/10x_all-FACS-n10_2021rev_step01_processing-QC_MNT.R#L4
 #suggests that MAD approach may unneccisarily throw out cells from samples in which the mito percentage  distribution is centered around 0
-# sce$high_mito <- isOutlier(sce$subsets_Mito_percent, nmads = 3, type = "higher", batch = sce$Sample)
-# table(sce$high_mito)
-# # FALSE  TRUE 
-# # 10580   887 
-# table(sce$high_mito, sce$Sample)
-# #       1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
-# # FALSE      4114      3469      2997
-# # TRUE        438       231       218
-# #Check to see if the cells being dropped have large mito percentages. 
-# mito_violin <- plotColData(sce, x = "Sample", y = "subsets_Mito_percent", colour_by = "high_mito") +
-#     ggtitle("Mito Precent") +
-#     theme(plot.title = element_text(hjust = 0.5)) +
-#     geom_hline(yintercept = 5,lty = 2) +
-#     annotate(geom="text",label = "5% Mito",x = 0.75,y=6)
-# 
-# ggsave(mito_violin,file=here("plots","mito_percentage_violin.png"))
-#
-######
-# Numeric cutoffs
-table(sce$subsets_Mito_percent >= 5.0)
-# FALSE  TRUE
-# 11062   405
-sce$high_mito_numeric <- ifelse(sce$subsets_Mito_percent >= 5.0,
+#Will try several MAD values + a numeric cutoff of 5% to see how many cells are getting thrown out 
+sce$high_mito_1 <- isOutlier(sce$subsets_Mito_percent, nmads = 1, type = "higher", batch = sce$Sample)
+table(sce$Sample,sce$high_mito_1)
+#           FALSE TRUE
+# 1c_LS_SCP  3380 1172
+# 2c_LS_SCP  2656 1044
+# 3c_LS_SCP  2263  952
+sce$high_mito_2 <- isOutlier(sce$subsets_Mito_percent, nmads = 2, type = "higher", batch = sce$Sample)
+table(sce$Sample,sce$high_mito_2)
+#           FALSE TRUE
+# 1c_LS_SCP  3870  682
+# 2c_LS_SCP  3221  479
+# 3c_LS_SCP  2745  470
+sce$high_mito_3 <- isOutlier(sce$subsets_Mito_percent, nmads = 3, type = "higher", batch = sce$Sample)
+table(sce$Sample,sce$high_mito_3)
+#           FALSE TRUE
+# 1c_LS_SCP  4114  438
+# 2c_LS_SCP  3469  231
+# 3c_LS_SCP  2997  218
+
+for(i in c("high_mito_1","high_mito_2","high_mito_3")){
+    x <- plotColData(sce,x = "Sample",y= "subsets_Mito_percent",colour_by = i) +
+        ggtitle(paste0("Mito Percent\n",i)) +
+        theme(plot.title = element_text(hjust = 0.5)) +
+        geom_hline(yintercept = 5,lty = 2) #Line at 5% which is a cutoff that is widely used. 
+    ggsave(x,file=here("plots",paste0(i,"_violin.png")))
+}
+
+####Numeric cutoff
+table(sce$Sample,sce$subsets_Mito_percent > 5.0)
+#           FALSE TRUE
+# 1c_LS_SCP  4548    4
+# 2c_LS_SCP  3411  289
+# 3c_LS_SCP  3105  110
+sce$high_mito_numeric <- ifelse(sce$subsets_Mito_percent > 5.0,
                                 TRUE,
                                 FALSE)
 table(sce$high_mito_numeric)
-# FALSE  TRUE
-# 11062   405
+# FALSE  TRUE 
+# 11064   403 
 
-numeric_mito_violin <- plotColData(sce, x = "Sample", y = "subsets_Mito_percent",colour_by = "high_mito_numeric") +
-    ggtitle("Mito Percent") +
+#Check to see if the cells being dropped have large mito percentages.
+mito_violin <- plotColData(sce, x = "Sample", y = "subsets_Mito_percent", colour_by = "high_mito_numeric") +
+    ggtitle("Mito Precent") +
     theme(plot.title = element_text(hjust = 0.5)) +
     geom_hline(yintercept = 5,lty = 2) +
     annotate(geom="text",label = "5% Mito",x = 0.75,y=6)
 
-ggsave(numeric_mito_violin,file=here("plots","mito_percentage_violin_numericCutoff.png"))
-#MAD approach is fa
+ggsave(mito_violin,file=here("plots","mito_percentage_violin_numericCutoff.png"))
 
+
+#########################################
+########## Low Library Size #############
+#########################################
 # ## low library size
-# sce$low_lib <- isOutlier(sce$sum, log = TRUE, type = "lower", batch = sce$Sample)
-# table(sce$low_lib)
-# # FALSE  TRUE 
-# # 11188   279 
-# 
-# lib_size_violin <- plotColData(sce, x = "Sample", y = "sum", colour_by = "low_lib") +
-#     scale_y_log10() +
-#     ggtitle("Total UMIs")
-# 
-# ggsave(lib_size_violin,file=here("plots","lib_size_violin.png"))
-
-# ## low detected features
-# # sce$qc.detected
-# sce$low_genes <- isOutlier(sce$detected, log = TRUE, type = "lower", batch = sce$Sample)
-# table(sce$low_genes)
-# # FALSE  TRUE 
-# # 10548   919 
-# 
-# low_genes_violin <- plotColData(sce, x = "Sample", y = "detected", colour_by = "low_genes") +
-#     scale_y_log10() +
-#     ggtitle("Total Detected Features")
-# 
-# ggsave(low_genes_violin,file=here("plots","low_genes_violin.png"))
-# 
-# table(sce$low_lib, sce$low_genes)
-# #       FALSE  TRUE
-# # FALSE 10548   640
-# # TRUE      0   279
-# #Low library size also have low genes. 
-#Going to try a feature detection cut off of 500 genes 
-table(sce$detected < 500)
-# FALSE  TRUE 
-# 10358  1109 
-sce$low_genes_numeric <- ifelse(sce$detected < 500,
-                                TRUE,
-                                FALSE)
-table(sce$low_genes_numeric)
-# FALSE  TRUE 
-# 10358  1109 
-
-table(sce$Sample,sce$low_genes_numeric)
-#            FALSE TRUE
-# 1c_LS_SCP  4465   87
-# 2c_LS_SCP  3127  573
-# 3c_LS_SCP  2766  449
-
-numeric_genes_violin <- plotColData(sce, x = "Sample", y = "detected",colour_by = "low_genes_numeric") +
+#Plot library size per sample to look at distributions. 
+lib_size_violin <- plotColData(sce, x = "Sample", y = "sum",colour_by = "Sample") +
     scale_y_log10() +
-    ggtitle("Detected Features") +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    geom_hline(yintercept = 500,lty = 2) +
-    annotate(geom="text",label = "500 genes",x = 0.75,y=550)
+    ggtitle("Total UMIs")
 
-ggsave(numeric_genes_violin,file=here("plots","low_genes_violin_numericCutoff.png"))
+ggsave(lib_size_violin,file=here("plots","lib_size_violin.png"))
 
-## Annotate nuclei to drop
-#sce$discard_auto <- sce$high_mito | sce$low_lib | sce$low_genes
-sce$discard_numeric <- sce$high_mito_numeric | sce$low_genes_numeric
+#Sample 1 has a unimodal distribution while samples 2 and 3 have bimodal distributions. 
+#Going to check calculate low library size using the MAD approach with differing numbers of MAD 1-3. 
+##1 
+sce$low_lib_1 <- isOutlier(sce$sum, log = TRUE, type = "lower", batch = sce$Sample,nmads = 1)
+table(sce$Sample,sce$low_lib_1)
+#            FALSE TRUE
+# 1c_LS_SCP  3181 1371
+# 2c_LS_SCP  2849  851
+# 3c_LS_SCP  2457  758
+
+##2
+sce$low_lib_2 <- isOutlier(sce$sum, log = TRUE, type = "lower", batch = sce$Sample,nmads = 2)
+table(sce$Sample,sce$low_lib_2)
+#           FALSE TRUE
+# 1c_LS_SCP  3858  694
+# 2c_LS_SCP  3412  288
+# 3c_LS_SCP  2646  569
+
+##3
+sce$low_lib_3 <- isOutlier(sce$sum, log = TRUE, type = "lower", batch = sce$Sample,nmads = 3)
+table(sce$Sample,sce$low_lib_3)
+#           FALSE TRUE
+# 1c_LS_SCP  4336  216
+# 2c_LS_SCP  3700    0
+# 3c_LS_SCP  3152   63
+
+#Plot each 
+for(i in c(1:3)){
+    sum_violon <- plotColData(object = sce,y = "sum",x = "Sample",colour_by = paste0("low_lib_",i)) +
+        scale_y_log10() +
+        ggtitle(paste0("Total UMIs"))
+    ggsave(here("plots",paste0("lib_size_violin_nmad_",i,".png"))) 
+}
+
+
+#########################################
+####### Low Detected Features ###########
+#########################################
+#Plot number of detected features per sample to look at distributions. 
+detected_features_violin <- plotColData(sce, x = "Sample", y = "detected",colour_by = "Sample") +
+    scale_y_log10()+
+    ggtitle("Detected Features")
+
+ggsave(detected_features_violin,file=here("plots","Detected_Features_violin.png"))
+
+#Similar bimodal distributions in samples 2+3 and unimodal in sample 1. 
+#Similar to library size, will investigate different MAD values for number of genes 
+##1 
+sce$low_genes_1 <- isOutlier(sce$detected, log = TRUE, type = "lower", batch = sce$Sample,nmads = 1)
+table(sce$Sample,sce$low_genes_1)
+#           FALSE TRUE
+# 1c_LS_SCP  3084 1468
+# 2c_LS_SCP  2818  882
+# 3c_LS_SCP  2439  776
+
+##2
+sce$low_genes_2 <- isOutlier(sce$detected, log = TRUE, type = "lower", batch = sce$Sample,nmads = 2)
+table(sce$Sample,sce$low_genes_2)
+#           FALSE TRUE
+# 1c_LS_SCP  3534 1018
+# 2c_LS_SCP  3183  517
+# 3c_LS_SCP  2608  607
+
+##3
+sce$low_genes_3 <- isOutlier(sce$detected, log = TRUE, type = "lower", batch = sce$Sample,nmads = 3)
+table(sce$Sample,sce$low_genes_3)
+#           FALSE TRUE
+# 1c_LS_SCP  3961  591
+# 2c_LS_SCP  3700    0
+# 3c_LS_SCP  2887  328
+
+#Plot each 
+for(i in c(1:3)){
+    detected_violin <- plotColData(object = sce,y = "detected",x = "Sample",colour_by = paste0("low_genes_",i)) +
+        scale_y_log10() +
+        geom_hline(yintercept = 500) +
+        ggtitle(paste0("Total Detected features"))
+    ggsave(here("plots",paste0("low_genes_violin_nmad_",i,".png"))) 
+}
+
+#Check what the distribution looks like when not splitting by sample
+x <- plotColData(object = sce,y = "detected")
+ggsave(here("plots","detected_features.png"),plot = x)
+
+######################################################################
+#Another option is to identify outliers in high-dimensional space based 
+#on the QC metrics for each cell" (OSCA ch. 1.3.3)
+df <- colData(sce)[,c("sum","detected","subsets_Mito_percent")]
+df$sum <- log10(df$sum)
+df$detected <- log10(df$detected)
+
+library(robustbase)
+outlying <- adjOutlyingness(df, only.outlyingness = TRUE)
+multi.outlier <- isOutlier(outlying, type = "higher")
+table(multi.outlier)
+# multi.outlier
+# FALSE  TRUE 
+# 10349  1118 
+
+#With this method, interpreting why a cell is dropped is difficult. 
+#Plot genes detected, library size, and mito percentage and color by it being defined as an outlier
+all(rownames(colData(sce)) == names(multi.outlier))
+#[1] TRUE
+#Everything is in the same order here, so can just add right to the object. 
+sce$robustbase_outlier <- multi.outlier
+
+#Now plot
+#Genes
+genes_robustbase <- plotColData(object = sce,y = "detected",x = "Sample",colour_by = "robustbase_outlier") +
+    scale_y_log10() +
+    ggtitle("Total Detected Features")
+ggsave(filename = here("plots","genes_violin_robustbaseoutliers.png"))
+#library size
+libsize_robustbase <- plotColData(object = sce,y = "sum",x = "Sample",colour_by = "robustbase_outlier") +
+    scale_y_log10() +
+    ggtitle("Total UMIs")
+ggsave(filename = here("plots","libsize_violin_robustbaseoutliers.png"))
+#mitochondrial genes
+mito_robustbase <- plotColData(object = sce,y = "subsets_Mito_percent",x = "Sample",colour_by = "robustbase_outlier") +
+    ggtitle("Reads mapping to mitochondrial genome")
+ggsave(filename = here("plots","mito_violin_robustbaseoutliers.png"))
+
+#This approach keys in on the mitochondrial percentage and not much else. Still keepign cells with low library 
+#and low number of genes. 
+
+############################################
+######### Annotate nuclei to drop ##########
+############################################
+#The MAd approach for mitochondria unnecessarily punishes sample 1 because the distribution is centered 
+#around 0. To prove: 
+summary(sce[,sce$Sample == "1c_LS_SCP"]$subsets_Mito_percent)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 0.00000 0.06194 0.12597 0.21432 0.24457 6.66667
+#Using the same MAD values for each sample is also problematic for library size and number of genes. 
+#Sample 1 is unimodal and using MAD approach for number of genes throws out cells with >1000 genes, which
+#I believe are most likely high quality cells. However, samples 2 and 3 are bimodal. This is a particular
+#issue for sample 2 because MAD=3 for library size removes 0 cells and includes those with <1000 reads +
+#<500 genes. With this information, I am going to use sample specific MAD values for library size and a numeric cutoff
+#of mitochondrial reads of 5%.
+
+#Using sample specific cutoffs. 
+####Sample 1
+sample_1_drop <- sce[,sce$Sample == "1c_LS_SCP"]$low_lib_3 | sce[,sce$Sample == "1c_LS_SCP"]$high_mito_numeric
+table(sample_1_drop)
+# FALSE  TRUE 
+# 4332   220 
+#Get cell IDs that need to be dropped
+sample_1_drop_names <- rownames(colData(sce[,sce$Sample == "1c_LS_SCP"])[which(sample_1_drop),])
+
+####Sample 2
+sample_2_drop <- sce[,sce$Sample == "2c_LS_SCP"]$low_lib_2 | sce[,sce$Sample == "2c_LS_SCP"]$low_genes_2 | sce[,sce$Sample == "2c_LS_SCP"]$high_mito_numeric
+table(sample_2_drop)
+# sample_2_drop
+# FALSE  TRUE 
+# 2924   776 
+table(sce[,sce$Sample == "2c_LS_SCP"]$low_lib_2, sce[,sce$Sample == "2c_LS_SCP"]$low_genes_2)
+#        FALSE TRUE
+# FALSE  3183  229
+# TRUE      0  288
+#All that have low library size are also low genes.  
+#Some that are low genes, do pass library size. 
+
+#Get cell IDs that need to be dropped
+sample_2_drop_names <- rownames(colData(sce[,sce$Sample == "2c_LS_SCP"])[which(sample_2_drop),])
+
+####Sample 3
+sample_3_drop <- sce[,sce$Sample == "3c_LS_SCP"]$low_lib_2 | sce[,sce$Sample == "3c_LS_SCP"]$low_genes_3 | sce[,sce$Sample == "3c_LS_SCP"]$high_mito_numeric
+table(sample_3_drop)
+# sample_3_drop
+# FALSE  TRUE 
+# 2551   664 
+
+table(sce[,sce$Sample == "3c_LS_SCP"]$low_lib_2, sce[,sce$Sample == "3c_LS_SCP"]$low_genes_3)
+#       FALSE TRUE
+# FALSE  2646    0
+# TRUE    241  328
+#Some that have low library size, do pass gene cutoffs. 
+#However, everything that has low genes is also low libary size. 
+
+#Get cell IDs that need to be dropped
+sample_3_drop_names <- rownames(colData(sce[,sce$Sample == "3c_LS_SCP"])[which(sample_3_drop),])
+
+#Concatenate all
+cells_to_drop <- c(sample_1_drop_names,sample_2_drop_names,sample_3_drop_names)
+
+#add information to the object
+sce$discard_sample_specific <- ifelse(sce$unique_rowname %in% cells_to_drop,
+                                      TRUE,
+                                      FALSE)
+
+table(sce$discard_sample_specific)
+# FALSE  TRUE 
+# 9807  1660 
 
 # table(sce$discard_auto)
 # FALSE  TRUE 
 # 9883  1584 
 
-table(sce$discard_numeric)
+#table(sce$discard_numeric)
 # FALSE  TRUE 
 # 10000  1467 
 
+100 * sum(sce$discard_sample_specific) / ncol(sce)
+#[1] 14.47632
 
-## discard 13% of nuc
-# 100 * sum(sce$discard_auto) / ncol(sce)
-# [1] 13.81355
-
-100 * sum(sce$discard_numeric) / ncol(sce)
-# [1] 12.79323
-
-
-# (qc_t <- addmargins(table(sce$Sample, sce$discard_auto)))
-#            FALSE  TRUE   Sum
-# 1c_LS_SCP  3717   835  4552
-# 2c_LS_SCP  3469   231  3700
-# 3c_LS_SCP  2697   518  3215
-# Sum        9883  1584 11467
-
-(qc_t <- addmargins(table(sce$Sample, sce$discard_numeric)))
-#            FALSE  TRUE   Sum
-# 1c_LS_SCP  4461    91  4552
-# 2c_LS_SCP  2870   830  3700
-# 3c_LS_SCP  2669   546  3215
-# Sum       10000  1467 11467
-
-
-# round(100 * sweep(qc_t, 1, qc_t[, 3], "/"), 1)
-# FALSE  TRUE   Sum
-# 1c_LS_SCP  81.7  18.3 100.0
-# 2c_LS_SCP  93.8   6.2 100.0
-# 3c_LS_SCP  83.9  16.1 100.0
-# Sum        86.2  13.8 100.0
-#above table created with mad cutoffs
+(qc_t <- addmargins(table(sce$Sample, sce$discard_sample_specific)))
+#           FALSE  TRUE   Sum
+# 1c_LS_SCP  4332   220  4552
+# 2c_LS_SCP  2924   776  3700
+# 3c_LS_SCP  2551   664  3215
+# Sum        9807  1660 11467
 
 round(100 * sweep(qc_t, 1, qc_t[, 3], "/"), 1)
-#            FALSE  TRUE   Sum
-# 1c_LS_SCP  98.0   2.0 100.0
-# 2c_LS_SCP  77.6  22.4 100.0
-# 3c_LS_SCP  83.0  17.0 100.0
-# Sum        87.2  12.8 100.0
-#above table created with the numeric cutoffs
-
+#           FALSE  TRUE   Sum
+# 1c_LS_SCP  95.2   4.8 100.0
+# 2c_LS_SCP  79.0  21.0 100.0
+# 3c_LS_SCP  79.3  20.7 100.0
+# Sum        85.5  14.5 100.0
 
 #### Doublet detection ####
 ## To speed up, run on sample-level top-HVGs - just take top 1000
@@ -324,7 +457,7 @@ for (i in splitit(sce$Sample)) {
 }
 
 summary(sce$doubletScore)
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 # 0.0000  0.1730  0.3996  0.5438  0.6660 17.7661 
 
 
@@ -359,40 +492,27 @@ dbl_df %>%
         drop = sum(doubletScore >= 5),
         drop_precent = 100 * drop / n()
     )
-
 # A tibble: 3 × 5
-#     Sample    median   q95  drop drop_precent
-#.    <chr>      <dbl> <dbl> <int>        <dbl>
+# Sample    median   q95  drop drop_precent
+# <chr>      <dbl> <dbl> <int>        <dbl>
 # 1 1c_LS_SCP  0.282 0.992    31        0.681
 # 2 2c_LS_SCP  0.496 1.37     18        0.486
 # 3 3c_LS_SCP  0.521 1.20     41        1.28 
 
-#table(sce$discard_auto, sce$doubletScore >= 5)
-#        FALSE TRUE
-# FALSE  9806   77
-# TRUE   1571   13
-
-table(sce$discard_numeric, sce$doubletScore >= 5)
-#        FALSE TRUE
-# FALSE  9919   81
-# TRUE   1458    9
+table(sce$discard_sample_specific, sce$doubletScore >= 5)
+#       FALSE TRUE
+# FALSE  9726   81
+# TRUE   1651    9
 
 #Save object
-save(sce,file = here("processed-data","sce_emptyDrops_removed.rda"))
+save(sce,file = here("processed-data","sce_emptyDrops_removed_withQC.rda"))
 
-
-#Remove problematic cells. 
-# sce <- sce[, !sce$discard_auto]
-# dim(sce)
-# #[1] 36601  9883
-
-sce <- sce[,!sce$discard_numeric]
+sce <- sce[,!sce$discard_sample_specific]
 dim(sce)
-# [1] 36601 10000
+# [1] 36601  9807
 
 ## save QCed and cleaned object. 
-#save(sce,file = here("processed-data","sce_clean.rda"))
-save(sce,file=here("processed-data","sce_clean_numeric_cutoffs.rda"))
+save(sce,file=here("processed-data","sce_clean.rda"))
 
 ## Reproducibility information
 print("Reproducibility information:")
@@ -400,11 +520,11 @@ Sys.time()
 proc.time()
 options(width = 120)
 session_info()
-#[1] "Reproducibility information:"
-# [1] "2023-10-16 14:29:16 EDT"
+# [1] "Reproducibility information:"
+# [1] "2023-10-20 14:48:40 EDT"
 # user   system  elapsed 
-# 99.874    2.976 1564.860 
-# ─ Session info ────────────────────────────────────────────────────────
+# 548.662   22.111 6976.418 
+# ─ Session info ───────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -414,10 +534,10 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-10-16
+# date     2023-10-20
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ────────────────────────────────────────────────────────────
+# ─ Packages ───────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # beachmat               2.16.0    2023-04-25 [2] Bioconductor
@@ -436,11 +556,12 @@ session_info()
 # codetools              0.2-19    2023-02-01 [3] CRAN (R 4.3.1)
 # colorout             * 1.2-2     2023-09-22 [1] Github (jalvesaq/colorout@79931fd)
 # colorspace             2.1-0     2023-01-23 [2] CRAN (R 4.3.1)
-# cowplot                1.1.1     2020-12-30 [2] CRAN (R 4.3.1)
+# cowplot                1.1.1     2020-12-30 [1] CRAN (R 4.3.1)
 # crayon                 1.5.2     2022-09-29 [2] CRAN (R 4.3.1)
 # data.table             1.14.8    2023-02-17 [2] CRAN (R 4.3.1)
 # DelayedArray           0.26.7    2023-07-28 [2] Bioconductor
 # DelayedMatrixStats     1.22.6    2023-08-28 [2] Bioconductor
+# DEoptimR               1.1-2     2023-08-28 [2] CRAN (R 4.3.1)
 # dplyr                * 1.1.3     2023-09-03 [2] CRAN (R 4.3.1)
 # dqrng                  0.3.1     2023-08-30 [2] CRAN (R 4.3.1)
 # DropletUtils         * 1.20.0    2023-04-25 [2] Bioconductor
@@ -494,6 +615,7 @@ session_info()
 # Rhdf5lib               1.22.1    2023-09-10 [2] Bioconductor
 # rjson                  0.2.21    2022-01-09 [2] CRAN (R 4.3.1)
 # rlang                  1.1.1     2023-04-28 [2] CRAN (R 4.3.1)
+# robustbase           * 0.99-0    2023-06-16 [2] CRAN (R 4.3.1)
 # rprojroot              2.0.3     2022-04-02 [2] CRAN (R 4.3.1)
 # Rsamtools              2.16.0    2023-04-25 [2] Bioconductor
 # rsvd                   1.0.5     2021-04-16 [2] CRAN (R 4.3.1)
@@ -522,14 +644,3 @@ session_info()
 # viridis                0.6.4     2023-07-22 [2] CRAN (R 4.3.1)
 # viridisLite            0.4.2     2023-05-02 [2] CRAN (R 4.3.1)
 # withr                  2.5.0     2022-03-03 [2] CRAN (R 4.3.1)
-# xgboost                1.7.5.1   2023-03-30 [2] CRAN (R 4.3.1)
-# XML                    3.99-0.14 2023-03-19 [2] CRAN (R 4.3.1)
-# XVector                0.40.0    2023-04-25 [2] Bioconductor
-# yaml                   2.3.7     2023-01-23 [2] CRAN (R 4.3.1)
-# zlibbioc               1.46.0    2023-04-25 [2] Bioconductor
-# 
-# [1] /users/rphillip/R/4.3
-# [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
-# [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
-# 
-# ───────────────────────────────────────────────────────────────────────
