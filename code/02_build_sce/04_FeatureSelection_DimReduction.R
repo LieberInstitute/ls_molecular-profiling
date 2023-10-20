@@ -12,23 +12,25 @@ library(here)
 
 ## load QCed and cleaned object. 
 #load(file = here("processed-data","sce_clean.rda"))
-load(file = here("processed-data","sce_clean_numeric_cutoffs.rda"))
+load(file = here("processed-data","sce_clean.rda"))
 
 sce
 # class: SingleCellExperiment 
-# dim: 36601 10000 
+# dim: 36601 9807 
 # metadata(1): Samples
 # assays(1): counts
 # rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
 # ENSG00000277196
 # rowData names(6): source type ... gene_name gene_type
-# colnames(10000): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
+# colnames(9807): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
 # 3_TTTGGTTTCTTCGACC-1 3_TTTGTTGTCCCGATCT-1
-# colData names(54): Sample Barcode ... discared_numeric discard_numeric
+# colData names(52): Sample Barcode ... discard_sample_specific
+# doubletScore
 # reducedDimNames(0):
 #     mainExpName: NULL
 # altExpNames(0):
 
+#Deviance feature selection
 sce <- devianceFeatureSelection(sce,
                                 assay = "counts",
                                 fam = "binomial",
@@ -72,6 +74,9 @@ table(rowSums(assay(sce,"binomial_deviance_residuals")) == 0)
 # FALSE  TRUE 
 # 33564  3037
 #Same number of true and false
+#Furthermore....
+all(names(rowSums(counts(sce)) == 0) == names(rowSums(assay(sce,"binomial_deviance_residuals")) == 0))
+# [1] TRUE
 
 #Take top 2000 highly deviant genes
 hdgs <- rownames(sce)[order(rowData(sce)$binomial_deviance, decreasing = T)][1:2000]
@@ -90,8 +95,7 @@ PCA_plots <- plotReducedDim(sce_uncorrected,
                             colour_by = "Sample",
                             ncomponents = 6, 
                             point_alpha = 0.3)
-#ggsave(PCA_plots,filename = here("plots","Dim_Red","multi_PCAs.png"))
-ggsave(PCA_plots,filename = here("plots","Dim_Red","multi_PCAs_numericCutoff.png"))
+ggsave(PCA_plots,filename = here("plots","Dim_Red","multi_PCAs.png"))
 
 # UMAP
 #With testing 15,20,25,and 50
@@ -128,7 +132,7 @@ for(i in c(15,20,25,50)){
         theme(plot.title = element_text(hjust = 0.5))
     ggsave(x,filename = here("plots",
                              "Dim_Red",
-                             paste0("sample_umap_numericCutoffs_",i,"dims.png")))
+                             paste0("sample_umap_",i,"dims.png")))
 }
 
 #####
@@ -143,7 +147,7 @@ for(i in c(15,20,25,50)){
         theme(plot.title = element_text(hjust = 0.5))
     ggsave(x,filename = here("plots",
                              "Dim_Red",
-                             paste0("sum_umap_numericCutoffs_",i,"dims.png")))
+                             paste0("sum_umap_",i,"dims.png")))
 }
 
 
@@ -158,7 +162,7 @@ for(i in c(15,20,25,50)){
         theme(plot.title = element_text(hjust = 0.5))
     ggsave(x,filename = here("plots",
                              "Dim_Red",
-                             paste0("doublet_umap_numericCutoffs_",i,"dims.png")))
+                             paste0("doublet_umap_",i,"dims.png")))
 }
 
 ######
@@ -169,16 +173,14 @@ for(i in c(15,20,25,50)){
                         colour_by = "Sample")
     ggsave(x,filename = here("plots",
                              "Dim_Red",
-                             paste0("sample_tSNE_numericCutoffs_",i,"dims.png")))
+                             paste0("sample_tSNE_",i,"dims.png")))
     
 }
 
 #batch effect results in cluster coming from a single sample. 
 #Will need to run MNN to fix this. 
 #save uncorrected object. 
-#save(sce_uncorrected,file = here("processed-data","sce_uncorrected.rda"))
-save(sce_uncorrected,file = here("processed-data","sce_uncorrected_numericCutoffs.rda"))
-
+save(sce_uncorrected,file = here("processed-data","sce_uncorrected.rda"))
 
 #Run batch correction with mutual nearest neighbors. 
 glmpca_mnn <- batchelor::reducedMNN(reducedDim(sce_uncorrected, "GLMPCA_approx"),
@@ -213,7 +215,7 @@ for(i in c(15,20,25,50)){
         theme(plot.title = element_text(hjust = 0.5))
     ggsave(x,filename = here("plots",
                              "Dim_Red",
-                             paste0("sample_umap_numericCutoffs_",i,"dims_postMNN.png")))
+                             paste0("sample_umap_",i,"dims_postMNN.png")))
 }
 
 #sum
@@ -226,7 +228,7 @@ for(i in c(15,20,25,50)){
         theme(plot.title = element_text(hjust = 0.5))
     ggsave(x,filename = here("plots",
                              "Dim_Red",
-                             paste0("sum_umap_numericCutoffs_",i,"dims_postMNN.png")))
+                             paste0("sum_umap_",i,"dims_postMNN.png")))
 }
 
 #detected
@@ -239,7 +241,7 @@ for(i in c(15,20,25,50)){
         theme(plot.title = element_text(hjust = 0.5))
     ggsave(x,filename = here("plots",
                              "Dim_Red",
-                             paste0("detected_umap_numericCutoffs_",i,"dims_postMNN.png")))
+                             paste0("detected_umap_",i,"dims_postMNN.png")))
 }
 
 #subsets mito percent
@@ -252,11 +254,9 @@ for(i in c(15,20,25,50)){
         theme(plot.title = element_text(hjust = 0.5))
     ggsave(x,filename = here("plots",
                              "Dim_Red",
-                             paste0("mito_percent_umap_numericCutoffs_",i,"dims_postMNN.png")))
+                             paste0("mito_percent_umap_",i,"dims_postMNN.png")))
 }
 ########
-
-
 #One cluster is dominated by Sample 1. Checking expression values to identify if this is a 
 #batch correction issue, or if this is due to something about the anatomy/biology of the sample
 
@@ -286,22 +286,27 @@ for(i in genes){
         scale_color_gradientn(colours = c("lightgrey","red")) +
         ggtitle(i) +
         theme(plot.title = element_text(hjust = 0.5))
-    ggsave(filename = paste0("plots/Expression_plots/",i,"_expression_umap_numericCutoffs_20_dims.pdf"),
+    ggsave(filename = paste0("plots/Expression_plots/",i,"_expression_umap_20_dims.pdf"),
            plot = x,
            height = 8,width = 8)
 }
 
-#Save the object
-save(sce,file = here("processed-data","sce_numeric_cutoff_QC.rda"))
+#This cluster is the result of glutamatergic cells present in sample 1 only. 
 
+#Save the object
+save(sce,file = here("processed-data","sce_postMNN.rda"))
+
+#session info
 print("Reproducibility information:")
 Sys.time()
 proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2023-10-18 11:42:23 EDT"
-# ─ Session info ────────────────────────────────────────────────────────────────────────────────────────────────────────
+# [1] "2023-10-20 15:48:32 EDT"
+# user   system  elapsed 
+# 1497.499   97.013 3482.481 
+# ─ Session info ──────────────────────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -311,10 +316,10 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-10-18
+# date     2023-10-20
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# ─ Packages ──────────────────────────────────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # batchelor              1.16.0    2023-04-25 [2] Bioconductor
@@ -332,7 +337,7 @@ session_info()
 # codetools              0.2-19    2023-02-01 [3] CRAN (R 4.3.1)
 # colorout             * 1.2-2     2023-09-22 [1] Github (jalvesaq/colorout@79931fd)
 # colorspace             2.1-0     2023-01-23 [2] CRAN (R 4.3.1)
-# cowplot                1.1.1     2020-12-30 [2] CRAN (R 4.3.1)
+# cowplot                1.1.1     2020-12-30 [1] CRAN (R 4.3.1)
 # crayon                 1.5.2     2022-09-29 [2] CRAN (R 4.3.1)
 # DelayedArray           0.26.7    2023-07-28 [2] Bioconductor
 # DelayedMatrixStats     1.22.6    2023-08-28 [2] Bioconductor
@@ -409,7 +414,6 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
-# ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-# 
-# 
-# 
+# ─────────────────────────────────────────────────────────────────────────────────────────────────
+
+
