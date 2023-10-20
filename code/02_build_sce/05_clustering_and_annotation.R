@@ -11,29 +11,28 @@ library(scran)
 library(here)
 
 #Load the object 
-load(here("processed-data","sce_numeric_cutoff_QC.rda"))
+load(here("processed-data","sce_postMNN.rda"))
 
 sce
 # class: SingleCellExperiment 
-# dim: 36601 10000 
+# dim: 36601 9807 
 # metadata(1): Samples
 # assays(3): counts binomial_deviance_residuals logcounts
 # rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
 # ENSG00000277196
 # rowData names(7): source type ... gene_type binomial_deviance
-# colnames(10000): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
+# colnames(9807): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
 # 3_TTTGGTTTCTTCGACC-1 3_TTTGTTGTCCCGATCT-1
-# colData names(55): Sample Barcode ... discard_numeric sizeFactor
+# colData names(53): Sample Barcode ... doubletScore sizeFactor
 # reducedDimNames(14): GLMPCA_approx UMAP_15 ... UMAP_mnn_25 UMAP_mnn_50
 # mainExpName: NULL
 # altExpNames(0):
 
-#Build SNN graph with k=20 and k=50. Can change k value later but will start with this. 
 #Lower K= fewer, larger clusters
 #Smaller= more, small clusters.
 #Run louvain clustering. 
 #jaccard + louvain is similar to seurat workflow. 
-#Resolution=1 is the default method
+#Resolution=1 is the default
 snn_k_20 <- buildSNNGraph(sce, k = 20, use.dimred = "mnn",type="jaccard")
 snn_k_50 <- buildSNNGraph(sce, k = 50, use.dimred = "mnn",type="jaccard")
 snn_k_75 <- buildSNNGraph(sce, k = 75, use.dimred = "mnn",type="jaccard")
@@ -42,21 +41,21 @@ set.seed(1234)
 clust_20 <- igraph::cluster_louvain(snn_k_20,resolution=1)$membership
 table(clust_20)
 # 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 276 1125  307  200  258 1096  475  542  674  645  225  838  143  106  517  252 
-# 17   18   19   20   21   22   23 
-# 72   49  168  637  126  310  959
+# 276  773  300  200  256 1092  694  543  645  351  524  284  168  416  139  105 
+# 17   18   19   20   21   22   23   24   25 
+# 478  255   71   49  162  635  126  313  952 
 
 set.seed(1234)
 clust_50 <- igraph::cluster_louvain(snn_k_50,resolution=1)$membership
 table(clust_50)
-#    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 1430 1125  362  197  257 1446  545  657  643  226  981  350  694  154  637  296 
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 1398 1124  361  197  254 1174  545  644  226  991  582  349  149  615  294  904 
 
 set.seed(1234)
 clust_75 <- igraph::cluster_louvain(snn_k_75,resolution=1)$membership
 table(clust_75)
-#    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15 
-# 1365 1224  355  193  256 1456  545  650  645 1382  750  214  143  636  186 
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14 
+# 1389 1224  355  193  392 1455  545  626  644  218 1291  675  614  186
 
 #Add cluster information to object
 sce$k_20_louvain_1 <- factor(clust_20)
@@ -68,26 +67,25 @@ set.seed(1234)
 wt_clusters_k_20 <- igraph::cluster_walktrap(snn_k_20)$membership
 table(wt_clusters_k_20)
 # 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 258 1087  721  436  375  192  218 1215  807  854  253  338  157   61  379  286 
+# 436  211  236  237 1063  668  777  750  251  338  162  734   61  375  314  275 
 # 17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32 
-# 307  265  164   86  114  179  170  143  144   58  107   95   77  119   48   54 
-# 33   34   35   36   37 
-# 56   63   29   43   42 
+# 269   95  178  303  160  176  105  284   63  210  144  188  107   45   77  113 
+# 33   34   35   36   37   38   39   40   41 
+# 49   54   63   51   51   29   44   19   42 
 
 set.seed(1234)
 wt_clusters_k_50 <- igraph::cluster_walktrap(snn_k_50)$membership
 table(wt_clusters_k_50)
-wt_clusters_k_50
-#   1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 289  163 1866 1228  643 1417  257  197 1381  373  316  353  215  332  154  149 
-#  17   18   19   20 
-# 228  271   98   70 
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 643  197  255 1387  662 1495  634  763  328  316 1056  389  227  158  100  127 
+# 17   18   19   20   21   22   23   24 
+# 228  174  144  232   70   44  115   63 
 
 set.seed(1234)
 wt_clusters_k_75 <- igraph::cluster_walktrap(snn_k_75)$membership
 table(wt_clusters_k_75)
 #   1    2    3    4    5    6    7    8    9   10   11   12   13   14 
-# 625  545 1213 2344  646  642  343 1360 1081  255  197  377  230  142 
+# 612  545 1214 2201  730  646  287 1411 1019  251  197  331  226  137 
 
 #Add cluster information to object
 sce$k_20_walktrap <- factor(wt_clusters_k_20)
@@ -133,145 +131,155 @@ ggsave(plot = k_75_wt_umap,filename = here("plots","Dim_Red","k_75_wt_umap_umap_
 #Tables by cluster and sample
 table(sce$k_20_louvain_1,sce$Sample)
 #     1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
-# 1        167        96        13
-# 2        649        33       443
-# 3        307         0         0
+# 1        168        95        13
+# 2        469        33       271
+# 3        300         0         0
 # 4         57        80        63
-# 5        152        75        31
-# 6        550       493        53
-# 7         38       284       153
-# 8        321       196        25
-# 9        295       281        98
-# 10       472       102        71
-# 11       158        29        38
-# 12       259       235       344
-# 13        59        31        53
-# 14        62        39         5
-# 15       257       131       129
-# 16        83        57       112
-# 17        72         0         0
-# 18        39        10         0
-# 19       109        27        32
-# 20       234       263       140
-# 21        96         4        26
-# 22        20       103       187
-# 23         5       301       653
+# 5        151        79        26
+# 6        551       491        50
+# 7         98       397       199
+# 8        321       197        25
+# 9        472       102        71
+# 10       179         0       172
+# 11       218       111       195
+# 12        72        87       125
+# 13        98        47        23
+# 14       208       163        45
+# 15        55        31        53
+# 16        61        39         5
+# 17       209       192        77
+# 18        83        58       114
+# 19        71         0         0
+# 20        39        10         0
+# 21       104        26        32
+# 22       224       282       129
+# 23        96         4        26
+# 24        21       105       187
+# 25         7       295       650
 
 table(sce$k_50_louvain_1,sce$Sample)
 #    1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
-# 1        753       608        69
-# 2        646        35       444
-# 3        362         0         0
+# 1        747       590        61
+# 2        644        35       445
+# 3        361         0         0
 # 4         55        79        63
-# 5        151        75        31
-# 6         41       595       810
+# 5        151        77        26
+# 6        309       596       269
 # 7        323       197        25
-# 8        297       267        93
-# 9        470       102        71
-# 10       161        28        37
-# 11       310       256       415
-# 12       198        71        81
-# 13       350       168       176
-# 14        96        26        32
-# 15       229       268       140
-# 16        19        95       182
+# 8        470       103        71
+# 9        161        28        37
+# 10       312       268       411
+# 11       269       218        95
+# 12       197        71        81
+# 13        91        26        32
+# 14       219       271       125
+# 15        20        95       179
+# 16         3       270       631
 
 table(sce$k_75_louvain_1,sce$Sample)
 #    1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
-# 1        738       571        56
+# 1        740       588        61
 # 2        660        82       482
 # 3        355         0         0
 # 4         52        78        63
-# 5        150        75        31
-# 6         47       597       812
+# 5        233       102        57
+# 6         46       597       812
 # 7        323       197        25
-# 8        292       265        93
-# 9        471       103        71
-# 10       526       347       509
-# 11       375       190       185
-# 12       155        27        32
-# 13        86        26        31
-# 14       228       268       140
-# 15         3        44       139
+# 8        267       270        89
+# 9        470       103        71
+# 10       158        27        33
+# 11       498       317       476
+# 12       307       249       119
+# 13       220       269       125
+# 14         3        45       138
 
 table(sce$k_20_walktrap,sce$Sample)
-#     1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
-# 1        152        75        31
-# 2        544       492        51
-# 3        468        88       165
-# 4        321        94        21
-# 5        132       171        72
-# 6          2        45       145
-# 7        154        27        37
-# 8        465       347       403
-# 9          5       288       514
-# 10       151       476       227
-# 11        83        57       113
-# 12       175         0       163
-# 13        75        47        35
-# 14        36        25         0
-# 15       242        88        49
-# 16       174        99        13
-# 17       183        95        29
-# 18       229        14        22
-# 19       106        26        32
-# 20        52        26         8
-# 21         5        54        55
-# 22        24         0       155
-# 23       170         0         0
-# 24         0         9       134
-# 25        48        19        77
-# 26        55         3         0
-# 27         0       103         4
-# 28        20        43        32
-# 29        13        16        48
-# 30       119         0         0
-# 31        38        10         0
-# 32        50         4         0
-# 33        38        14         4
-# 34        37         1        25
-# 35        29         0         0
-# 36        24        14         5 
+#    1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
+# 1        321        94        21
+# 2        144        48        19
+# 3         73       118        45
+# 4        165        30        42
+# 5        374       385       304
+# 6        469        50       149
+# 7        374       361        42
+# 8        133       423       194
+# 9         83        57       111
+# 10       173         0       165
+# 11        75        51        36
+# 12        21       305       408
+# 13        36        25         0
+# 14       241        86        48
+# 15         0        42       272
+# 16       166        96        13
+# 17       230        16        23
+# 18        54        31        10
+# 19        24         0       154
+# 20       164       130         9
+# 21       102        26        32
+# 22       176         0         0
+# 23         3        49        53
+# 24       159       100        25
+# 25        59         3         1
+# 26        71        96        43
+# 27        48        19        77
+# 28         4        53       131
+# 29         0       103         4
+# 30         7        31         7
+# 31        13        16        48
+# 32       113         0         0
+# 33        39        10         0
+# 34        50         4         0
+# 35        37         1        25
+# 36        35        14         2
+# 37         0        37        14
+# 38        29         0         0
+# 39        25        14         5
+# 40         0         0        19
+# 41        42         0         0
 
 table(sce$k_50_walktrap,sce$Sample)
-#     1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
-# 1        289         0         0
-# 2         95        38        30
-# 3        719       466       681
-# 4        661        85       482
-# 5        470       102        71
-# 6        137       692       588
-# 7        151        75        31
-# 8         55        79        63
-# 9        738       585        58
-# 10       124       176        73
-# 11       126       170        20
-# 12       201       115        37
-# 13       155        27        33
-# 14         0        54       278
-# 15        73        47        34
-# 16        92        26        31
+#    1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
+# 1        470       102        71
+# 2         55        79        63
+# 3        151        78        26
+# 4        742       587        58
+# 5        294       134       234
+# 6        590       454       451
+# 7        272       272        90
+# 8        371         0       392
+# 9        114       159        55
+# 10       126       170        20
+# 11        40       527       489
+# 12         1        67       321
+# 13       161        28        38
+# 14        75        49        34
+# 15        58        37         5
+# 16        30        61        36
 # 17       196        27         5
-# 18        88        62       121
-# 19        21        44        33
-# 20        70         0         0
+# 18       174         0         0
+# 19        87        26        31
+# 20        74        53       105
+# 21        70         0         0
+# 22        29        13         2
+# 23       115         0         0
+# 24        37         1        25
 
 table(sce$k_75_walktrap,sce$Sample)
 #     1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
-# 1        220       267       138
+# 1        218       269       125
 # 2        323       197        25
-# 3        658        79       476
-# 4        922       583       839
-# 5        472       103        71
-# 6        289       263        90
-# 7        343         0         0
-# 8        736       572        52
-# 9         47       534       500
-# 10       149        75        31
+# 3        659        79       476
+# 4        870       602       729
+# 5        276       338       116
+# 6        472       103        71
+# 7        287         0         0 #probably glutamatergic cluster
+# 8        746       598        67
+# 9         36       476       507
+# 10       149        76        26
 # 11        55        79        63
-# 12         0        64       313
-# 13       162        28        40
-# 14        85        26        31 
+# 12         0        53       278
+# 13       161        28        37
+# 14        80        26        31
 
 #Preliminary explorration of distribution of expression of marker genes found that one cluster 
 #was dominated by Slc17a7 expression and only contained sample 1. This is not driven by batch effect
