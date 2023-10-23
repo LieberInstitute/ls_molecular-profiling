@@ -16,13 +16,13 @@ load(file = here("processed-data","sce_clean.rda"))
 
 sce
 # class: SingleCellExperiment 
-# dim: 36601 9807 
+# dim: 36601 9225 
 # metadata(1): Samples
 # assays(1): counts
 # rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
 # ENSG00000277196
 # rowData names(6): source type ... gene_name gene_type
-# colnames(9807): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
+# colnames(9225): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
 # 3_TTTGGTTTCTTCGACC-1 3_TTTGTTGTCCCGATCT-1
 # colData names(52): Sample Barcode ... discard_sample_specific
 # doubletScore
@@ -51,17 +51,17 @@ sce <- nullResiduals(sce,
                      assay = "counts", 
                      fam   = "binomial", 
                      type  = "deviance")
-# In addition: Warning messages:
+# Warning messages:
 #     1: In asMethod(object) :
-#     sparse->dense coercion: allocating vector of size 1.0 GiB
+#     sparse->dense coercion: allocating vector of size 2.5 GiB
 # 2: In asMethod(object) :
-#     sparse->dense coercion: allocating vector of size 1.0 GiB
+#     sparse->dense coercion: allocating vector of size 2.5 GiB
 # 3: In .sparse2dense(x) :
-#     sparse->dense coercion: allocating vector of size 1.0 GiB
+#     sparse->dense coercion: allocating vector of size 2.5 GiB
 # 4: In asMethod(object) :
-#     sparse->dense coercion: allocating vector of size 1.0 GiB
+#     sparse->dense coercion: allocating vector of size 2.5 GiB
 # 5: In asMethod(object) :
-#     sparse->dense coercion: allocating vector of size 1.0 GiB
+#     sparse->dense coercion: allocating vector of size 2.5 GiB
 # 6: In sqrt(x@x) : NaNs produced
 #Not sure about warnings. sparse-->dense coercion doesn't seem to affect function. 
 #NaNs are produced when all count values for a specific gene are 0. 
@@ -69,10 +69,10 @@ sce <- nullResiduals(sce,
 #To prove it 
 table(rowSums(counts(sce)) == 0)
 # FALSE  TRUE 
-# 33564  3037 
+# 33556  3045
 table(rowSums(assay(sce,"binomial_deviance_residuals")) == 0)
 # FALSE  TRUE 
-# 33564  3037
+# 33556  3045 
 #Same number of true and false
 #Furthermore....
 all(names(rowSums(counts(sce)) == 0) == names(rowSums(assay(sce,"binomial_deviance_residuals")) == 0))
@@ -110,7 +110,7 @@ for(i in c(15,20,25,50)){
 }
 
 # t-SNE
-#with 15 dimensions
+#with 5,20,25,and 50 dimensions
 for(i in c(15,20,25,50)){
     print(i)
     set.seed(1234)
@@ -276,17 +276,17 @@ genes <- c("SYT1","SNAP25", #pan neuron
            "DRD3")
 
 #That cluster dominated by sample 1 is present in every iteration of the umap. 
-#umap with 20 dimensions looks the best here. Will just use that for this diagnostic plot. 
+#umap with 15 dimensions looks the best here. Will just use that for this diagnostic plot. 
 for(i in genes){
     print(i)
     x <- plotReducedDim(sce,
-                        dimred = "UMAP_mnn_20", 
+                        dimred = "UMAP_mnn_15", 
                         colour_by = i,
                         swap_rownames = "gene_name") +
         scale_color_gradientn(colours = c("lightgrey","red")) +
         ggtitle(i) +
         theme(plot.title = element_text(hjust = 0.5))
-    ggsave(filename = paste0("plots/Expression_plots/",i,"_expression_umap_20_dims.pdf"),
+    ggsave(filename = paste0("plots/Expression_plots/",i,"_expression_umap_15_dims.pdf"),
            plot = x,
            height = 8,width = 8)
 }
@@ -303,10 +303,10 @@ proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2023-10-20 15:48:32 EDT"
+# [1] "2023-10-23 10:43:14 EDT"
 # user   system  elapsed 
-# 1497.499   97.013 3482.481 
-# ─ Session info ──────────────────────────────────────────────────────────────────────────────────
+# 638.079   15.690 2472.103 
+# ─ Session info ────────────────────────────────────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -316,10 +316,10 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-10-20
+# date     2023-10-23
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ──────────────────────────────────────────────────────────────────────────────────────
+# ─ Packages ────────────────────────────────────────────────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # batchelor              1.16.0    2023-04-25 [2] Bioconductor
@@ -414,6 +414,5 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
-# ─────────────────────────────────────────────────────────────────────────────────────────────────
-
-
+# ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# 
