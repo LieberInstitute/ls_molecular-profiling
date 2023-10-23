@@ -410,3 +410,10 @@ table(sce$Sample,sce$k_50_louvain_1 == 11)
 #Primarily coming from samples 1 and 2, but all samples have cells within that cluster. 
 #Will need to remove the cluster and rerun dimensionality reduction steps. 
 
+#Identify the cell IDs that make up cluster 11 so that they can be removed on the front end of the analysis. 
+low_quality_nuclei <- colnames(sce[,sce$k_50_louvain_1 == 11])
+save(low_quality_nuclei,file = here("processed-data","cluster_11_low_quality_IDs.rda"))
+
+
+
+
