@@ -4,6 +4,8 @@
 library(SingleCellExperiment)
 library(DeconvoBuddies)
 library(sessioninfo)
+library(scater)
+library(ggplot2)
 library(scran)
 library(here)
 
@@ -23,7 +25,9 @@ table(rowSums(assay(sce, "counts")) == 0)
 #Remove 3045 genes that are all 0s 
 sce <- sce[!rowSums(assay(sce, "counts")) == 0, ]
 
-#run 1 vs all testing. 
+##################################################
+###############run 1 vs all testing###############
+##################################################
 markers_1vALL_enrich <- findMarkers_1vAll(sce, 
                                           assay_name = "logcounts", 
                                           cellType_col = "k_50_walktrap", 
@@ -57,4 +61,52 @@ markers_1vALL_df <- dplyr::left_join(x = as.data.frame(markers_1vALL_enrich),
 save(markers_1vALL_df,file = here("processed-data","markers_1vAll_ttest.rda"))
 
 
+##################################################
+############Annotate the clusters.################
+##################################################
+annotation_df <- data.frame(cluster=c(1:15),
+                            celltype = c("Astrocyte_1","Astrocyte_2","LS_GABA_2","Glutamatergic","MS_GABA_1",
+                                         "Striosome","Polydendrocyte","LS_GABA_1","Oligo_1","Astrocyte_3",
+                                         "Microglia","Oligo_2","Oligo_3","MS_GABA_2","Endothelial"))
+
+
+
+sce$CellType <- annotation_df$celltype[match(sce$k_50_walktrap,
+                                             annotation_df$cluster)]
+sce$CellType <- factor(sce$CellType,
+                       levels = c("LS_GABA_1","LS_GABA_2",
+                                  "MS_GABA_1","MS_GABA_2",
+                                  "Glutamatergic","Striosome",
+                                  "Astrocyte_1","Astrocyte_2","Astrocyte_3",
+                                  "Oligo_1","Oligo_2","Oligo_3",
+                                  "Microglia",
+                                  "Polydendrocyte",
+                                  "Endothelial"))
+
+###check expression profiles of the clusters to convince youself that these are correct. 
+genes <- c("SYT1","SNAP25","GAD1","GAD2","SLC32A1",
+           "TRPC4","HOMER2","PTPN3",
+           "ELAVL2",
+           "SLC17A7", "SLC17A6", "SLC17A8",
+           "DRD1","OPRM1","FOXP2",
+           "GFAP", "TNC", "AQP4", "SLC1A2",
+           "MBP","MOBP",
+           "CD74", "CSF1R", "C3",
+           "PDGFRA", "VCAN", "CSPG4",
+           "CLDN5", "FLT1", "VTN")
+
+
+Expression_dotplot <- plotDots(object = sce,
+                               features = rev(genes),
+                               group = "CellType",swap_rownames = "gene_name") +
+    scale_color_gradientn(colours = c("lightgrey","orange","red")) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
+                                                 "annotated_dotplot.pdf"),
+       height = 8)
+
+###Annotate the umap. 
+annotated_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn_15",colour_by = "CellType",text_by = "CellType")
+ggsave(plot = annotated_umap,filename = here("plots","Dim_Red",
+                                                 "annotated_umap.pdf"))
 
