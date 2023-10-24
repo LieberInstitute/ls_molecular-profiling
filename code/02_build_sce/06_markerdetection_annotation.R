@@ -4,8 +4,8 @@
 library(SingleCellExperiment)
 library(DeconvoBuddies)
 library(sessioninfo)
-library(scater)
 library(ggplot2)
+library(scater)
 library(scran)
 library(here)
 
@@ -51,7 +51,7 @@ markers_1vALL_enrich <- findMarkers_1vAll(sce,
 # ** Done! **
 
 #Add symbol information to the table
-#First change the ensemble gene id column to have same name as what is in rowData(sce)
+#First change the ensembl gene id column to have same name as what is in rowData(sce)
 colnames(markers_1vALL_enrich)[1] <- "gene_id"
 markers_1vALL_df <- dplyr::left_join(x = as.data.frame(markers_1vALL_enrich),
                                      y = as.data.frame(rowData(sce)[,c("gene_id","gene_name")]),
@@ -62,14 +62,48 @@ save(markers_1vALL_df,file = here("processed-data","markers_1vAll_ttest.rda"))
 
 
 ##################################################
+###############run pairwise testing###############
+##################################################
+mod <- with(colData(sce), model.matrix(~ Sample))
+mod <- mod[ , -1, drop=F] # intercept otherwise automatically dropped by `findMarkers()`
+
+# Run pairwise t-tests
+markers_pairwise <- findMarkers(sce, 
+                                groups=sce$k_50_walktrap,
+                                assay.type="logcounts", 
+                                design=mod, 
+                                test="t",
+                                direction="up", 
+                                pval.type="all", 
+                                full.stats=T)
+
+#How many DEGs for each cluster? 
+sapply(markers_pairwise, function(x){table(x$FDR<0.05)})
+#           1     2     3     4     5     6     7     8     9    10    11    12
+# FALSE 31437 33483 32954 32700 33408 33311 33056 33268 33555 32991 32410 33484
+# TRUE   2119    73   602   856   148   245   500   288     1   565  1146    72
+#           13    14    15
+# FALSE 32492 32704 32349
+# TRUE   1064   852  1207
+
+#Add gene info to each list. 
+for(i in names(markers_pairwise)){
+    markers_pairwise[[i]] <- as.data.frame(markers_pairwise[[i]])
+    markers_pairwise[[i]]$gene_id <- row.names(markers_pairwise[[i]])
+    markers_pairwise[[i]] <- dplyr::left_join(x  =  markers_pairwise[[i]],
+                                              y  =  as.data.frame(rowData(sce)[,c("gene_id","gene_name")]),
+                                              by = "gene_id")
+}
+
+save(markers_pairwise,file = here("processed-data","markers_pairwise_list.rda"))
+
+##################################################
 ############Annotate the clusters.################
 ##################################################
 annotation_df <- data.frame(cluster=c(1:15),
                             celltype = c("Astrocyte_1","Astrocyte_2","LS_GABA_2","Glutamatergic","MS_GABA_1",
                                          "Striosome","Polydendrocyte","LS_GABA_1","Oligo_1","Astrocyte_3",
                                          "Microglia","Oligo_2","Oligo_3","MS_GABA_2","Endothelial"))
-
-
 
 sce$CellType <- annotation_df$celltype[match(sce$k_50_walktrap,
                                              annotation_df$cluster)]
