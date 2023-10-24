@@ -197,16 +197,19 @@ for(i in names(markers_pairwise)){
 
 save(markers_pairwise,file = here("processed-data","markers_pairwise_list.rda"))
 
+#Save the object with celltype
+save(sce,file = here("processed-data","sce_with_CellType.rda"))
+
 print("Reproducibility information:")
 Sys.time()
 proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2023-10-24 16:27:20 EDT"
-# user  system elapsed 
-# 437.121   7.720 988.981
-# ─ Session info ──────────────────────────────────────────────────────────────
+# [1] "2023-10-24 16:36:28 EDT"
+#    user   system  elapsed 
+# 710.000   10.332 1536.325 
+# ─ Session info ────────────────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -219,7 +222,7 @@ session_info()
 # date     2023-10-24
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ──────────────────────────────────────────────────────────────────
+# ─ Packages ────────────────────────────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # beachmat               2.16.0    2023-04-25 [2] Bioconductor
@@ -314,5 +317,4 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
-# ─────────────────────────────────────────────────────────────────────────────
-# 
+# ───────────────────────────────────────────────────────────────────────────────────────────
