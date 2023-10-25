@@ -63,7 +63,7 @@ domain_genes[!(domain_genes %in% rowData(sce)$gene_name)]
 #TAC1R name is same in human genome. 
 #CD24a is CD24 in human genome. 
 
-
+#Dot plot for domain markers
 domain_dot <- plotDots(object = sce,features = rev(c("CBLN2","CBLN4","PAX6","SEMA3A", #Rostrocaudal Deep
                                                      "COL15A1","MATN2","WFS1", #Rostrocaudal Superficial
                                                      "DRD3","GALR1","IGFBP5","POU6F2", #Rostral Deep
@@ -76,7 +76,45 @@ domain_dot <- plotDots(object = sce,features = rev(c("CBLN2","CBLN4","PAX6","SEM
 ggsave(filename = here("plots","Expression_plots","LS_Domains_dotplot.png"),plot = domain_dot)
 
 
+#Make volcano plots for these genes
+domain_violin <- plotExpression(object = sce,features = c("CBLN2","CBLN4","PAX6","SEMA3A", #Rostrocaudal Deep
+                                                          "COL15A1","MATN2","WFS1", #Rostrocaudal Superficial
+                                                          "DRD3","GALR1","IGFBP5","POU6F2", #Rostral Deep
+                                                          "FOXP2","NDST4","GDPD2","CDH7","CRHR2","DACH2","FST","LHX2", #Rostral Superficial
+                                                          "ASB4","OTX2","PDE1C","TRPC6", #Caudal Deep
+                                                          "CD24","IGFBP4"),
+                                swap_rownames = "gene_name",x = "CellType",
+                                colour_by = "CellType",ncol = 5) +
+    theme(axis.text.x = element_text(angle = 45,hjust = 1),legend.position = "none")
+ggsave(filename = here("plots","Expression_plots","LS_Domains_violin.png"),
+       plot = domain_violin,width = 14,height = 16)
 
+#UMAPs
+domain_markers <- c("CBLN2","CBLN4","PAX6","SEMA3A", #Rostrocaudal Deep
+                    "COL15A1","MATN2","WFS1", #Rostrocaudal Superficial
+                    "DRD3","GALR1","IGFBP5","POU6F2", #Rostral Deep
+                    "FOXP2","NDST4","GDPD2","CDH7","CRHR2","DACH2","FST","LHX2", #Rostral Superficial
+                    "ASB4","OTX2","PDE1C","TRPC6", #Caudal Deep
+                    "CD24","IGFBP4")
 
+for(i in domain_markers){
+    umap_domain <- plotReducedDim(object = sce,
+                                  dimred = "UMAP_mnn_15",
+                                  colour_by = i,
+                                  swap_rownames = "gene_name") +
+        scale_color_gradientn(colours = c("lightgrey","red")) +
+        ggtitle(i) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(filename = paste0("plots/Expression_plots/domain_markers_UMAP_mnn_15/",i,"_expression_umap_15_dims.pdf"),
+           plot = umap_domain,
+           height = 8,width = 8)
+}
 
+#Additional investigation of marker genes. 
+LS_GABA_1_markers <- subset(markers_1vALL_df,subset=(cellType.target == "LS_GABA_1"))[1:50,]
+LS_GABA_2_markers <- subset(markers_1vALL_df,subset=(cellType.target == "LS_GABA_2"))[1:50,]
+plotReducedDim(object = sce,
+               dimred = "UMAP_mnn_15",
+               colour_by = "RARB",
+               swap_rownames = "gene_name")
 
