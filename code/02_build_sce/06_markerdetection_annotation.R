@@ -49,8 +49,8 @@ sce$CellType <- factor(sce$CellType,
 
 ###check expression profiles of the clusters
 genes <- c("SYT1","SNAP25","GAD1","GAD2","SLC32A1",
-           "TRPC4","HOMER2","PTPN3",
-           "ELAVL2",
+           "TRPC4","HOMER2","PTPN3","DGKG",
+           "ELAVL2","TRPC5",
            "SLC17A7", "SLC17A6", "SLC17A8",
            "DRD1","OPRM1","FOXP2",
            "GFAP", "TNC", "AQP4", "SLC1A2",
@@ -74,12 +74,13 @@ annotated_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn_15",colour_by =
 ggsave(plot = annotated_umap,filename = here("plots","Dim_Red",
                                              "annotated_umap.pdf"))
 
-#Another dotplot with other canonical LS genes. 
+#Another dotplot with other canonical LS genes and markers of neighboring regions. 
 genes <- c("SYT1","SNAP25","GAD1","GAD2","SLC32A1",
-           "TRPC4","HOMER2","PTPN3",
-           "ELAVL2",
+           "TRPC4","HOMER2","PTPN3","DGKG","TRHDE","CPNE7","NRP1",
+           "ELAVL2","TRPC5","CHAT",
            "SLC17A7", "SLC17A6", "SLC17A8",
-           "DRD1","OPRM1","FOXP2",
+           "DRD1","OPRM1","FOXP2", #Drd1 
+           "DRD2","ADORA2A","PENK",#Drd2
            "NTS","CRHR1","CRHR2","OXTR","AVPR1A","DRD3",
            "GFAP", "TNC", "AQP4", "SLC1A2",
            "MBP","MOBP",
@@ -95,7 +96,7 @@ Expression_dotplot <- plotDots(object = sce,
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
                                                  "annotated_dotplot_withadditionalLSmarkers.pdf"),
-       height = 8)
+       height = 12)
 
 violins <- plotExpression(object = sce,
                           features = c("TRPC4","HOMER2","PTPN3",
