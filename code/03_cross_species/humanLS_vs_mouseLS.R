@@ -1,11 +1,13 @@
 #Goal: Compare gene expression signatures of the mouse and human LS
 #Will use two different approaches: 
-#1. Correlation of t-statistics for markers genes. 
+#1. Correlation of t-statistics for markers genes. Code modified from https://github.com/LieberInstitute/10xPilot_snRNAseq-human/blob/51d15ef9f5f2c4c53f55e22e3fe467de1a724668/10x_NAc-n8_step04_cross-species_rnNAc_MNT.R#L4
 #2. Integrate human and mouse data with mnn. 
 #cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/
 
 library(SingleCellExperiment)
 library(sparseMatrixStats)
+library(org.Hs.eg.db) #human
+library(org.Mm.eg.db) #mouse
 library(rafalib)
 library(here)
 
@@ -103,10 +105,88 @@ for(i in names(markers.ls.t.1vAll)){
                                                        by = "gene_id")
 }
 
+#rename the objects to make more sense. 
+sce_human_ls <- sce 
+sce_mouse_ls <- sce.ls
+rm(sce,sce.ls)
 
 
+############Correlation of t-statistics for markers genes###############
 
+#Do the objects contain any genes with no counts? 
+table(rowSums(assay(sce_human_ls, "counts"))==0)
+# FALSE 
+# 33556 
 
+table(rowSums(assay(sce_mouse_ls, "counts"))==0)
+# FALSE  TRUE 
+# 27797  4488 
+
+#Remove genes with all 0s from the mouse object. 
+sce_mouse_ls <- sce_mouse_ls[!rowSums(assay(sce_mouse_ls, "counts"))==0, ]
+
+#sanity check
+table(rowSums(assay(sce_mouse_ls, "counts"))==0)
+# FALSE 
+# 27797 
+
+##Add entrez gene ids and jax ids to the human object
+#Entrez ids 
+hs.entrezIds <- mapIds(org.Hs.eg.db, 
+                       keys=rowData(sce_human_ls)$gene_id, 
+                       column="ENTREZID", 
+                       keytype="ENSEMBL")
+# 'select()' returned 1:many mapping between keys and columns
+
+table(is.na(hs.entrezIds))
+# FALSE  TRUE 
+# 22561 10995 
+#22561 valid entries. 
+
+#Which genes do not have entrez ids
+withoutEntrez <- names(hs.entrezIds)[is.na(hs.entrezIds)]
+names(withoutEntrez) <- rowData(sce_human_ls)[rowData(sce_human_ls)$gene_id %in% withoutEntrez, ]$gene_name
+
+#Add entrez ids to the object
+rowData(sce_human_ls) <- cbind(rowData(sce_human_ls), hs.entrezIds)
+
+# JAX annotation info
+hom <-  read.delim("http://www.informatics.jax.org/downloads/reports/HOM_AllOrganism.rpt",
+                   as.is=TRUE)
+
+#Save dataframe with date. In case we need to use later and it gets updated. 
+write.table(x = hom,
+            file = here("processed-data","HOM_AllOrganism_JAX_102623.csv"),
+            sep = ",",col.names = TRUE,row.names = FALSE,quote = FALSE)
+
+#Subset for human 
+hom_hs <- hom[hom$Common.Organism.Name == "human", ]
+
+table(rowData(sce_human_ls)$hs.entrezIds %in% hom_hs$EntrezGene.ID)
+# FALSE  TRUE 
+# 16025 17531 
+
+#Add the IDs to the sce_human_ls object. 
+rowData(sce_human_ls)$JAX.geneID <- hom_hs$DB.Class.Key[match(rowData(sce_human_ls)$hs.entrezIds,hom_hs$EntrezGene.ID)]
+
+##Add entrez gene ids and jax ids to the mouse object
+#Entrez ids 
+mm.entrezIds <- mapIds(org.Mm.eg.db, 
+                       keys=rowData(sce_mouse_ls)$gene_id, 
+                       column="ENTREZID", 
+                       keytype="ENSEMBL")
+# 'select()' returned 1:many mapping between keys and columns
+
+table(is.na(mm.entrezIds))
+# FALSE  TRUE 
+# 21576  6221 
+
+#Which genes do not have entrez ids
+withoutEntrez_mouse <- names(mm.entrezIds)[is.na(mm.entrezIds)]
+names(withoutEntrez_mouse) <- rowData(sce_mouse_ls)[rowData(sce_mouse_ls)$gene_id %in% withoutEntrez_mouse, ]$gene_name
+
+#Add entrez ids to the object
+rowData(sce_mouse_ls) <- cbind(rowData(sce_mouse_ls), mm.entrezIds)
 
 
 
