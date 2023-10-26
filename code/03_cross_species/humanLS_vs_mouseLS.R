@@ -1,7 +1,11 @@
-#Goal: Compare gene expression signatures of the 
+#Goal: Compare gene expression signatures of the mouse and human LS
+#Will use two different approaches: 
+#1. Correlation of t-statistics for markers genes. 
+#2. Integrate human and mouse data with mnn. 
 #cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/
 
 library(SingleCellExperiment)
+library(sparseMatrixStats)
 library(rafalib)
 library(here)
 
@@ -27,14 +31,31 @@ sce
 
 #load human DEG list from
 load(here("processed-data","markers_1vAll_ttest.rda")) #markers_1vALL_df
+dim(markers_1vALL_df)
+# [1] 503340      9
 
-#Figure out which genes have non0 means.
+#Split the markers_1vALL_df into a lsit
+markers_1vALL_list <- split(markers_1vALL_df,
+                            f = markers_1vALL_df$cellType.target)
+
+#Figure out which genes have non0 medians
 cellClust.idx <- splitit(sce$CellType)
-medianNon0.human_ls <- lapply(cellClust.idx, function(x) {
-    apply(as.matrix(assay(sce, "logcounts")), 1, function(y) {
-        median(y[x]) > 0
-    })
-})
+non0median_human_ls <- vector(mode = "list",length = 15)
+names(non0median_human_ls) <- names(cellClust.idx)
+for(i in names(cellClust.idx)){
+    print(i)
+    #Create dataframe that consists of cell type, ensembl gene id, and whether gene has a non0median or not. 
+    non0median_human_ls[[i]] <- data.frame(celltype = i,
+                                           gene_id = rownames(sce[,cellClust.idx[[i]]]), 
+                                           non0median = rowMedians(assay(sce[,cellClust.idx[[i]]],"logcounts")) > 0)
+    #add non0median information oto the list of dataframes. 
+    markers_1vALL_list[[i]] <- dplyr::left_join(x  = markers_1vALL_list[[i]],
+                                                y  = non0median_human_ls[[i]],
+                                                by = "gene_id")
+    markers_1vALL_list[[i]]$FDR <- exp(markers_1vALL_list[[i]]$log.FDR)
+    
+}
+
 
 #load the SingleCellExperiment object for mouse Lateral Septum
 load(here("MAGMA","mouse_analysis","sce_updated_LS.rda"))
@@ -67,7 +88,6 @@ load(here("MAGMA","mouse_analysis","markers-stats_LS-n4_findMarkers_33cellTypes.
 #Want the list "1" which includes genes that are enriched in the cluster. 
 for(i in names(markers.ls.t.1vAll)){
     print(i)
-    print(nrow(markers.ls.t.1vAll[[i]][["1"]]))
     markers.ls.t.1vAll[[i]][["1"]] <- cbind(
         markers.ls.t.1vAll[[i]][["1"]],
         medianNon0.ls[[i]][
@@ -81,7 +101,6 @@ for(i in names(markers.ls.t.1vAll)){
     markers.ls.t.1vAll[[i]][["1"]] <- dplyr::left_join(x = markers.ls.t.1vAll[[i]][["1"]],
                                                        y = as.data.frame(rowData(sce.ls)[,c("gene_id","gene_name")]),
                                                        by = "gene_id")
-    print(nrow(markers.ls.t.1vAll[[i]][["1"]]))
 }
 
 
