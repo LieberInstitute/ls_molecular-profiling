@@ -58,7 +58,6 @@ for(i in names(cellClust.idx)){
     
 }
 
-
 #load the SingleCellExperiment object for mouse Lateral Septum
 load(here("MAGMA","mouse_analysis","sce_updated_LS.rda"))
 
@@ -83,7 +82,6 @@ load(here("MAGMA","mouse_analysis","markers-stats_LS-n4_findMarkers_33cellTypes.
 #     markers.ls.t.pw
 #     markers.ls.t.1vAll
 #     medianNon0.ls
-
 
 #Lines 88-122 are straight from https://github.com/LieberInstitute/10xPilot_snRNAseq-human/blob/51d15ef9f5f2c4c53f55e22e3fe467de1a724668/10x_NAc-n8_step04_cross-species_rnNAc_MNT.R#L4
 #This cleans up the list nicely. 
@@ -117,9 +115,14 @@ for (i in names(markers.ls.t.1vAll)) {
         )]
     )
     colnames(markers.ls.t.1vAll[[i]][["1"]])[4] <- "non0median"
+    markers.ls.t.1vAll[[i]][["1"]]$gene_id <- rownames(markers.ls.t.1vAll[[i]][["1"]]) 
+    markers.ls.t.1vAll[[i]][["1"]] <- dplyr::left_join(x = as.data.frame(markers.ls.t.1vAll[[i]][["1"]]),
+                                                       y = as.data.frame(rowData(sce.ls)[,c("gene_id","gene_name")]),
+                                                       by = "gene_id")
     
     # Then re-name the entries to more interpretable, because we'll keeping both contrasts
     names(markers.ls.t.1vAll[[i]]) <- paste0(i, c("_depleted", "_enriched"))
+
 }
 
 
@@ -216,7 +219,6 @@ table(rowData(sce_mouse_ls)$mm.entrezIds %in% hom_mm$EntrezGene.ID)
 #Add the IDs to the sce_human_ls object. 
 rowData(sce_mouse_ls)$JAX.geneID <- hom_mm$DB.Class.Key[match(rowData(sce_mouse_ls)$mm.entrezIds,hom_mm$EntrezGene.ID)]
 
-
 ##Identify shared genes
 length(intersect(rowData(sce_human_ls)$JAX.geneID,
                  rowData(sce_mouse_ls)$JAX.geneID)) 
@@ -227,6 +229,95 @@ shared_homologs <- intersect(rowData(sce_human_ls)$JAX.geneID,
                              rowData(sce_mouse_ls)$JAX.geneID)
 shared_homologs <- shared_homologs[-1] #first is na
 
+# Human not in mouse
+length(setdiff(rowData(sce_human_ls)$JAX.geneID,
+               rowData(sce_mouse_ls)$JAX.geneID))  # 460
+# Mouse not in human
+length(setdiff(rowData(sce_mouse_ls)$JAX.geneID,
+               rowData(sce_human_ls)$JAX.geneID))  # 2213
 
 
+# Subset for shared homologs
+sce_human_sub <- sce_human_ls[rowData(sce_human_ls)$JAX.geneID %in% shared_homologs, ]
+dim(sce_human_sub)
+# [1] 16996  9225
+#16996 genes and 9225 cells
+
+sce_mouse_sub <- sce_mouse_ls[rowData(sce_mouse_ls)$JAX.geneID %in% shared_homologs, ]
+dim(sce_mouse_sub)
+# [1] 16588 22860
+#16588 genes adn 22860 cells
+
+#Are any of the JAX IDs duplicated
+length(rowData(sce_human_sub)$gene_name[duplicated(rowData(sce_human_sub)$JAX.geneID)])
+#[1] 424
+
+length(rowData(sce_mouse_sub)$gene_name[duplicated(rowData(sce_mouse_sub)$JAX.geneID)])
+# [1] 16
+
+######Need to identify genes that are duplicated and keep the higher expressing. 
+###Mouse first. 
+mouse_dups <- rowData(sce_mouse_sub)[which(duplicated(rowData(sce_mouse_sub)$JAX.geneID)),"JAX.geneID"]
+mouse_genes_to_compare <- list()
+mouse_genes_to_keep <- character()
+for(i in 1:length(mouse_dups)){
+    print(i)
+    mouse_genes_to_compare[[i]] <- rownames(sce_mouse_sub)[rowData(sce_mouse_sub)$JAX.geneID == mouse_dups[i]]
+    rowmeans_dups <- rowMeans(assay(sce_mouse_sub[mouse_genes_to_compare[[i]], ], "logcounts"))
+    mouse_genes_to_keep[i] <- names(rowmeans_dups[order(rowmeans_dups, decreasing=TRUE)])[1]
+}
+
+#Get the genes that were not duplicated. 
+non_dups_mouse <- rownames(sce_mouse_sub)[!(rownames(sce_mouse_sub) %in% unlist(mouse_genes_to_compare))]
+
+# Finally combine and subset
+sce_mouse_sub <- sce_mouse_sub[c(non_dups_mouse, unique(mouse_genes_to_keep)), ]
+
+table(rowData(sce_mouse_sub)$JAX.geneID %in% shared_homologs)
+# TRUE 
+# 16572 
+
+table(duplicated(rowData(sce_mouse_sub)$JAX.geneID))
+# FALSE 
+# 16572 
+
+#Nothing is duplicated so can move forward. 
+
+###human first. 
+human_dups <- rowData(sce_human_sub)[which(duplicated(rowData(sce_human_sub)$JAX.geneID)),"JAX.geneID"]
+human_genes_to_compare <- list()
+human_genes_to_keep <- character()
+for(i in 1:length(human_dups)){
+    print(i)
+    human_genes_to_compare[[i]] <- rownames(sce_human_sub)[rowData(sce_human_sub)$JAX.geneID == human_dups[i]]
+    rowmeans_dups <- rowMeans(assay(sce_human_sub[human_genes_to_compare[[i]], ], "logcounts"))
+    human_genes_to_keep[i] <- names(rowmeans_dups[order(rowmeans_dups, decreasing=TRUE)])[1]
+}
+
+#Get the genes that were not duplicated. 
+non_dups_human <- rownames(sce_human_sub)[!(rownames(sce_human_sub) %in% unlist(human_genes_to_compare))]
+
+# Finally combine and subset
+sce_human_sub <- sce_human_sub[c(non_dups_human, unique(human_genes_to_keep)), ]
+
+table(rowData(sce_human_sub)$JAX.geneID %in% shared_homologs)
+# TRUE 
+# 16572 
+
+table(duplicated(rowData(sce_human_sub)$JAX.geneID))
+# FALSE 
+# 16572 
+
+#Nothing is duplicated so can move forward. 
+
+## Match order and save
+sce_mouse_sub <- sce_mouse_sub[match(rowData(sce_human_sub)$JAX.geneID,
+                                     rowData(sce_mouse_sub)$JAX.geneID), ]
+
+#sanity_check
+all(rowData(sce_mouse_sub)$JAX.geneID == rowData(sce_human_sub)$JAX.geneID)
+# [1] TRUE
+
+#Save the objects. 
+save(sce_mouse_sub,sce_human_sub,file = here("processed-data","human_mouse_matched_by_JAX.rda"))
 
