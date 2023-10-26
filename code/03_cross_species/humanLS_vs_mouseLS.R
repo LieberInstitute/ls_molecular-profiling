@@ -84,26 +84,44 @@ load(here("MAGMA","mouse_analysis","markers-stats_LS-n4_findMarkers_33cellTypes.
 #     markers.ls.t.1vAll
 #     medianNon0.ls
 
-#DEGs generated with the cluster-vs-all method are in the markers.ls.t.1vAll object
-#Add the medianNon0 information into the cluster.  
-#Each iteration of the list contains two lists.
-#Want the list "1" which includes genes that are enriched in the cluster. 
-for(i in names(markers.ls.t.1vAll)){
-    print(i)
+
+#Lines 88-122 are straight from https://github.com/LieberInstitute/10xPilot_snRNAseq-human/blob/51d15ef9f5f2c4c53f55e22e3fe467de1a724668/10x_NAc-n8_step04_cross-species_rnNAc_MNT.R#L4
+#This cleans up the list nicely. 
+markers.ls.t.1vAll <- lapply(markers.ls.t.1vAll, function(x) {
+    # Basically take the 'stats.[1 or 0]' since is redundant with the 'summary'-level stats
+    lapply(x, function(y) {
+        y[, 4]
+    })
+})
+
+# Re-name std.lfc column and the entries; add non-0-median info
+for (i in names(markers.ls.t.1vAll)) {
+    colnames(markers.ls.t.1vAll[[i]][["0"]])[1] <- "std.logFC"
+    colnames(markers.ls.t.1vAll[[i]][["1"]])[1] <- "std.logFC"
+    # Add non0median Boolean - might be informative for both sets of stats
+    markers.ls.t.1vAll[[i]][["0"]] <- cbind(
+        markers.ls.t.1vAll[[i]][["0"]],
+        medianNon0.ls[[i]][match(
+            rownames(markers.ls.t.1vAll[[i]][["0"]]),
+            names(medianNon0.ls[[i]])
+        )]
+    )
+    colnames(markers.ls.t.1vAll[[i]][["0"]])[4] <- "non0median"
+    
+    # "1" aka 'enriched'
     markers.ls.t.1vAll[[i]][["1"]] <- cbind(
         markers.ls.t.1vAll[[i]][["1"]],
-        medianNon0.ls[[i]][
-            match(row.names(markers.ls.t.1vAll[[i]][["1"]]),
-                  names(medianNon0.ls[[i]]))
-        ]
+        medianNon0.ls[[i]][match(
+            rownames(markers.ls.t.1vAll[[i]][["1"]]),
+            names(medianNon0.ls[[i]])
+        )]
     )
-    colnames(markers.ls.t.1vAll[[i]][["1"]])[5] <- "non0Median"
-    markers.ls.t.1vAll[[i]][["1"]] <- as.data.frame(markers.ls.t.1vAll[[i]][["1"]])
-    markers.ls.t.1vAll[[i]][["1"]]$gene_id <- row.names(markers.ls.t.1vAll[[i]][["1"]])
-    markers.ls.t.1vAll[[i]][["1"]] <- dplyr::left_join(x = markers.ls.t.1vAll[[i]][["1"]],
-                                                       y = as.data.frame(rowData(sce.ls)[,c("gene_id","gene_name")]),
-                                                       by = "gene_id")
+    colnames(markers.ls.t.1vAll[[i]][["1"]])[4] <- "non0median"
+    
+    # Then re-name the entries to more interpretable, because we'll keeping both contrasts
+    names(markers.ls.t.1vAll[[i]]) <- paste0(i, c("_depleted", "_enriched"))
 }
+
 
 #rename the objects to make more sense. 
 sce_human_ls <- sce 
@@ -188,7 +206,26 @@ names(withoutEntrez_mouse) <- rowData(sce_mouse_ls)[rowData(sce_mouse_ls)$gene_i
 #Add entrez ids to the object
 rowData(sce_mouse_ls) <- cbind(rowData(sce_mouse_ls), mm.entrezIds)
 
+#Subset for mouse
+hom_mm <- hom[hom$Common.Organism.Name == "mouse, laboratory", ]
 
+table(rowData(sce_mouse_ls)$mm.entrezIds %in% hom_mm$EntrezGene.ID)
+# FALSE  TRUE 
+# 8990 18807 
+
+#Add the IDs to the sce_human_ls object. 
+rowData(sce_mouse_ls)$JAX.geneID <- hom_mm$DB.Class.Key[match(rowData(sce_mouse_ls)$mm.entrezIds,hom_mm$EntrezGene.ID)]
+
+
+##Identify shared genes
+length(intersect(rowData(sce_human_ls)$JAX.geneID,
+                 rowData(sce_mouse_ls)$JAX.geneID)) 
+# [1] 16573
+#16,573 shared genes. 
+
+shared_homologs <- intersect(rowData(sce_human_ls)$JAX.geneID,
+                             rowData(sce_mouse_ls)$JAX.geneID)
+shared_homologs <- shared_homologs[-1] #first is na
 
 
 
