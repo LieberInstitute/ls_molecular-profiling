@@ -54,7 +54,7 @@ for(i in names(cellClust.idx)){
     markers_1vALL_list[[i]] <- dplyr::left_join(x  = markers_1vALL_list[[i]],
                                                 y  = non0median_human_ls[[i]],
                                                 by = "gene_id")
-    markers_1vALL_list[[i]]$FDR <- exp(markers_1vALL_list[[i]]$log.FDR)
+    rownames(markers_1vALL_list[[i]]) <- markers_1vALL_list[[i]]$gene_id
     
 }
 
@@ -118,14 +118,14 @@ for (i in names(markers.ls.t.1vAll)) {
         )]
     )
     colnames(markers.ls.t.1vAll[[i]][["1"]])[4] <- "non0median"
+    #Add additional columns
     markers.ls.t.1vAll[[i]][["1"]]$gene_id <- rownames(markers.ls.t.1vAll[[i]][["1"]]) 
     markers.ls.t.1vAll[[i]][["1"]] <- dplyr::left_join(x = as.data.frame(markers.ls.t.1vAll[[i]][["1"]]),
                                                        y = as.data.frame(rowData(sce.ls)[,c("gene_id","gene_name")]),
                                                        by = "gene_id")
-    
+    rownames(markers.ls.t.1vAll[[i]][["1"]]) <- markers.ls.t.1vAll[[i]][["1"]]$gene_id
     # Then re-name the entries to more interpretable, because we'll keeping both contrasts
     names(markers.ls.t.1vAll[[i]]) <- paste0(i, c("_depleted", "_enriched"))
-
 }
 
 #save the list. 
@@ -182,7 +182,7 @@ hom <-  read.delim("http://www.informatics.jax.org/downloads/reports/HOM_AllOrga
 
 #Save dataframe with date. In case we need to use later and it gets updated. 
 write.table(x = hom,
-            file = here("processed-data","HOM_AllOrganism_JAX_102623.csv"),
+            file = here("processed-data","HOM_AllOrganism_JAX_102723.csv"),
             sep = ",",col.names = TRUE,row.names = FALSE,quote = FALSE)
 
 #Subset for human 
@@ -236,11 +236,13 @@ shared_homologs <- shared_homologs[-1] #first is na
 
 # Human not in mouse
 length(setdiff(rowData(sce_human_ls)$JAX.geneID,
-               rowData(sce_mouse_ls)$JAX.geneID))  # 460
+               rowData(sce_mouse_ls)$JAX.geneID)) 
+# [1] 460
+
 # Mouse not in human
 length(setdiff(rowData(sce_mouse_ls)$JAX.geneID,
-               rowData(sce_human_ls)$JAX.geneID))  # 2213
-
+               rowData(sce_human_ls)$JAX.geneID)) 
+#[1] 2213
 
 # Subset for shared homologs
 sce_human_sub <- sce_human_ls[rowData(sce_human_ls)$JAX.geneID %in% shared_homologs, ]
@@ -323,6 +325,84 @@ sce_mouse_sub <- sce_mouse_sub[match(rowData(sce_human_sub)$JAX.geneID,
 all(rowData(sce_mouse_sub)$JAX.geneID == rowData(sce_human_sub)$JAX.geneID)
 # [1] TRUE
 
-#Save the objects. 
+##Calculate the t statistic
+#Mouse first. 
+#Take the _enriched dataframe within this list. 
+mouse_enriched <- lapply(markers.ls.t.1vAll, function(x){x[[2]]})
+
+#Now calculate
+fixTo <- rownames(mouse_enriched[["Astro"]])
+for(x in names(mouse_enriched)){
+    print(x)
+    mouse_enriched[[x]]$t.stat <- mouse_enriched[[x]]$std.logFC * sqrt(ncol(sce_mouse_sub))
+    mouse_enriched[[x]] <- mouse_enriched[[x]][fixTo, ]
+}
+
+# Pull out the t's
+mouse_t_stats <- sapply(mouse_enriched, function(x){x$t.stat})
+rownames(mouse_t_stats) <- fixTo
+
+table(rownames(sce_mouse_sub) %in% rownames(mouse_t_stats))
+# FALSE  TRUE 
+# 10     16562 
+#There are 10 genes within the sce_mouse_sub object that are not within the mouse_t_statistics. 
+#Pull those genes. 
+m_missing <- rownames(sce_mouse_sub)[!(rownames(sce_mouse_sub) %in% rownames(mouse_t_stats))]
+#Are they found in the DEG list? 
+lapply(mouse_enriched,function(x){ table(m_missing %in% rownames(x)) }) #All FALSE
+
+# Subset for those with homologous genes in human
+mouse_t_stats_hom <- mouse_t_stats[rownames(mouse_t_stats) %in% rownames(sce_mouse_sub), ]
+dim(mouse_t_stats_hom)
+# [1] 16562    33
+
+# Need to change the rownames to JAX.geneID so we can assure everything is in the same order. 
+mouse_t_stats_df <- as.data.frame(mouse_t_stats_hom)
+mouse_t_stats_df$gene_id <- rownames(mouse_t_stats_df)
+#Add JAx ID to the dataframe
+mouse_t_stats_df <- dplyr::left_join(x = mouse_t_stats_df,
+                                     y = as.data.frame(rowData(sce_mouse_sub)[,c("gene_id","JAX.geneID")]),
+                                     by = "gene_id")
+#Make rownames the JAx ID
+rownames(mouse_t_stats_df) <- mouse_t_stats_df$JAX.geneID
+#Convert it to a matrix. 
+mouse_t_stats_mat <- as.matrix(mouse_t_stats_df[,c(1:33)]) #Just keeping the celltype columns and removing both gene columns
+
+
+#Human now 
+#Now calculate
+fixTo <- rownames(markers_1vALL_list[["LS_GABA_1"]])
+for(x in names(markers_1vALL_list)){
+    print(x)
+    markers_1vALL_list[[x]]$t.stat <- markers_1vALL_list[[x]]$std.logFC * sqrt(ncol(sce_human_sub))
+    markers_1vALL_list[[x]] <- markers_1vALL_list[[x]][fixTo, ]
+}
+
+
+# Pull out the t's
+human_t_stats <- sapply(markers_1vALL_list, function(x){x$t.stat})
+rownames(human_t_stats) <- fixTo
+
+table(rownames(sce_human_sub) %in% rownames(human_t_stats))
+# TRUE 
+# 16572 
+
+human_t_stats_hom <- human_t_stats[rownames(sce_human_sub),]
+
+# Need to change the rownames to JAX.geneID so we can assure everything is in the same order. 
+human_t_stats_df <- as.data.frame(human_t_stats_hom)
+human_t_stats_df$gene_id <- rownames(human_t_stats_df)
+#Add JAx ID to the dataframe
+human_t_stats_df <- dplyr::left_join(x = human_t_stats_df,
+                                     y = as.data.frame(rowData(sce_human_sub)[,c("gene_id","JAX.geneID")]),
+                                     by = "gene_id")
+#Make rownames the JAx ID
+rownames(human_t_stats_df) <- human_t_stats_df$JAX.geneID
+#Convert it to a matrix. 
+human_t_stats_mat <- as.matrix(human_t_stats_df[,c(1:15)]) #Just keeping the celltype columns and removing both gene columns
+
+
+#Save the subset objects and t stat matrices. 
+save(human_t_stats_mat,mouse_t_stats_mat,file = here("processed-data","t_stats_mats.rda"))
 save(sce_mouse_sub,sce_human_sub,file = here("processed-data","human_mouse_matched_by_JAX.rda"))
 
