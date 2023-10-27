@@ -58,6 +58,9 @@ for(i in names(cellClust.idx)){
     
 }
 
+#Save the markers_1vALL_list 
+save(markers_1vALL_list,file = here("processed-data","markers_1vAll_ttest_withnon0median.rda"))
+
 #load the SingleCellExperiment object for mouse Lateral Septum
 load(here("MAGMA","mouse_analysis","sce_updated_LS.rda"))
 
@@ -125,6 +128,8 @@ for (i in names(markers.ls.t.1vAll)) {
 
 }
 
+#save the list. 
+save(markers.ls.t.1vAll,file = here("processed-data","mouse_markers_1vAll_ttest_withnon0median.rda"))
 
 #rename the objects to make more sense. 
 sce_human_ls <- sce 
