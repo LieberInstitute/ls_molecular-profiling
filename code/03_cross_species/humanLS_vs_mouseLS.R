@@ -406,3 +406,73 @@ human_t_stats_mat <- as.matrix(human_t_stats_df[,c(1:15)]) #Just keeping the cel
 save(human_t_stats_mat,mouse_t_stats_mat,file = here("processed-data","t_stats_mats.rda"))
 save(sce_mouse_sub,sce_human_sub,file = here("processed-data","human_mouse_matched_by_JAX.rda"))
 
+#the mouse t stat matrix has 10 less genes. Need to subset the human mat to have the same genes
+human_t_stats_mat <- human_t_stats_mat[rownames(mouse_t_stats_mat),]
+
+all(rownames(human_t_stats_mat) == rownames(mouse_t_stats_mat))
+# [1] TRUE
+#everything in the same order. 
+
+#Correlate all of the homologs. 
+cor_t_all <- cor(human_t_stats_mat, mouse_t_stats_mat)
+rownames(cor_t_all) <- paste0(rownames(cor_t_all),"_Human")
+colnames(cor_t_all) <- paste0(colnames(cor_t_all),"_Mouse")
+range(cor_t_all) 
+# [1] -0.3748624  0.6449819
+
+
+#Get top 100 genes for each human LS cluster. Top chosen by t-statistic. 
+human_top_100 <- mapply(as.data.frame(human_t_stats_mat), FUN = function(t) {
+    o <- order(t, decreasing = TRUE)[1:100]
+})
+
+#Now top 100 for each mouse. 
+mouse_top_100 <- mapply(as.data.frame(mouse_t_stats_mat), FUN = function(t) {
+    o <- order(t, decreasing = TRUE)[1:100]
+})
+
+#get the unique identifiers for each species plus the shared. 
+human_unique <- unique(as.numeric(human_top_100))
+length(human_unique)
+#[1] 1235
+
+mouse_unique <- unique(as.numeric(mouse_top_100))
+length(mouse_unique)
+#[1] 2000
+
+shared_identifiers <- intersect(rownames(human_t_stats_mat)[human_unique], 
+                                rownames(mouse_t_stats_mat)[mouse_unique])
+length(shared_identifiers)
+#706
+
+
+#Correlate with just the human identifiers. 
+cor_t_human_unique <- cor(human_t_stats_mat[human_unique, ],
+                          mouse_t_stats_mat[human_unique, ])
+rownames(cor_t_human_unique) <- paste0(rownames(cor_t_human_unique),"_Human")
+colnames(cor_t_human_unique) <- paste0(colnames(cor_t_human_unique),"_Mouse")
+range(cor_t_human_unique)
+# [1] -0.4211243  0.7728237
+
+
+#Correlate with just the mouse identifiers. 
+cor_t_mouse_unique <- cor(human_t_stats_mat[mouse_unique, ],
+                          mouse_t_stats_mat[mouse_unique, ])
+rownames(cor_t_mouse_unique) <- paste0(rownames(cor_t_mouse_unique),"_Human")
+colnames(cor_t_mouse_unique) <- paste0(colnames(cor_t_mouse_unique),"_Mouse")
+range(cor_t_mouse_unique)
+# [1] -0.4143752  0.7664956
+
+#Correlate with just the shared identifiers. 
+cor_t_shared <- cor(human_t_stats_mat[shared_identifiers, ],
+                    mouse_t_stats_mat[shared_identifiers, ])
+rownames(cor_t_shared) <- paste0(rownames(cor_t_shared),"_Human")
+colnames(cor_t_shared) <- paste0(colnames(cor_t_shared),"_Mouse")
+range(cor_t_shared)
+# [1] -0.4683984  0.8702079
+
+#Save all of the correlation matrices. 
+save(cor_t_all,cor_t_human_unique,cor_t_mouse_unique,cor_t_shared,
+     file = here("processed-data","correlation_matrices_conservation_analysis.rda"))
+
+
