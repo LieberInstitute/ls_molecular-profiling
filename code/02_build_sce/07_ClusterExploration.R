@@ -113,8 +113,48 @@ for(i in domain_markers){
 #Additional investigation of marker genes. 
 LS_GABA_1_markers <- subset(markers_1vALL_df,subset=(cellType.target == "LS_GABA_1"))[1:50,]
 LS_GABA_2_markers <- subset(markers_1vALL_df,subset=(cellType.target == "LS_GABA_2"))[1:50,]
-plotReducedDim(object = sce,
+for(i in 1:nrow(LS_GABA_2_markers)){
+    print(i)
+    x <- plotReducedDim(object = sce,
+                        dimred = "UMAP_mnn_15",
+                        colour_by = LS_GABA_2_markers[i,"gene_name"],
+                        swap_rownames = "gene_name") +
+        scale_color_gradientn(colours = c("lightgrey","orange","red"))
+    ggsave(plot = x,
+           filename = here("plots","Expression_plots","LS_GABA_2_Markers",
+                           paste0(i,"_",LS_GABA_2_markers[i,"gene_name"],"_umap.pdf")))
+}
+p1 <- plotReducedDim(object = sce,
                dimred = "UMAP_mnn_15",
-               colour_by = "RARB",
-               swap_rownames = "gene_name")
+               colour_by = "DGKG",
+               swap_rownames = "gene_name") +
+    scale_color_gradientn(colours = c("lightgrey","orange","red")) +
+    ggtitle("DGKG (LS Marker)") +
+    theme(plot.title = element_text(hjust = 0.5))
 
+p2 <- plotReducedDim(object = sce,
+                     dimred = "UMAP_mnn_15",
+                     colour_by = "TRPC4",
+                     swap_rownames = "gene_name") +
+    scale_color_gradientn(colours = c("lightgrey","orange","red")) +
+    ggtitle("TRPC4 (LS Marker)")
+
+
+p3 <- plotReducedDim(object = sce,
+                     dimred = "UMAP_mnn_15",
+                     colour_by = "RARB",
+                     swap_rownames = "gene_name") +
+    scale_color_gradientn(colours = c("lightgrey","orange","red")) +
+    ggtitle("RARB (Striatal Marker)") +
+    theme(plot.title = element_text(hjust = 0.5))
+
+p4 <- plotReducedDim(object = sce,
+                     dimred = "UMAP_mnn_15",
+                     colour_by = "BCL11B",
+                     swap_rownames = "gene_name") +
+    scale_color_gradientn(colours = c("lightgrey","orange","red")) +
+    ggtitle("BCL11B (Striatal Marker)") +
+    theme(plot.title = element_text(hjust = 0.5))
+
+x <- cowplot::plot_grid(plotlist = list(p1,p2,p3,p4),ncol = 2)
+ggsave(x, filename = here("plots","Expression_plots","LS_Str_Markers.pdf"))
