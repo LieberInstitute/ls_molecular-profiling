@@ -177,14 +177,20 @@ k_50_modularity <- bluster::pairwiseModularity(graph = snn_k_50,
 
 library(pheatmap)
 pdf(file = here("plots","k_50_pairwise_modularity_celltypes.pdf"))
-pheatmap(log2(k_50_modularity+1), cluster_rows=FALSE, cluster_cols=FALSE,
+pheatmap(log2(k_50_modularity+1), 
+         cluster_rows=FALSE, 
+         cluster_cols=FALSE,
+         display_numbers=TRUE, 
+         number_format="%.2f", 
+         fontsize_number=6.5,
+         main = "Modularity ratio for 15 graph-based clusters in human LS (n=3)",
          color=colorRampPalette(c("white","orange","red"))(100))
 dev.off()
 # "Indeed, concentration of the weight on the diagonal of (Figure 5.5) indicates 
 # that most of the clusters are well-separated, while some modest off-diagonal entries 
 # represent closely related clusters with more inter-connecting edges." - OSCA advanced, chatper 5.2.5
 
-cluster.gr <- igraph::graph_from_adjacency_matrix(log2(k_50_modularity+1),
+cluster.gr <- igraph::graph_from_adjacency_matrix(log2(k_50_modu4larity+1),
                                                   mode="upper", weighted=TRUE, diag=FALSE)
 
 # Increasing the weight to increase the visibility of the lines.
@@ -197,7 +203,28 @@ dev.off()
 # Force-based layout showing the relationships between clusters based on the log-ratio of observed to expected total weights 
 # between nodes in different clusters. The thickness of the edge between a pair of clusters is proportional to the corresponding 
 # log-ratio. - OSCA advanced, chapter 5.2.5, figure 5.6
-table(sce$CellType,sce$Sample)
+
+plotReducedDim(object = sce,dimred = "UMAP_mnn_15",
+               colour_by = "k_20_walktrap",text_by = "k_20_walktrap")
+
+
+
+snn_k_20 <- buildSNNGraph(sce, k = 20, use.dimred = "mnn",type="jaccard")
+k_20_modularity <- bluster::pairwiseModularity(graph = snn_k_20,
+                                               clusters = sce$k_20_walktrap,
+                                               as.ratio = TRUE)
+
+library(pheatmap)
+pdf(file = here("plots","k_20_pairwise_modularity_celltypes.pdf"))
+pheatmap(log2(k_20_modularity+1), 
+         cluster_rows=FALSE, 
+         cluster_cols=FALSE,
+         display_numbers=TRUE, 
+         number_format="%.2f", 
+         fontsize_number=6.5,
+         color=colorRampPalette(c("white","orange","red"))(100))
+dev.off()
+
 
 
 
