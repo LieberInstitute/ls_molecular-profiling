@@ -158,3 +158,48 @@ p4 <- plotReducedDim(object = sce,
 
 x <- cowplot::plot_grid(plotlist = list(p1,p2,p3,p4),ncol = 2)
 ggsave(x, filename = here("plots","Expression_plots","LS_Str_Markers.pdf"))
+
+
+
+#####Cluster modularity
+#Build the graph again. 
+#Used k=50 + walktrap clustering for celltype designations. 
+snn_k_50 <- buildSNNGraph(sce, k = 50, use.dimred = "mnn",type="jaccard")
+
+# "Rather, we use the pairwiseModularity() function from bluster with as.ratio=TRUE, 
+# which returns the ratio of the observed to expected sum of weights between each pair of clusters. 
+# We use the ratio instead of the difference as the former is less dependent on the number of cells 
+# in each cluster" - OSCA advanced, Chatper 5.2.5
+k_50_modularity <- bluster::pairwiseModularity(graph = snn_k_50,
+                                               clusters = sce$CellType,
+                                               as.ratio = TRUE)
+
+
+library(pheatmap)
+pdf(file = here("plots","k_50_pairwise_modularity_celltypes.pdf"))
+pheatmap(log2(k_50_modularity+1), cluster_rows=FALSE, cluster_cols=FALSE,
+         color=colorRampPalette(c("white","orange","red"))(100))
+dev.off()
+# "Indeed, concentration of the weight on the diagonal of (Figure 5.5) indicates 
+# that most of the clusters are well-separated, while some modest off-diagonal entries 
+# represent closely related clusters with more inter-connecting edges." - OSCA advanced, chatper 5.2.5
+
+cluster.gr <- igraph::graph_from_adjacency_matrix(log2(k_50_modularity+1),
+                                                  mode="upper", weighted=TRUE, diag=FALSE)
+
+# Increasing the weight to increase the visibility of the lines.
+set.seed(11001010)
+pdf(file = here("plots","k_50_relationship_between_clusters_graph.pdf"))
+plot(cluster.gr, edge.width=igraph::E(cluster.gr)$weight*10,
+     layout=igraph::layout_with_lgl)
+dev.off()
+
+# Force-based layout showing the relationships between clusters based on the log-ratio of observed to expected total weights 
+# between nodes in different clusters. The thickness of the edge between a pair of clusters is proportional to the corresponding 
+# log-ratio. - OSCA advanced, chapter 5.2.5, figure 5.6
+table(sce$CellType,sce$Sample)
+
+
+
+
+
