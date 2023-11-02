@@ -128,7 +128,7 @@ OnevAll_enriched_sub <- dplyr::left_join(x = as.data.frame(OnevAll_enriched_sub)
 OnevAll_enriched_sub$FDR <- exp(OnevAll_enriched_sub$log.FDR)
 
 #Subset for significant FDR only
-OnevAll_enriched_sig <- subset(OnevAll_enriched_sub,subset=(FDR <= 0.05))
+OnevAll_enriched_sig <- subset(OnevAll_enriched_sub,subset=(FDR <= 0.001))
 
 #One major question about the current clustering is whether the LS_GABA_2
 #cluster contains a mixture of striatal and Lateral Septum cell types.
@@ -140,10 +140,31 @@ OnevAll_enriched_sig <- subset(OnevAll_enriched_sub,subset=(FDR <= 0.05))
 #FOXP2, RARB, BCL11B, OPRM1, DRD1, DRD2, PENK, ADORA2A
 DEG_mat_list <- vector(mode = "list",length = length(unique(sce$CellType_sub)))
 names(DEG_mat_list) <- unique(sce$CellType_sub)
+for(i in names(DEG_mat_list)){
+    DEG_mat_list[[i]] <- matrix(ncol = 22,nrow = 22)
+    colnames(DEG_mat_list[[i]]) <- c("GAD1", "GAD2", "TRPC4", "DGKG", "HOMER2", "PTPN3", "NRP1", "TRHDE", #LS
+                                     "FOXP2", "RARB", "BCL11B","PPP1R1B","OPRM1", "DRD1", "DRD2", "PENK", #Str
+                                     "VIPR2", "CPA6", "LGR5", "BAIAP3", "PDCD7", "TRPC5")
+    rownames(DEG_mat_list[[i]]) <- colnames(DEG_mat_list[[i]])
+}
+
+#Fill the matrix
+for(i in names(DEG_mat_list)){
+    print(i)
+    x <- subset(OnevAll_enriched_sig,subset=(cellType.target == i))
+    for(j in colnames(DEG_mat_list[[i]])){
+        for(l in rownames(DEG_mat_list[[i]])){
+            if(nrow(subset(x,subset=(gene_name == j | gene_name == l))) > 1){
+                DEG_mat_list[[i]][l,j] <- 1
+            }else{
+                DEG_mat_list[[i]][l,j] <- 0
+            }
+        }
+    }
+}
 
 
 
 
-plotReducedDim(object = sce[,sce$CellType == "LS_GABA_2"],dimred = "UMAP_mnn_15",color_by = "CellType_sub")
 
 
