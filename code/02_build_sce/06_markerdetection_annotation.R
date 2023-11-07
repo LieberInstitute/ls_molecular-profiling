@@ -100,6 +100,7 @@ sce$CellType_k_20_louvain <- factor(sce$CellType_k_20_louvain,
 #Annotate the tSNE
 cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType_k_20_louvain)),c("#FF0000", "#00FF00", "#0000FF"))
 names(cluster_cols) <- unique(sce$CellType_k_20_louvain)
+
 annotated_tSNE <- plotReducedDim(object = sce,
                                  dimred = "tSNE_mnn_15",
                                  colour_by = "CellType_k_20_louvain",
@@ -108,88 +109,29 @@ annotated_tSNE <- plotReducedDim(object = sce,
 ggsave(filename = here("plots","Dim_Red","tSNE_mnn_15_annotated_CellType_k20_louvain.pdf"),
        plot = annotated_tSNE)
 
-##################################################
-############Annotate the clusters.################
-##################################################
-annotation_df <- data.frame(cluster=c(1:15),
-                            celltype = c("Astrocyte_1","Astrocyte_2","LS_GABA_2","Glutamatergic","MS_GABA_1",
-                                         "Striosome","Polydendrocyte","LS_GABA_1","Oligo_1","Astrocyte_3",
-                                         "Microglia","Oligo_2","Oligo_3","MS_GABA_2","Endothelial"))
+########Calculate modularity scores.
+set.seed(1234)
+#Make the graph. 
+snn_k_20 <- buildSNNGraph(sce, k = 20, use.dimred = "mnn",type="jaccard")
 
-sce$CellType <- annotation_df$celltype[match(sce$k_50_walktrap,
-                                             annotation_df$cluster)]
-sce$CellType <- factor(sce$CellType,
-                       levels = c("LS_GABA_1","LS_GABA_2",
-                                  "MS_GABA_1","MS_GABA_2",
-                                  "Glutamatergic","Striosome",
-                                  "Astrocyte_1","Astrocyte_2","Astrocyte_3",
-                                  "Oligo_1","Oligo_2","Oligo_3",
-                                  "Microglia",
-                                  "Polydendrocyte",
-                                  "Endothelial"))
+#Calcualte modularity scores. 
+k_20_modularity <- bluster::pairwiseModularity(graph = snn_k_20,
+                                               clusters = sce$CellType_k_20_louvain,
+                                               as.ratio = TRUE)
 
-###check expression profiles of the clusters
-genes <- c("SYT1","SNAP25","GAD1","GAD2","SLC32A1",
-           "TRPC4","HOMER2","PTPN3","DGKG",
-           "ELAVL2","TRPC5",
-           "SLC17A7", "SLC17A6", "SLC17A8",
-           "DRD1","OPRM1","FOXP2",
-           "GFAP", "TNC", "AQP4", "SLC1A2",
-           "MBP","MOBP",
-           "CD74", "CSF1R", "C3",
-           "PDGFRA", "VCAN", "CSPG4",
-           "CLDN5", "FLT1", "VTN")
+#make a heatmap. 
+library(pheatmap)
+pdf(file = here("plots","CellType_k_20_louvain_pairwise_modularity.pdf"))
+pheatmap(log2(k_20_modularity+1), 
+         cluster_rows=FALSE, 
+         cluster_cols=FALSE,
+         display_numbers=TRUE, 
+         number_format="%.2f", 
+         fontsize_number=6.5,
+         main = "Modularity ratio for 24 clusters in human LS (n=3)",
+         color=colorRampPalette(c("white","orange","red"))(100))
+dev.off()
 
-
-Expression_dotplot <- plotDots(object = sce,
-                               features = rev(genes),
-                               group = "CellType",swap_rownames = "gene_name") +
-    scale_color_gradientn(colours = c("lightgrey","orange","red")) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
-                                                 "annotated_dotplot.pdf"),
-       height = 8)
-
-###Annotate the umap. 
-annotated_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn_15",colour_by = "CellType",text_by = "CellType")
-ggsave(plot = annotated_umap,filename = here("plots","Dim_Red",
-                                             "annotated_umap.pdf"))
-
-#Another dotplot with other canonical LS genes and markers of neighboring regions. 
-genes <- c("SYT1","SNAP25","GAD1","GAD2","SLC32A1",
-           "TRPC4","HOMER2","PTPN3","DGKG","TRHDE","CPNE7","NRP1",
-           "ELAVL2","TRPC5","CHAT",
-           "SLC17A7", "SLC17A6", "SLC17A8",
-           "DRD1","OPRM1","FOXP2", #Drd1 
-           "DRD2","ADORA2A","PENK",#Drd2
-           "NTS","CRHR1","CRHR2","OXTR","AVPR1A","DRD3",
-           "GFAP", "TNC", "AQP4", "SLC1A2",
-           "MBP","MOBP",
-           "CD74", "CSF1R", "C3",
-           "PDGFRA", "VCAN", "CSPG4",
-           "CLDN5", "FLT1", "VTN")
-
-
-Expression_dotplot <- plotDots(object = sce,
-                               features = rev(genes),
-                               group = "CellType",swap_rownames = "gene_name") +
-    scale_color_gradientn(colours = c("lightgrey","orange","red")) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
-ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
-                                                 "annotated_dotplot_withadditionalLSmarkers.pdf"),
-       height = 12)
-
-violins <- plotExpression(object = sce,
-                          features = c("TRPC4","HOMER2","PTPN3",
-                                       "NTS","CRHR1","CRHR2",
-                                       "OXTR","AVPR1A","DRD3"),
-                          swap_rownames = "gene_name",x = "CellType",ncol = 3,
-                          colour_by = "CellType") +
-    theme(axis.text.x = element_text(angle = 45,hjust = 1),legend.position = "none")
-ggsave(plot = violins,filename = here("plots","Expression_plots",
-                                                 "annotated_violin_LSmarkers.pdf"),
-       width = 12,
-       height = 12)
 
 
 ##################################################
