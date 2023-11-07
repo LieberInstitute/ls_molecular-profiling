@@ -132,8 +132,6 @@ pheatmap(log2(k_20_modularity+1),
          color=colorRampPalette(c("white","orange","red"))(100))
 dev.off()
 
-
-
 ##################################################
 #########Prep sce object for DEG testing##########
 ##################################################
@@ -151,25 +149,8 @@ sce <- sce[!rowSums(assay(sce, "counts")) == 0, ]
 ##################################################
 markers_1vALL_enrich <- findMarkers_1vAll(sce, 
                                           assay_name = "logcounts", 
-                                          cellType_col = "CellType", 
+                                          cellType_col = "CellType_k_20_louvain", 
                                           mod = "~Sample")
-# LS_GABA_1 - '2023-10-24 16:13:20.146492
-# LS_GABA_2 - '2023-10-24 16:13:36.971206
-# Glutamatergic - '2023-10-24 16:13:54.641428
-# Polydendrocyte - '2023-10-24 16:14:12.438615
-# Microglia - '2023-10-24 16:14:30.290416
-# Oligo_2 - '2023-10-24 16:14:48.158806
-# Astrocyte_1 - '2023-10-24 16:15:06.106722
-# Oligo_1 - '2023-10-24 16:15:24.129632
-# Striosome - '2023-10-24 16:15:42.010409
-# MS_GABA_2 - '2023-10-24 16:15:59.972938
-# MS_GABA_1 - '2023-10-24 16:16:17.891058
-# Endothelial - '2023-10-24 16:16:35.84846
-# Astrocyte_2 - '2023-10-24 16:16:53.755235
-# Astrocyte_3 - '2023-10-24 16:17:11.606782
-# Oligo_3 - '2023-10-24 16:17:30.754411
-# Building Table - 2023-10-24 16:17:48.676136
-# ** Done! **
 
 #Add symbol information to the table
 #First change the ensembl gene id column to have same name as what is in rowData(sce)
@@ -179,47 +160,59 @@ markers_1vALL_df <- dplyr::left_join(x = as.data.frame(markers_1vALL_enrich),
                                      by = "gene_id")
 
 #save the dataframe. 
-save(markers_1vALL_df,file = here("processed-data","markers_1vAll_ttest.rda"))
+save(markers_1vALL_df,file = here("processed-data","markers_1vAll_ttest_k_20_louvain_24Clusters.rda"))
+###############################
 
+#Modularity scores suggest Str_Inh_A, Str_Inh_B, and Str_Inh_C are related. 
+#Check out their gene markers and see if their is significant overlap. 
+
+#DEGs: logFC>=0.5 & FDR<=0.001
+str_a <- subset(markers_1vALL_df,subset=(cellType.target == "Str_Inh_A" & logFC >= 0.5 & log.FDR < 0.001))
+str_c <- subset(markers_1vALL_df,subset=(cellType.target == "Str_Inh_C" & logFC >= 0.5 & log.FDR < 0.001))
+str_d <- subset(markers_1vALL_df,subset=(cellType.target == "Str_Inh_D" & logFC >= 0.5 & log.FDR < 0.001))
+
+dim(str_a)
+# [1] 964   9
+dim(str_c)
+# [1] 1011    9
+dim(str_d)
+# [1] 1321    9
+
+#Check how many genes intersect
+length(intersect(str_a$gene_name,str_c$gene_name))
+# [1] 763
+length(intersect(str_a$gene_name,str_d$gene_name))
+# [1] 812
+length(intersect(str_c$gene_name,str_d$gene_name))
+# [1] 932
+#61-92% of DEGs are shared between these populations. Will merge these. 
+###############################
 
 ##################################################
-###############run pairwise testing###############
+############  Begin final annotation  ############    
 ##################################################
-mod <- with(colData(sce), model.matrix(~ Sample))
-mod <- mod[ , -1, drop=F] # intercept otherwise automatically dropped by `findMarkers()`
+#Create final celltype 
+sce$CellType.Final <- as.character(sce$CellType_k_20_louvain)
 
-# Run pairwise t-tests
-markers_pairwise <- findMarkers(sce, 
-                                groups=sce$CellType,
-                                assay.type="logcounts", 
-                                design=mod, 
-                                test="t",
-                                direction="up", 
-                                pval.type="all", 
-                                full.stats=T)
+#Combine str_a,c,d and then combine the three oligo populations. 
+sce$CellType.Final[sce$CellType.Final %in% c("Str_Inh_A", "Str_Inh_C","Str_Inh_D")] <- "Str_Inh_A"
+sce$CellType.Final[sce$CellType.Final %in% c("Oligo_A", "Oligo_B","Oligo_C")] <- "Oligo"
 
-#How many DEGs for each cluster? 
-sapply(markers_pairwise, function(x){table(x$FDR<0.05)})
-#       LS_GABA_1 LS_GABA_2 MS_GABA_1 MS_GABA_2 Glutamatergic Striosome
-# FALSE     33268     32954     33408     32704         32700     33311
-# TRUE        288       602       148       852           856       245
-#        Astrocyte_1 Astrocyte_2 Astrocyte_3 Oligo_1 Oligo_2 Oligo_3 Microglia
-# FALSE       31437       33483       32991   33555   33484   32492     32410
-# TRUE         2119          73         565       1      72    1064      1146
-#       Polydendrocyte Endothelial
-# FALSE          33056       32349
-# TRUE             500        1207
+#Check out the tSNE
+cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType.Final)),c("#FF0000", "#00FF00", "#0000FF"))
+names(cluster_cols) <- unique(sce$CellType.Final)
+tSNE_celltype_final <- plotReducedDim(object = sce,
+                                      dimred = "tSNE_mnn_15",
+                                      colour_by = "CellType.Final",
+                                      text_by = "CellType.Final")
+ggsave(plot = tSNE_celltype_final,
+       filename = here("plots","Dim_Red","tSNE_mnn_15_20Clusters.pdf"))
 
-#Add gene info to each list. 
-for(i in names(markers_pairwise)){
-    markers_pairwise[[i]] <- as.data.frame(markers_pairwise[[i]])
-    markers_pairwise[[i]]$gene_id <- row.names(markers_pairwise[[i]])
-    markers_pairwise[[i]] <- dplyr::left_join(x  =  markers_pairwise[[i]],
-                                              y  =  as.data.frame(rowData(sce)[,c("gene_id","gene_name")]),
-                                              by = "gene_id")
-}
+###Begin annotation of Septal clusters. 
 
-save(markers_pairwise,file = here("processed-data","markers_pairwise_list.rda"))
+
+
+
 
 #Save the object with celltype
 save(sce,file = here("processed-data","sce_with_CellType.rda"))
@@ -229,116 +222,3 @@ Sys.time()
 proc.time()
 options(width = 120)
 session_info()
-# [1] "Reproducibility information:"
-# [1] "2023-10-24 16:36:28 EDT"
-#    user   system  elapsed 
-# 710.000   10.332 1536.325 
-# ─ Session info ────────────────────────────────────────────────────────────────────────────
-# setting  value
-# version  R version 4.3.1 Patched (2023-07-19 r84711)
-# os       Rocky Linux 9.2 (Blue Onyx)
-# system   x86_64, linux-gnu
-# ui       X11
-# language (EN)
-# collate  en_US.UTF-8
-# ctype    en_US.UTF-8
-# tz       US/Eastern
-# date     2023-10-24
-# pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
-# 
-# ─ Packages ────────────────────────────────────────────────────────────────────────────────
-# package              * version   date (UTC) lib source
-# abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
-# beachmat               2.16.0    2023-04-25 [2] Bioconductor
-# beeswarm               0.4.0     2021-06-01 [2] CRAN (R 4.3.1)
-# Biobase              * 2.60.0    2023-04-25 [2] Bioconductor
-# BiocGenerics         * 0.46.0    2023-04-25 [2] Bioconductor
-# BiocNeighbors          1.18.0    2023-04-25 [2] Bioconductor
-# BiocParallel           1.34.2    2023-05-22 [2] Bioconductor
-# BiocSingular           1.16.0    2023-04-25 [2] Bioconductor
-# bitops                 1.0-7     2021-04-24 [2] CRAN (R 4.3.1)
-# bluster                1.10.0    2023-04-25 [2] Bioconductor
-# cli                    3.6.1     2023-03-23 [2] CRAN (R 4.3.1)
-# cluster                2.1.4     2022-08-22 [3] CRAN (R 4.3.1)
-# codetools              0.2-19    2023-02-01 [3] CRAN (R 4.3.1)
-# colorout             * 1.2-2     2023-09-22 [1] Github (jalvesaq/colorout@79931fd)
-# colorspace             2.1-0     2023-01-23 [2] CRAN (R 4.3.1)
-# cowplot                1.1.1     2020-12-30 [1] CRAN (R 4.3.1)
-# crayon                 1.5.2     2022-09-29 [2] CRAN (R 4.3.1)
-# DeconvoBuddies       * 0.99.0    2023-10-23 [1] Github (LieberInstitute/DeconvoBuddies@9ce4a42)
-# DelayedArray           0.26.7    2023-07-28 [2] Bioconductor
-# DelayedMatrixStats     1.22.6    2023-08-28 [2] Bioconductor
-# dplyr                  1.1.3     2023-09-03 [2] CRAN (R 4.3.1)
-# dqrng                  0.3.1     2023-08-30 [2] CRAN (R 4.3.1)
-# edgeR                  3.42.4    2023-05-31 [2] Bioconductor
-# fansi                  1.0.4     2023-01-22 [2] CRAN (R 4.3.1)
-# farver                 2.1.1     2022-07-06 [2] CRAN (R 4.3.1)
-# generics               0.1.3     2022-07-05 [2] CRAN (R 4.3.1)
-# GenomeInfoDb         * 1.36.3    2023-09-07 [2] Bioconductor
-# GenomeInfoDbData       1.2.10    2023-07-20 [2] Bioconductor
-# GenomicRanges        * 1.52.0    2023-04-25 [2] Bioconductor
-# ggbeeswarm             0.7.2     2023-04-29 [2] CRAN (R 4.3.1)
-# ggplot2              * 3.4.3     2023-08-14 [2] CRAN (R 4.3.1)
-# ggrepel                0.9.3     2023-02-03 [2] CRAN (R 4.3.1)
-# glue                   1.6.2     2022-02-24 [2] CRAN (R 4.3.1)
-# gridExtra              2.3       2017-09-09 [2] CRAN (R 4.3.1)
-# gtable                 0.3.4     2023-08-21 [2] CRAN (R 4.3.1)
-# here                 * 1.0.1     2020-12-13 [2] CRAN (R 4.3.1)
-# igraph                 1.5.1     2023-08-10 [2] CRAN (R 4.3.1)
-# IRanges              * 2.34.1    2023-06-22 [2] Bioconductor
-# irlba                  2.3.5.1   2022-10-03 [2] CRAN (R 4.3.1)
-# labeling               0.4.3     2023-08-29 [2] CRAN (R 4.3.1)
-# lattice                0.21-8    2023-04-05 [3] CRAN (R 4.3.1)
-# lifecycle              1.0.3     2022-10-07 [2] CRAN (R 4.3.1)
-# limma                  3.56.2    2023-06-04 [2] Bioconductor
-# locfit                 1.5-9.8   2023-06-11 [2] CRAN (R 4.3.1)
-# magrittr               2.0.3     2022-03-30 [2] CRAN (R 4.3.1)
-# Matrix                 1.6-1.1   2023-09-18 [3] CRAN (R 4.3.1)
-# MatrixGenerics       * 1.12.3    2023-07-30 [2] Bioconductor
-# matrixStats          * 1.0.0     2023-06-02 [2] CRAN (R 4.3.1)
-# metapod                1.8.0     2023-04-25 [2] Bioconductor
-# munsell                0.5.0     2018-06-12 [2] CRAN (R 4.3.1)
-# pillar                 1.9.0     2023-03-22 [2] CRAN (R 4.3.1)
-# pkgconfig              2.0.3     2019-09-22 [2] CRAN (R 4.3.1)
-# purrr                  1.0.2     2023-08-10 [2] CRAN (R 4.3.1)
-# R6                     2.5.1     2021-08-19 [2] CRAN (R 4.3.1)
-# rafalib                1.0.0     2015-08-09 [1] CRAN (R 4.3.1)
-# ragg                   1.2.5     2023-01-12 [2] CRAN (R 4.3.1)
-# RColorBrewer           1.1-3     2022-04-03 [2] CRAN (R 4.3.1)
-# Rcpp                   1.0.11    2023-07-06 [2] CRAN (R 4.3.1)
-# RCurl                  1.98-1.12 2023-03-27 [2] CRAN (R 4.3.1)
-# rlang                  1.1.1     2023-04-28 [2] CRAN (R 4.3.1)
-# rprojroot              2.0.3     2022-04-02 [2] CRAN (R 4.3.1)
-# rsvd                   1.0.5     2021-04-16 [2] CRAN (R 4.3.1)
-# S4Arrays               1.0.6     2023-08-30 [2] Bioconductor
-# S4Vectors            * 0.38.1    2023-05-02 [2] Bioconductor
-# ScaledMatrix           1.8.1     2023-05-03 [2] Bioconductor
-# scales                 1.2.1     2022-08-20 [2] CRAN (R 4.3.1)
-# scater               * 1.28.0    2023-04-25 [2] Bioconductor
-# scran                * 1.28.2    2023-07-23 [2] Bioconductor
-# scuttle              * 1.10.2    2023-08-03 [2] Bioconductor
-# sessioninfo          * 1.2.2     2021-12-06 [2] CRAN (R 4.3.1)
-# SingleCellExperiment * 1.22.0    2023-04-25 [2] Bioconductor
-# sparseMatrixStats      1.12.2    2023-07-02 [2] Bioconductor
-# statmod                1.5.0     2023-01-06 [2] CRAN (R 4.3.1)
-# stringi                1.7.12    2023-01-11 [2] CRAN (R 4.3.1)
-# stringr                1.5.0     2022-12-02 [2] CRAN (R 4.3.1)
-# SummarizedExperiment * 1.30.2    2023-06-06 [2] Bioconductor
-# systemfonts            1.0.4     2022-02-11 [2] CRAN (R 4.3.1)
-# textshaping            0.3.6     2021-10-13 [2] CRAN (R 4.3.1)
-# tibble                 3.2.1     2023-03-20 [2] CRAN (R 4.3.1)
-# tidyselect             1.2.0     2022-10-10 [2] CRAN (R 4.3.1)
-# utf8                   1.2.3     2023-01-31 [2] CRAN (R 4.3.1)
-# vctrs                  0.6.3     2023-06-14 [2] CRAN (R 4.3.1)
-# vipor                  0.4.5     2017-03-22 [2] CRAN (R 4.3.1)
-# viridis                0.6.4     2023-07-22 [2] CRAN (R 4.3.1)
-# viridisLite            0.4.2     2023-05-02 [2] CRAN (R 4.3.1)
-# withr                  2.5.0     2022-03-03 [2] CRAN (R 4.3.1)
-# XVector                0.40.0    2023-04-25 [2] Bioconductor
-# zlibbioc               1.46.0    2023-04-25 [2] Bioconductor
-# 
-# [1] /users/rphillip/R/4.3
-# [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
-# [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
-# 
-# ───────────────────────────────────────────────────────────────────────────────────────────
