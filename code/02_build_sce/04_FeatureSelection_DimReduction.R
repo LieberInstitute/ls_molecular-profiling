@@ -11,7 +11,6 @@ library(scry)
 library(here)
 
 ## load QCed and cleaned object. 
-#load(file = here("processed-data","sce_clean.rda"))
 load(file = here("processed-data","sce_clean.rda"))
 
 sce
@@ -194,7 +193,6 @@ sce <- sce_uncorrected
 rm(sce_uncorrected)
 
 #umap with 15,20,25,50 dimensions
-#Only going to run umap at this point. 
 for(i in c(15,20,25,50)){
     set.seed(1234)
     sce <- runUMAP(sce,
@@ -203,59 +201,73 @@ for(i in c(15,20,25,50)){
                    name = paste0("UMAP_mnn_",i))
 }
 
+#tSNE with 15,20,25,50 dimensions
+for(i in c(15,20,25,50)){
+    set.seed(1234)
+    sce <- runTSNE(sce,
+                   dimred = "mnn",
+                   n_dimred = i,
+                   name = paste0("tSNE_mnn_",i))
+}
+
 #######
-#Plot umaps by sample, sum, detected, and subsets_mito_percent
+#Plot umaps and tSNEs by sample, sum, detected, and subsets_mito_percent
 #Sample
 for(i in c(15,20,25,50)){
-    x <- plotReducedDim(sce,
-                        dimred = paste0("UMAP_mnn_",i), 
-                        colour_by = "Sample",
-                        point_alpha = 0.3) +
-        ggtitle(paste(i,"Dimensions")) +
-        theme(plot.title = element_text(hjust = 0.5))
-    ggsave(x,filename = here("plots",
-                             "Dim_Red",
-                             paste0("sample_umap_",i,"dims_postMNN.png")))
+    print(i)
+    for(j in c("UMAP","tSNE")){
+        
+        #Sample
+        sample_plot <- plotReducedDim(sce,
+                                      dimred = paste0(j,"_mnn_",i), 
+                                      colour_by = "Sample",
+                                      point_alpha = 0.3) +
+            ggtitle(paste(i,"Dimensions")) +
+            theme(plot.title = element_text(hjust = 0.5))
+        ggsave(sample_plot,filename = here("plots",
+                                 "Dim_Red",
+                                 paste0("sample_",j,"_",i,"dims_postMNN.png")))
+        print(paste(i,j,"sample plot done"))
+        
+        #Sum
+        sum_plot <- plotReducedDim(sce,
+                                   dimred = paste0(j,"_mnn_",i), 
+                                   colour_by = "sum",
+                                   point_alpha = 0.3) +
+            ggtitle(paste(i,"Dimensions")) +
+            theme(plot.title = element_text(hjust = 0.5))
+        ggsave(sum_plot,filename = here("plots",
+                                 "Dim_Red",
+                                 paste0("sum_",j,"_",i,"dims_postMNN.png")))
+        print(paste(i,j,"sum plot done"))
+        
+        #detected (number of genes)
+        detected_plot <- plotReducedDim(sce,
+                                        dimred = paste0(j,"_mnn_",i), 
+                                        colour_by = "detected",
+                                        point_alpha = 0.3) +
+            ggtitle(paste(i,"Dimensions")) +
+            theme(plot.title = element_text(hjust = 0.5))
+        ggsave(detected_plot,filename = here("plots",
+                                 "Dim_Red",
+                                 paste0("detected_",j,"_",i,"dims_postMNN.png")))
+        print(paste(i,j,"detected plot done"))
+        
+        #subsets mito percent
+        mito_plot <- plotReducedDim(sce,
+                                    dimred = paste0(j,"_mnn_",i), 
+                                    colour_by = "subsets_Mito_percent",
+                                    point_alpha = 0.3) +
+            ggtitle(paste(i,"Dimensions")) +
+            theme(plot.title = element_text(hjust = 0.5))
+        ggsave(mito_plot,filename = here("plots",
+                                 "Dim_Red",
+                                 paste0("subsets_mito_percent_",j,"_",i,"dims_postMNN.png")))
+        print(paste(i,j,"mitochondrial percentage plot done"))
+        
+    }
 }
 
-#sum
-for(i in c(15,20,25,50)){
-    x <- plotReducedDim(sce,
-                        dimred = paste0("UMAP_mnn_",i), 
-                        colour_by = "sum",
-                        point_alpha = 0.3) +
-        ggtitle(paste(i,"Dimensions")) +
-        theme(plot.title = element_text(hjust = 0.5))
-    ggsave(x,filename = here("plots",
-                             "Dim_Red",
-                             paste0("sum_umap_",i,"dims_postMNN.png")))
-}
-
-#detected
-for(i in c(15,20,25,50)){
-    x <- plotReducedDim(sce,
-                        dimred = paste0("UMAP_mnn_",i), 
-                        colour_by = "detected",
-                        point_alpha = 0.3) +
-        ggtitle(paste(i,"Dimensions")) +
-        theme(plot.title = element_text(hjust = 0.5))
-    ggsave(x,filename = here("plots",
-                             "Dim_Red",
-                             paste0("detected_umap_",i,"dims_postMNN.png")))
-}
-
-#subsets mito percent
-for(i in c(15,20,25,50)){
-    x <- plotReducedDim(sce,
-                        dimred = paste0("UMAP_mnn_",i), 
-                        colour_by = "subsets_Mito_percent",
-                        point_alpha = 0.3) +
-        ggtitle(paste(i,"Dimensions")) +
-        theme(plot.title = element_text(hjust = 0.5))
-    ggsave(x,filename = here("plots",
-                             "Dim_Red",
-                             paste0("mito_percent_umap_",i,"dims_postMNN.png")))
-}
 ########
 #One cluster is dominated by Sample 1. Checking expression values to identify if this is a 
 #batch correction issue, or if this is due to something about the anatomy/biology of the sample
@@ -276,17 +288,17 @@ genes <- c("SYT1","SNAP25", #pan neuron
            "DRD3")
 
 #That cluster dominated by sample 1 is present in every iteration of the umap. 
-#umap with 15 dimensions looks the best here. Will just use that for this diagnostic plot. 
+#check tsne with 15 dimensions. 
 for(i in genes){
     print(i)
     x <- plotReducedDim(sce,
-                        dimred = "UMAP_mnn_15", 
+                        dimred = "tSNE_mnn_15", 
                         colour_by = i,
                         swap_rownames = "gene_name") +
         scale_color_gradientn(colours = c("lightgrey","red")) +
         ggtitle(i) +
         theme(plot.title = element_text(hjust = 0.5))
-    ggsave(filename = paste0("plots/Expression_plots/",i,"_expression_umap_15_dims.pdf"),
+    ggsave(filename = paste0("plots/Expression_plots/",i,"_expression_tSNE_15_dims.pdf"),
            plot = x,
            height = 8,width = 8)
 }
@@ -303,9 +315,9 @@ proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2023-10-23 10:43:14 EDT"
-# user   system  elapsed 
-# 638.079   15.690 2472.103 
+# [1] "2023-11-07 11:44:37 EST"
+#     user   system  elapsed 
+# 1635.482   37.693 2971.300 
 # ─ Session info ────────────────────────────────────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
@@ -316,7 +328,7 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-10-23
+# date     2023-11-07
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
 # ─ Packages ────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -415,4 +427,3 @@ session_info()
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
 # ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
-# 
