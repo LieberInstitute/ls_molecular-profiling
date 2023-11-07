@@ -24,7 +24,7 @@ sce
 # colnames(9225): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
 # 3_TTTGGTTTCTTCGACC-1 3_TTTGTTGTCCCGATCT-1
 # colData names(53): Sample Barcode ... doubletScore sizeFactor
-# reducedDimNames(14): GLMPCA_approx UMAP_15 ... UMAP_mnn_25 UMAP_mnn_50
+# reducedDimNames(18): GLMPCA_approx UMAP_15 ... tSNE_mnn_25 tSNE_mnn_50
 # mainExpName: NULL
 # altExpNames(0):
 
@@ -41,9 +41,9 @@ set.seed(1234)
 clust_20 <- igraph::cluster_louvain(snn_k_20,resolution=1)$membership
 table(clust_20)
 # 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 264  588  291  197  254 1078  633  544  628  643  228  739  133  357  101  253 
+# 264  588  291  197  254 1078  635  544  628  643  228  739  133  357  101  253 
 # 17   18   19   20   21   22   23   24 
-# 71   49  149  630  121  296  803  175 
+# 71   49  149  630  121  296  801  175 
 
 set.seed(1234)
 clust_50 <- igraph::cluster_louvain(snn_k_50,resolution=1)$membership
@@ -51,12 +51,13 @@ table(clust_50)
 # 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
 # 241 1407  361  197  254 1128  649  545  627  643  974  168  211  252  149  615 
 # 17 
-# 804 
+# 804
 
 set.seed(1234)
 clust_75 <- igraph::cluster_louvain(snn_k_75,resolution=1)$membership
-# clust_75
-# 1    2    3    4    5    6    7    8    9   10   11   12 
+table(clust_75)
+clust_75
+#    1    2    3    4    5    6    7    8    9   10   11   12 
 # 1352 1395  347  196  403 1456  545  627  645 1483  162  614 
 
 
@@ -69,75 +70,53 @@ sce$k_75_louvain_1 <- factor(clust_75)
 set.seed(1234)
 wt_clusters_k_20 <- igraph::cluster_walktrap(snn_k_20)$membership
 table(wt_clusters_k_20)
-# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 71  254 1122  818  292 1071  436  243  646  228 1079  253  358  161  381   61 
-# 17   18   19   20   21   22   23   24   25   26   27   28   29   30 
-# 264  149  172  269  114   83  206  107   58  119   51   56   63   40 
+#   1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 436  243  189  255  645  698  228  420 1018  618  774  253  161  347  381   61 
+#  17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32 
+# 264  149  172  269  114  297  175   83  206   65  107   58  119   51   73   56 
+#  33   34   35   36   37   38 
+# 63   19   29   40   42   47 
 
 set.seed(1234)
 wt_clusters_k_50 <- igraph::cluster_walktrap(snn_k_50)$membership
 table(wt_clusters_k_50)
-# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15 
-# 544  344 1403  361 1357  643  197 1399  630  272  254 1093  355  224  149 
+#   1    2    3    4    5    6    7    8    9   10   11   12   13   14   15 
+# 544  344 1420  361 1357  643  197 1399  630  272  254 1093  355  207  149 
 
 set.seed(1234)
 wt_clusters_k_75 <- igraph::cluster_walktrap(snn_k_75)$membership
 table(wt_clusters_k_75)
 # 1    2    3    4    5    6    7    8    9   10   11   12   13   14 
-# 545 1390  363 1629  643  625  359 1361 1052  254  251  196  406  151 
+# 545 1390  363 1571  643  625  359 1093 1419  254  251  196  365  151
 
 #Add cluster information to object
 sce$k_20_walktrap <- factor(wt_clusters_k_20)
 sce$k_50_walktrap <- factor(wt_clusters_k_50)
 sce$k_75_walktrap <- factor(wt_clusters_k_75)
 
-#Plot the clusters on the umap
-#15 dimensions 
-#k=20 louvain
-k_20_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn_15",
-                            colour_by = "k_20_louvain_1",text_by = "k_20_louvain_1") #Color and label by cluster 
-ggsave(plot = k_20_umap,filename = here("plots","Dim_Red","k_20_louvain_umap_15components.pdf"))
 
-#k=50 louvain
-k_50_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn_15",
-                            colour_by = "k_50_louvain_1",text_by = "k_50_louvain_1") #Color and label by cluster 
-ggsave(plot = k_50_umap,filename = here("plots","Dim_Red","k_50_louvain_umap_15components.pdf"))
-
-#k=75 louvain
-k_75_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn_15",
-                            colour_by = "k_75_louvain_1",text_by = "k_75_louvain_1") #Color and label by cluster 
-ggsave(plot = k_50_umap,filename = here("plots","Dim_Red","k_75_louvain_umap_15components.pdf"))
-
-#k=20 walktrap
-k_20_wt_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn_15",
-                               colour_by = "k_20_walktrap",text_by = "k_20_walktrap") #Color and label by cluster 
-ggsave(plot = k_20_wt_umap,filename = here("plots","Dim_Red","k_20_walktrap_umap_15components.pdf"))
-
-#k=50 walktrap
-k_50_wt_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn_15",
-                               colour_by = "k_50_walktrap",text_by = "k_50_walktrap") #Color and label by cluster 
-ggsave(plot = k_50_wt_umap,filename = here("plots","Dim_Red","k_50_walktrap_umap_15components.pdf"))
-
-#k=50 walktrap
-k_50_wt_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn_15",
-                               colour_by = "k_50_walktrap",text_by = "k_50_walktrap") #Color and label by cluster 
-ggsave(plot = k_50_wt_umap,filename = here("plots","Dim_Red","k_50_walktrap_umap_15components.pdf"))
-
-#k=75 walktrap
-k_75_wt_umap <- plotReducedDim(object = sce,dimred = "UMAP_mnn_15",
-                               colour_by = "k_75_walktrap",text_by = "k_75_walktrap") #Color and label by cluster 
-ggsave(plot = k_75_wt_umap,filename = here("plots","Dim_Red","k_75_wt_umap_umap_15components.pdf"))
+#Plot the clusters on the tSNE with 15 dimensions. 
+for(i in c("k_20_louvain_1","k_50_louvain_1","k_75_louvain_1",
+           "k_20_walktrap","k_50_walktrap","k_75_walktrap")){
+    print(i)
+    x <- plotReducedDim(object = sce,
+                        dimred = "tSNE_mnn_15",
+                        colour_by = i,text_by = i) +
+        ggtitle(i) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(plot = x,filename = here("plots","Dim_Red",paste0(i,"_tSNE_mnn_15.pdf")))
+}
 
 #Tables by cluster and sample
 table(sce$k_20_louvain_1,sce$Sample)
-#     1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
+#    1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
 # 1        162        92        10
 # 2        437        34       117
 # 3        291         0         0
 # 4         55        79        63
 # 5        151        77        26
 # 6        544       484        50
-# 7         39       374       220
+# 7         39       376       220
 # 8        322       197        25
 # 9        270       268        90
 # 10       470       102        71
@@ -153,11 +132,11 @@ table(sce$k_20_louvain_1,sce$Sample)
 # 20       220       281       129
 # 21        91         4        26
 # 22        21        94       181
-# 23         3       213       587
+# 23         3       211       587
 # 24        23         0       152
 
 table(sce$k_50_louvain_1,sce$Sample)
-#     1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
+#    1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
 # 1        153        82         6
 # 2        663       125       619
 # 3        361         0         0
@@ -177,7 +156,7 @@ table(sce$k_50_louvain_1,sce$Sample)
 # 17         7       212       585
 
 table(sce$k_75_louvain_1,sce$Sample)
-#     1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
+#    1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
 # 1        725       568        59
 # 2        663       121       611
 # 3        347         0         0
@@ -193,20 +172,20 @@ table(sce$k_75_louvain_1,sce$Sample)
 
 table(sce$k_20_walktrap,sce$Sample)
 #     1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
-# 1         71         0         0
-# 2        151        77        26
-# 3        644        33       445
-# 4        242       232       344
-# 5         18        95       179
-# 6        537       485        49
-# 7        321        94        21
-# 8         75       122        46
-# 9        268       284        94
-# 10       161        28        39
-# 11        43       524       512
+# 1        321        94        21
+# 2         75       122        46
+# 3        135        37        17
+# 4         18        89       148
+# 5        268       283        94
+# 6        186       213       299
+# 7        161        28        39
+# 8          1        81       338
+# 9         43       506       469
+# 10       444        39       135
+# 11       372       360        42
 # 12        83        58       112
-# 13         1        62       295
-# 14        75        51        35
+# 13        75        51        35
+# 14       176         0       171
 # 15       244        87        50
 # 16        36        25         0
 # 17       227        15        22
@@ -214,23 +193,31 @@ table(sce$k_20_walktrap,sce$Sample)
 # 19       172         0         0
 # 20       167        92        10
 # 21         5        54        55
-# 22        50        25         8
-# 23        70        93        43
-# 24         0       103         4
-# 25        54         3         1
-# 26       119         0         0
-# 27        40        11         0
-# 28        38        14         4
-# 29        37         1        25
-# 30        23        12         5
+# 22       165       125         7
+# 23        24         0       151
+# 24        50        25         8
+# 25        70        93        43
+# 26        16        40         9
+# 27         0       103         4
+# 28        54         3         1
+# 29       119         0         0
+# 30        40        11         0
+# 31        13        15        45
+# 32        38        14         4
+# 33        37         1        25
+# 34         0         0        19
+# 35        29         0         0
+# 36        23        12         5
+# 37        42         0         0
+# 38        43         4         0
 
 table(sce$k_50_walktrap,sce$Sample)
-#     1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
+#    1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
 # 1        322       197        25
 # 2        136       133        75
-# 3        663       124       616
+# 3        665       131       624
 # 4        361         0         0
-# 5        509       348       500
+# 5        519       342       496
 # 6        470       102        71
 # 7         55        79        63
 # 8        748       589        62
@@ -239,71 +226,69 @@ table(sce$k_50_walktrap,sce$Sample)
 # 11       151        77        26
 # 12        40       532       521
 # 13         1        64       290
-# 14       161        28        35
+# 14       149        27        31
 # 15        91        26        32
 
 table(sce$k_75_walktrap,sce$Sample)
-#     1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
+#    1c_LS_SCP 2c_LS_SCP 3c_LS_SCP
 # 1        323       197        25
 # 2        663       121       606
 # 3        142       143        78
-# 4        687       395       547
+# 4        668       367       536
 # 5        470       102        71
 # 6        267       270        88
 # 7        359         0         0
-# 8        732       570        59
-# 9         45       523       484
+# 8         45       530       518
+# 9        751       598        70
 # 10       151        77        26
 # 11        77       127        47
 # 12        54        79        63
-# 13         1        75       330
+# 13         1        68       296
 # 14        92        27        32
 
 #Preliminary explorration of distribution of expression of marker genes found that one cluster 
 #was dominated by Slc17a7 expression and only contained sample 1. This is not driven by batch effect
-#but rather biological (due to anatomy of section?).
+#but rather biological (due to anatomy of section).
 
 #save the object
 save(sce,file = here("processed-data","sce_clustered.rda"))
 
 #check doublet score per cluster. 
-#will move forward with k=50 walktrap
+#will move forward with k=20 louvain
 doublet_violin <- plotColData(object = sce,
-                              x = "k_50_walktrap",
+                              x = "k_20_louvain_1",
                               y = "doubletScore",
-                              colour_by = "k_50_walktrap") +
+                              colour_by = "k_20_louvain_1") +
     labs(x = "Cluster",
          y = "Doublet Score",
          title = "Doublet Score by Cluster") +
     theme(plot.title = element_text(hjust=0.5),legend.position = "none") +
     geom_hline(yintercept = 5)
-ggsave(doublet_violin,filename = here("plots","doublet_score_by_cluster_k_50_walktrap_violin.pdf"))
+ggsave(doublet_violin,filename = here("plots","doublet_score_by_cluster_k_20_louvain_1_violin.pdf"))
 
 #number of genes per cluster
-#walktrap
 genes_violin <- plotColData(object = sce,
-                            x = "k_50_walktrap",
+                            x = "k_20_louvain_1",
                             y = "detected",
-                            colour_by = "k_50_walktrap") +
+                            colour_by = "k_20_louvain_1") +
     labs(x = "Cluster",
          y = "Number of genes/cell",
          title = "Number of Genes/Cell by Cluster") +
     theme(plot.title = element_text(hjust=0.5),legend.position = "none")
-ggsave(genes_violin,filename = here("plots","Genes_by_cluster_k_50_walktrap_violin.pdf"))
+ggsave(genes_violin,filename = here("plots","Genes_by_cluster_k_20_louvain_1_violin.pdf"))
 
 #library size per cluster
-#Walktrap
 lib_violin <- plotColData(object = sce,
-                          x = "k_50_walktrap",
+                          x = "k_20_louvain_1",
                           y = "sum",
-                          colour_by = "k_50_walktrap") +
+                          colour_by = "k_20_louvain_1") +
     scale_y_log10() +
     labs(x = "Cluster",
          title = "Total UMIs") +
     theme(plot.title = element_text(hjust=0.5),legend.position = "none")
-ggsave(lib_violin,filename = here("plots","lib_size_by_cluster_k50_walktrap_violin.pdf"))
+ggsave(lib_violin,filename = here("plots","lib_size_by_cluster_k_20_louvain_1_violin.pdf"))
 
-#DEfine some genes that are good markers. 
+#Dfine some genes that are good markers. 
 #Primary goal of making this plot is to make sure that there are no low quality clusters.   
 genes <- c("SYT1","SNAP25", #pan neuron
            "MBP","MOBP", #OLIGODENDROCYTE
@@ -325,13 +310,11 @@ genes <- c("SYT1","SNAP25", #pan neuron
 #Walktrap
 Expression_dotplot <- plotDots(object = sce,
                                features = rev(genes),
-                               group = "k_50_walktrap",swap_rownames = "gene_name") +
+                               group = "k_20_louvain_1",swap_rownames = "gene_name") +
     scale_color_gradientn(colours = c("lightgrey","orange","red"))
 ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
-                                                 "post_k_50_walktrap_clustering","general_dotplot.pdf"),
+                                                 "post_k_20_louvain_1_clustering_general_dotplot.pdf"),
        height = 8)
-
-#Will move forward with 15 dimensions UMAP after mnn + k=50 walktrap clustering. 
 
 ##########This commented code from 10/20/23#########
 # #The louvain algorithm identifies a cluster (cluster 11) that exhibits low # of genes/cell, but expresses
@@ -356,10 +339,10 @@ proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2023-10-23 11:17:38 EDT"
+# [1] "2023-11-07 12:18:40 EST"
 # user   system  elapsed 
-# 490.149    4.280 1945.890 
-# ─ Session info ────────────────────────────────────────────────────────────────────────────────────────────────
+# 870.180   10.914 1909.545 
+# ─ Session info ──────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -369,10 +352,10 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-10-23
+# date     2023-11-07
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ────────────────────────────────────────────────────────────────────────────────────────────────────
+# ─ Packages ──────────────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # beachmat               2.16.0    2023-04-25 [2] Bioconductor
@@ -463,6 +446,4 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
-# ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
-# 
-# 
+# ─────────────────────────────────────────────────────────────────────────────
