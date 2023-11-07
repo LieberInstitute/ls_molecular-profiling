@@ -4,6 +4,7 @@
 library(SingleCellExperiment)
 library(DeconvoBuddies)
 library(sessioninfo)
+library(Polychrome)
 library(ggplot2)
 library(scater)
 library(scran)
@@ -23,9 +24,89 @@ sce
 # colnames(9225): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
 # 3_TTTGGTTTCTTCGACC-1 3_TTTGTTGTCCCGATCT-1
 # colData names(59): Sample Barcode ... k_50_walktrap k_75_walktrap
-# reducedDimNames(14): GLMPCA_approx UMAP_15 ... UMAP_mnn_25 UMAP_mnn_50
+# reducedDimNames(18): GLMPCA_approx UMAP_15 ... tSNE_mnn_25 tSNE_mnn_50
 # mainExpName: NULL
 # altExpNames(0):
+
+##################################################
+############ Explore the clusters ################
+##################################################
+#Dotplot with major markers of LS, MS, Septal, Str, + major oligo clusters. 
+genes <- c("SYT1","SNAP25", #Pan-neuronal
+           "GAD1","GAD2","SLC32A1", #GABAergic
+           "SLC17A6","SLC17A7","SLC17A8", #Glutamatergic
+           "TRPC4","DGKG","HOMER2","PTPN3","TRHDE","CPNE7","NRP1", #Lateral Septum markers from mouse
+           "ELAVL2","TRPC5", #Medial Septum markers from mouse
+           "RARB","BCL11B","PPP1R1B", #Broad striatal + MSN markers 
+           "OPRM1","DRD1", #Striosome markers
+           "MBP","MOBP", #Oligodendrocyte
+           "CD74", "CSF1R", "C3", #Microglia
+           "GFAP", "TNC", "AQP4", "SLC1A2", #Astrocytes
+           "CLDN5", "FLT1", "VTN", #Endothelial
+           "COL1A2", "TBX18", "RBPMS", #Mural
+           "SKAP1", "ITK", "CD247", #Tcell
+           "CD163", "SIGLEC1", "F13A1", #Macrophage
+           "FOXJ1","PIFO","CFAP44", #Ependymal
+           "PDGFRA", "VCAN", "CSPG4") #Polydendrocytes
+
+#Louvain clustering
+Expression_dotplot <- plotDots(object = sce,
+                               features = rev(genes),
+                               group = "k_20_louvain_1",
+                               swap_rownames = "gene_name") +
+    scale_color_gradientn(colours = c("lightgrey","orange","red"))
+ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
+                                                 "post_k_20_louvain_1_clustering_general_dotplot_v2.pdf"),
+       height = 8)
+
+
+#Plot these genes on top of the tSNE
+#Add several additional markers of MSNs. 
+for(i in c(genes,"FOXP2","PDE1B","KIAA1211L","PDE2A","SLIT3","NGEF")){
+    print(i)
+    x <- plotReducedDim(object = sce,
+                        dimred = "tSNE_mnn_15",
+                        colour_by = i,
+                        swap_rownames = "gene_name") +
+        scale_color_gradientn(colours = c("lightgrey","orange","red"))
+    ggsave(plot = x,
+           filename = here("plots","Expression_plots","post_k_20_louvain_clustering",paste0(i,"_tSNE_mnn_15.pdf")))
+}
+
+##################################################
+############   Annotate clusters      ############    
+##################################################
+#Create annotation dataframe
+annotation_df <- data.frame(cluster= 1:24,
+                            celltype = c("Sept_Inh_A","Str_Inh_A","Excit_A","Polydendrocyte",
+                                         "Microglia","Sept_Inh_B","Oligo_A","Ependymal",
+                                         "Oligo_B","Str_Inh_B","Sept_Inh_C","Sept_Inh_D",
+                                         "Sept_Inh_E","Str_Inh_C","Sept_Inh_F","Sept_Excit_A",
+                                         "Excit_B","Sept_Inh_G","Mural","Astrocyte",
+                                         "Sept_Inh_H","Sept_Inh_I","Oligo_C","Str_Inh_D"))
+
+#add celltype info
+sce$CellType_k_20_louvain <- annotation_df$celltype[match(sce$k_20_louvain_1,
+                                                          annotation_df$cluster)]
+#factorize. 
+sce$CellType_k_20_louvain <- factor(sce$CellType_k_20_louvain,
+                                    levels = c("Sept_Inh_A","Sept_Inh_B","Sept_Inh_C","Sept_Inh_D",
+                                               "Sept_Inh_E","Sept_Inh_F","Sept_Inh_G","Sept_Inh_H",
+                                               "Sept_Inh_I","Sept_Excit_A","Str_Inh_A","Str_Inh_B",
+                                               "Str_Inh_C","Str_Inh_D","Excit_A","Excit_B",
+                                               "Oligo_A","Oligo_B","Oligo_C","Polydendrocyte",
+                                               "Astrocyte","Ependymal","Microglia","Mural"))
+
+#Annotate the tSNE
+cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType_k_20_louvain)),c("#FF0000", "#00FF00", "#0000FF"))
+names(cluster_cols) <- unique(sce$CellType_k_20_louvain)
+annotated_tSNE <- plotReducedDim(object = sce,
+                                 dimred = "tSNE_mnn_15",
+                                 colour_by = "CellType_k_20_louvain",
+                                 text_by = "CellType_k_20_louvain") +
+    scale_color_manual(values = cluster_cols)
+ggsave(filename = here("plots","Dim_Red","tSNE_mnn_15_annotated_CellType_k20_louvain.pdf"),
+       plot = annotated_tSNE)
 
 ##################################################
 ############Annotate the clusters.################
