@@ -151,6 +151,32 @@ markers_1vALL_enrich <- findMarkers_1vAll(sce,
                                           assay_name = "logcounts", 
                                           cellType_col = "CellType_k_20_louvain", 
                                           mod = "~Sample")
+# Sept_Inh_A - '2023-11-08 09:41:12.810285
+# Str_Inh_A - '2023-11-08 09:41:29.786506
+# Excit_A - '2023-11-08 09:41:46.657498
+# Polydendrocyte - '2023-11-08 09:42:03.591051
+# Microglia - '2023-11-08 09:42:20.535435
+# Sept_Inh_B - '2023-11-08 09:42:37.437445
+# Oligo_A - '2023-11-08 09:42:54.335511
+# Ependymal - '2023-11-08 09:43:11.236241
+# Oligo_B - '2023-11-08 09:43:28.417719
+# Str_Inh_B - '2023-11-08 09:43:45.380726
+# Sept_Inh_C - '2023-11-08 09:44:02.623924
+# Sept_Inh_D - '2023-11-08 09:44:19.597667
+# Sept_Inh_E - '2023-11-08 09:44:36.583435
+# Str_Inh_C - '2023-11-08 09:44:53.842077
+# Sept_Inh_F - '2023-11-08 09:45:11.948174
+# Sept_Excit_A - '2023-11-08 09:45:29.059849
+# Excit_B - '2023-11-08 09:45:45.996569
+# Sept_Inh_G - '2023-11-08 09:46:02.548759
+# Mural - '2023-11-08 09:46:19.526886
+# Astrocyte - '2023-11-08 09:46:36.846822
+# Sept_Inh_H - '2023-11-08 09:46:53.798798
+# Sept_Inh_I - '2023-11-08 09:47:10.814651
+# Oligo_C - '2023-11-08 09:47:27.890011
+# Str_Inh_D - '2023-11-08 09:47:44.854139
+# Building Table - 2023-11-08 09:48:02.068503
+# ** Done! **
 
 #Add symbol information to the table
 #First change the ensembl gene id column to have same name as what is in rowData(sce)
@@ -209,8 +235,50 @@ ggsave(plot = tSNE_celltype_final,
        filename = here("plots","Dim_Red","tSNE_mnn_15_20Clusters.pdf"))
 
 ###Begin annotation of Septal clusters. 
+#subset sce for just the septal clusters to investigate. 
+sce_sept <- sce[,grep("Sept",sce$CellType.Final)]
+
+#Plot tSNE to ensure the subset worked. 
+tSNE_sept_only <- plotReducedDim(object = sce_sept,
+                                 dimred = "tSNE_mnn_1f5",
+                                 colour_by = "CellType.Final",
+                                 text_by = "CellType.Final")
+ggsave(plot = tSNE_sept_only,
+       filename = here("plots","Dim_Red","tSNE_mnn_15_SeptOnly.pdf"))
 
 
+#Septal violin plots
+Sept_violin <- plotExpression(object = sce_sept,features = c("TRPC4","HOMER2","PTPN3","TRHDE", #LS markers from mouse
+                                                             "DGKG", #boad septal mouse from mouse
+                                                             "ELAVL2","TRPC5",#MS markers from mouse
+                                                             "SLC17A6","CHAT",#MS subsets (Excit + Chat-int.) 
+                                                             "CRHR2", "OPRM1","CCK","VIP","KIT",#Expressed in LS NEURONS
+                                                             "FRMD3","UNC5D","ABLIM3",#BROAD SEPTAL MARKERS from mouse
+                                                             "NOS1","SST",
+                                                             "BCL11B","PPP1R1B","ISL1","RARB","DRD1"), 
+                              swap_rownames = "gene_name",x = "CellType.Final",
+                              colour_by = "CellType.Final",ncol = 4) +
+    theme(axis.text.x = element_text(angle = 45,hjust = 1),legend.position = "none")
+ggsave(plot = Sept_violin,
+       filename = here("plots","Expression_plots","Sept_Str_markers_SeptOnly.pdf"),
+       width = 10,height =12)
+
+#Plot RARB and LHX6
+RARB_violin <- plotExpression(object = sce,features = c("RARB"), 
+                              swap_rownames = "gene_name",x = "CellType.Final",
+                              colour_by = "CellType.Final",ncol = 4) +
+    theme(axis.text.x = element_text(angle = 45,hjust = 1),legend.position = "none")
+ggsave(plot = RARB_violin,
+       filename = here("plots","Expression_plots","RARB_VIOLIN.pdf"))
+
+LHX6_violin <- plotExpression(object = sce,features = c("LHX6"), 
+                              swap_rownames = "gene_name",x = "CellType.Final",
+                              colour_by = "CellType.Final",ncol = 4) +
+    theme(axis.text.x = element_text(angle = 45,hjust = 1),legend.position = "none")
+ggsave(plot = LHX6_violin,
+       filename = here("plots","Expression_plots","LHX6_VIOLIN.pdf"))
+
+#Make final Celltype designations. 
 
 
 
