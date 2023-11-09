@@ -314,27 +314,27 @@ markers_1vALL_enrich_Final <- findMarkers_1vAll(sce,
                                                 assay_name = "logcounts", 
                                                 cellType_col = "CellType.Final", 
                                                 mod = "~Sample")
-# LS_Inh_A - '2023-11-08 13:06:57.252122
-# Str_Inh_A - '2023-11-08 13:07:14.104472
-# Excit_A - '2023-11-08 13:07:31.08543
-# Polydendrocyte - '2023-11-08 13:07:48.007222
-# Microglia - '2023-11-08 13:08:04.801294
-# LS_Inh_B - '2023-11-08 13:08:21.577275
-# Oligo - '2023-11-08 13:08:38.419018
-# Ependymal - '2023-11-08 13:08:55.224017
-# Str_Inh_B - '2023-11-08 13:09:12.030433
-# MS_Inh_A - '2023-11-08 13:09:28.905939
-# Sept_Inh_D - '2023-11-08 13:09:45.998409
-# MS_Inh_E - '2023-11-08 13:10:03.042953
-# Sept_Inh_F - '2023-11-08 13:10:19.865302
-# MS_Excit_A - '2023-11-08 13:10:36.724319
-# Excit_B - '2023-11-08 13:10:53.576307
-# LS_Inh_G - '2023-11-08 13:11:10.053569
-# Mural - '2023-11-08 13:11:26.856716
-# Astrocyte - '2023-11-08 13:11:43.671958
-# MS_Inh_H - '2023-11-08 13:12:00.562602
-# LS_Inh_I - '2023-11-08 13:12:17.475058
-# Building Table - 2023-11-08 13:12:34.274085
+# LS_Inh_A - '2023-11-09 08:44:48.264284
+# Str_Inh_A - '2023-11-09 08:45:07.804005
+# Excit_A - '2023-11-09 08:45:27.281616
+# Polydendrocyte - '2023-11-09 08:45:46.946403
+# Microglia - '2023-11-09 08:46:06.185961
+# LS_Inh_B - '2023-11-09 08:46:25.81612
+# Oligo - '2023-11-09 08:46:45.220754
+# Ependymal - '2023-11-09 08:47:04.783594
+# Str_Inh_B - '2023-11-09 08:47:24.599634
+# MS_Inh_A - '2023-11-09 08:47:43.815873
+# Sept_Inh_D - '2023-11-09 08:48:03.196129
+# MS_Inh_E - '2023-11-09 08:48:23.233959
+# Sept_Inh_F - '2023-11-09 08:48:42.804301
+# MS_Excit_A - '2023-11-09 08:49:02.525566
+# Excit_B - '2023-11-09 08:49:22.217644
+# LS_Inh_G - '2023-11-09 08:49:41.288085
+# Mural - '2023-11-09 08:50:00.989209
+# Astrocyte - '2023-11-09 08:50:20.722238
+# MS_Inh_H - '2023-11-09 08:50:40.270978
+# LS_Inh_I - '2023-11-09 08:50:59.823694
+# Building Table - 2023-11-09 08:51:19.37887
 # ** Done! **
 
 #Add symbol information to the table
@@ -345,7 +345,7 @@ markers_1vALL_enrich_Final <- dplyr::left_join(x = as.data.frame(markers_1vALL_e
                                                by = "gene_id")
 
 #save the dataframe. 
-save(markers_1vALL_df,file = here("processed-data","markers_1vAll_ttest_CellTypeFinal_20Clusters.rda"))
+save(markers_1vALL_enrich_Final,file = here("processed-data","markers_1vAll_ttest_CellTypeFinal_20Clusters.rda"))
 
 ##################################################
 ###############run pairwise testing###############
