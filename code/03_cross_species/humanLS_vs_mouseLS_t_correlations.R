@@ -1,7 +1,6 @@
 #Goal: Compare gene expression signatures of the mouse and human LS
-#Will use two different approaches: 
-#1. Correlation of t-statistics for markers genes. Code modified from https://github.com/LieberInstitute/10xPilot_snRNAseq-human/blob/51d15ef9f5f2c4c53f55e22e3fe467de1a724668/10x_NAc-n8_step04_cross-species_rnNAc_MNT.R#L4
-#2. Integrate human and mouse data with mnn. 
+#This analysis will focus on correlation of t-statistics for markers genes. 
+#Code modified from https://github.com/LieberInstitute/10xPilot_snRNAseq-human/blob/51d15ef9f5f2c4c53f55e22e3fe467de1a724668/10x_NAc-n8_step04_cross-species_rnNAc_MNT.R#L4
 #cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/
 
 library(SingleCellExperiment)
@@ -29,23 +28,24 @@ sce
 # rowData names(7): source type ... gene_type binomial_deviance
 # colnames(9225): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
 # 3_TTTGGTTTCTTCGACC-1 3_TTTGTTGTCCCGATCT-1
-# colData names(60): Sample Barcode ... k_75_walktrap CellType
-# reducedDimNames(14): GLMPCA_approx UMAP_15 ... UMAP_mnn_25 UMAP_mnn_50
+# colData names(61): Sample Barcode ... CellType_k_20_louvain
+# CellType.Final
+# reducedDimNames(18): GLMPCA_approx UMAP_15 ... tSNE_mnn_25 tSNE_mnn_50
 # mainExpName: NULL
 # altExpNames(0):
 
-#load human DEG list from
-load(here("processed-data","markers_1vAll_ttest.rda")) #markers_1vALL_df
-dim(markers_1vALL_df)
-# [1] 503340      9
+#load human DEG list from human
+load(here("processed-data","markers_1vAll_ttest_CellTypeFinal_20Clusters.rda"),verbose = TRUE) #markers_1vALL_enrich_Final
+dim(markers_1vALL_enrich_Final)
+# [1] 671120      9
 
 #Split the markers_1vALL_df into a lsit
-markers_1vALL_list <- split(markers_1vALL_df,
-                            f = markers_1vALL_df$cellType.target)
+markers_1vALL_list <- split(markers_1vALL_enrich_Final,
+                            f = markers_1vALL_enrich_Final$cellType.target)
 
 #Figure out which genes have non0 medians
-cellClust.idx <- splitit(sce$CellType)
-non0median_human_ls <- vector(mode = "list",length = 15)
+cellClust.idx <- splitit(sce$CellType.Final)
+non0median_human_ls <- vector(mode = "list",length = length(unique(sce$CellType.Final)))
 names(non0median_human_ls) <- names(cellClust.idx)
 for(i in names(cellClust.idx)){
     print(i)
@@ -65,7 +65,7 @@ for(i in names(cellClust.idx)){
 save(markers_1vALL_list,file = here("processed-data","markers_1vAll_ttest_withnon0median.rda"))
 
 #load the SingleCellExperiment object for mouse Lateral Septum
-load(here("MAGMA","mouse_analysis","sce_updated_LS.rda"))
+load(file = "/dcs04/lieber/marmaypag/pilotLS_LIBD1070/snRNAseq_mouse/processed_data/SCE/sce_updated_LS.rda")
 
 sce.ls
 # class: SingleCellExperiment 
@@ -83,7 +83,8 @@ sce.ls
 # altExpNames(0):
 
 #Run mouse DEGs 
-load(here("MAGMA","mouse_analysis","markers-stats_LS-n4_findMarkers_33cellTypes.rda"),verbose = TRUE)
+load(file = "/dcs04/lieber/marmaypag/pilotLS_LIBD1070/snRNAseq_mouse/processed_data/SCE/markers-stats_LS-n4_findMarkers_33cellTypes.rda",
+     verbose = TRUE)
 # Loading objects:
 #     markers.ls.t.pw
 #     markers.ls.t.1vAll
@@ -185,7 +186,7 @@ hom <-  read.delim("http://www.informatics.jax.org/downloads/reports/HOM_AllOrga
 
 #Save dataframe with date. In case we need to use later and it gets updated. 
 write.table(x = hom,
-            file = here("processed-data","HOM_AllOrganism_JAX_102723.csv"),
+            file = here("processed-data","HOM_AllOrganism_JAX_110923.csv"),
             sep = ",",col.names = TRUE,row.names = FALSE,quote = FALSE)
 
 #Subset for human 
@@ -240,7 +241,7 @@ shared_homologs <- shared_homologs[-1] #first is na
 # Human not in mouse
 length(setdiff(rowData(sce_human_ls)$JAX.geneID,
                rowData(sce_mouse_ls)$JAX.geneID)) 
-# [1] 460
+# [1] 459
 
 # Mouse not in human
 length(setdiff(rowData(sce_mouse_ls)$JAX.geneID,
@@ -250,17 +251,17 @@ length(setdiff(rowData(sce_mouse_ls)$JAX.geneID,
 # Subset for shared homologs
 sce_human_sub <- sce_human_ls[rowData(sce_human_ls)$JAX.geneID %in% shared_homologs, ]
 dim(sce_human_sub)
-# [1] 16996  9225
-#16996 genes and 9225 cells
+# [1] 16997  9225
+#16997 genes and 9225 cells
 
 sce_mouse_sub <- sce_mouse_ls[rowData(sce_mouse_ls)$JAX.geneID %in% shared_homologs, ]
 dim(sce_mouse_sub)
-# [1] 16588 22860
-#16588 genes adn 22860 cells
+#[1] 16588 22860
+#16588 genes and 22860 cells
 
 #Are any of the JAX IDs duplicated
 length(rowData(sce_human_sub)$gene_name[duplicated(rowData(sce_human_sub)$JAX.geneID)])
-#[1] 424
+#[1] 425
 
 length(rowData(sce_mouse_sub)$gene_name[duplicated(rowData(sce_mouse_sub)$JAX.geneID)])
 # [1] 16
@@ -374,7 +375,7 @@ mouse_t_stats_mat <- as.matrix(mouse_t_stats_df[,c(1:33)]) #Just keeping the cel
 
 #Human now 
 #Now calculate
-fixTo <- rownames(markers_1vALL_list[["LS_GABA_1"]])
+fixTo <- rownames(markers_1vALL_list[["LS_Inh_A"]])
 for(x in names(markers_1vALL_list)){
     print(x)
     markers_1vALL_list[[x]]$t.stat <- markers_1vALL_list[[x]]$std.logFC * sqrt(ncol(sce_human_sub))
@@ -402,7 +403,7 @@ human_t_stats_df <- dplyr::left_join(x = human_t_stats_df,
 #Make rownames the JAx ID
 rownames(human_t_stats_df) <- human_t_stats_df$JAX.geneID
 #Convert it to a matrix. 
-human_t_stats_mat <- as.matrix(human_t_stats_df[,c(1:15)]) #Just keeping the celltype columns and removing both gene columns
+human_t_stats_mat <- as.matrix(human_t_stats_df[,c(1:20)]) #Just keeping the celltype columns and removing both gene columns
 
 
 #Save the subset objects and t stat matrices. 
@@ -421,7 +422,7 @@ cor_t_all <- cor(human_t_stats_mat, mouse_t_stats_mat)
 rownames(cor_t_all) <- paste0(rownames(cor_t_all),"_Human")
 colnames(cor_t_all) <- paste0(colnames(cor_t_all),"_Mouse")
 range(cor_t_all) 
-# [1] -0.3748624  0.6449819
+#[1] -0.4335106  0.6448713
 
 
 #Get top 100 genes for each human LS cluster. Top chosen by t-statistic. 
@@ -437,7 +438,7 @@ mouse_top_100 <- mapply(as.data.frame(mouse_t_stats_mat), FUN = function(t) {
 #get the unique identifiers for each species plus the shared. 
 human_unique <- unique(as.numeric(human_top_100))
 length(human_unique)
-#[1] 1235
+#[1] 1546
 
 mouse_unique <- unique(as.numeric(mouse_top_100))
 length(mouse_unique)
@@ -446,7 +447,7 @@ length(mouse_unique)
 shared_identifiers <- intersect(rownames(human_t_stats_mat)[human_unique], 
                                 rownames(mouse_t_stats_mat)[mouse_unique])
 length(shared_identifiers)
-#706
+#[1] 865
 
 
 #Correlate with just the human identifiers. 
@@ -455,7 +456,7 @@ cor_t_human_unique <- cor(human_t_stats_mat[human_unique, ],
 rownames(cor_t_human_unique) <- paste0(rownames(cor_t_human_unique),"_Human")
 colnames(cor_t_human_unique) <- paste0(colnames(cor_t_human_unique),"_Mouse")
 range(cor_t_human_unique)
-# [1] -0.4211243  0.7728237
+# [1] -0.5175540  0.7730306
 
 
 #Correlate with just the mouse identifiers. 
@@ -464,7 +465,7 @@ cor_t_mouse_unique <- cor(human_t_stats_mat[mouse_unique, ],
 rownames(cor_t_mouse_unique) <- paste0(rownames(cor_t_mouse_unique),"_Human")
 colnames(cor_t_mouse_unique) <- paste0(colnames(cor_t_mouse_unique),"_Mouse")
 range(cor_t_mouse_unique)
-# [1] -0.4143752  0.7664956
+# [1] -0.5078417  0.7664956
 
 #Correlate with just the shared identifiers. 
 cor_t_shared <- cor(human_t_stats_mat[shared_identifiers, ],
@@ -472,13 +473,15 @@ cor_t_shared <- cor(human_t_stats_mat[shared_identifiers, ],
 rownames(cor_t_shared) <- paste0(rownames(cor_t_shared),"_Human")
 colnames(cor_t_shared) <- paste0(colnames(cor_t_shared),"_Mouse")
 range(cor_t_shared)
-# [1] -0.4683984  0.8702079
+# [1] -0.5626473  0.8641498
 
 #Save all of the correlation matrices. 
 save(cor_t_all,cor_t_human_unique,cor_t_mouse_unique,cor_t_shared,
      file = here("processed-data","correlation_matrices_conservation_analysis.rda"))
 
-#Make heatmaps. 
+#######################################
+############ Make heatmaps ############
+#######################################
 #First for correlations between all 16000+ genes. 
 colrange <-  seq(-.65,.65, by = 0.01)
 colorpal <- colorRampPalette(rev(brewer.pal(n = 7, name = "RdBu")))(length(colrange))
@@ -576,6 +579,7 @@ pheatmap(cor_t_shared,
          legend_breaks=c(seq(-.9,.9, by = 0.45)),
          main = "Shared Markers")
 dev.off()
+#######################################
 
 print("Reproducibility information:")
 Sys.time()
@@ -583,10 +587,10 @@ proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2023-10-27 17:06:52 EDT"
+# [1] "2023-11-09 13:57:43 EST"
 #    user   system  elapsed 
-# 803.761   47.686 6166.055 
-# ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
+# 675.350   36.125 2598.221 
+# ─ Session info ────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -596,10 +600,10 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-10-27
+# date     2023-11-09
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
+# ─ Packages ────────────────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # AnnotationDbi        * 1.62.2    2023-07-02 [2] Bioconductor
@@ -670,5 +674,4 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
-# ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-# 
+# ───────────────────────────────────────────────────────────────────────────────
