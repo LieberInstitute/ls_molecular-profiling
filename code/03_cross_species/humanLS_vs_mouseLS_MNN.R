@@ -6,7 +6,10 @@
 
 library(SingleCellExperiment)
 library(batchelor)
+library(harmony)
+library(scater)
 library(here)
+library(scry)
 
 #Load the human and mouse matched SCE objects.
 load(here("processed-data","human_mouse_matched_by_JAX.rda"),verbose = TRUE)
@@ -85,12 +88,133 @@ sce_combo
 # reducedDimNames(0):
 #     mainExpName: NULL
 # altExpNames(0):
-
+    
 #compute logcounts
 sce_combo <- multiBatchNorm(sce_combo, batch=sce_combo$Sample)
 
+##########Feature selection. 
+#Deviance feature selection
+sce_combo <- devianceFeatureSelection(sce_combo,
+                                      assay = "counts",
+                                      fam = "binomial",
+                                      sorted = FALSE,
+                                      batch = as.factor(sce_combo$Sample))
+
+pdf(here("plots","Conservation","featureSelxn_binomialDeviance-byGene_numericcutoffs.pdf"))
+plot(sort(rowData(sce_combo)$binomial_deviance, decreasing = T),
+     type = "l", xlab = "ranked genes",
+     ylab = "binomial deviance"
+)
+abline(v = 2000,lty = 2, col = "red")
+dev.off()
+
+#2000 should be good. 
+sce_combo <- nullResiduals(sce_combo,
+                           assay = "counts", 
+                           fam   = "binomial", 
+                           type  = "deviance")
+
+#Take top 2000 highly deviant genes
+hdgs <- rownames(sce_combo)[order(rowData(sce_combo)$binomial_deviance, decreasing = T)][1:2000]
 
 
+#current object doesn't include gene name info. Pull from the sce_human_sub object. 
+hdgs.symbols <- rowData(sce_human_sub)$gene_name[match(hdgs, rowData(sce_human_sub)$gene_id)]
+
+#PCA
+sce_combo <- runPCA(sce_combo,
+                    exprs_values = "binomial_deviance_residuals",
+                    subset_row = hdgs, 
+                    ncomponents = 100,
+                    name = "GLMPCA_approx")
 
 
+#PCA plot of top 6 PCs
+PCA_plots <- plotReducedDim(sce_combo,
+                            dimred = "GLMPCA_approx", 
+                            colour_by = "Sample",
+                            ncomponents = 6, 
+                            point_alpha = 0.3)
+ggsave(PCA_plots,filename = here("plots","Conservation","multi_PCAs.png"))
+
+#Run the UMAP + tSNE with 50 dimensions. 
+#UMAP
+set.seed(1234)
+sce_combo <- runUMAP(sce_combo,
+                     dimred = "GLMPCA_approx",
+                     n_dimred = 50,
+                     name = "UMAP_50")
+#tSNE
+set.seed(1234)
+sce_combo <- runTSNE(sce_combo,
+                     dimred = "GLMPCA_approx",
+                     n_dimred = 50,
+                     name = "tSNE_50")
+
+#Plot the tSNE and UMAP
+#UMAP  
+umap_cross_species <- plotReducedDim(sce_combo,
+                                     dimred = "UMAP_50", 
+                                     colour_by = "Species",
+                                     point_alpha = 0.3)
+ggsave(umap_cross_species,filename = here("plots",
+                                          "Conservation",
+                                          "umap_cross_species.png"))
+
+#tSNE
+tSNE_cross_species <- plotReducedDim(sce_combo,
+                                     dimred = "tSNE_50", 
+                                     colour_by = "Species",
+                                     point_alpha = 0.3)
+ggsave(tSNE_cross_species,filename = here("plots",
+                                          "Conservation",
+                                          "tSNE_cross_species.png"))
+
+
+#As expected, tSNE and UMAP are split by species. Next run fast fastMNN
+mnn.hold <- fastMNN(sce_combo, 
+                    batch=sce_combo$Sample,
+                    subset.row=hdgs, d=50,
+                    correct.all=TRUE, get.variance=TRUE,
+                    BSPARAM=BiocSingular::IrlbaParam())
+
+#Add mnn to sce_combo object
+reducedDim(sce_combo, "PCA_corrected") <- reducedDim(mnn.hold, "corrected")
+
+#Rerun the UMAP and tSNE
+set.seed(1234)
+sce_combo <- runUMAP(sce_combo,
+                     dimred = "PCA_corrected",
+                     n_dimred = 50,
+                     name = "UMAP_corrected_50")
+#tSNE
+set.seed(1234)
+sce_combo <- runTSNE(sce_combo,
+                     dimred = "PCA_corrected",
+                     n_dimred = 50,
+                     name = "tSNE_corrected_50")
+
+
+#Plot the tSNE and UMAP
+#UMAP  
+umap_cross_species <- plotReducedDim(sce_combo,
+                                     dimred = "UMAP_corrected_50", 
+                                     colour_by = "Species",
+                                     point_alpha = 0.3)
+ggsave(umap_cross_species,filename = here("plots",
+                                          "Conservation",
+                                          "umap_cross_species_mnn_corrected.png"))
+
+#tSNE
+tSNE_cross_species <- plotReducedDim(sce_combo,
+                                     dimred = "tSNE_corrected_50", 
+                                     colour_by = "Species",
+                                     point_alpha = 0.3)
+ggsave(tSNE_cross_species,filename = here("plots",
+                                          "Conservation",
+                                          "tSNE_cross_species_mnn_corrected.png"))
+
+save(sce_combo,file = here("processed-data","sce_combo.rda"))
+
+#These look okay. Will also try Harmony. 
 
