@@ -196,7 +196,7 @@ sce_combo <- runTSNE(sce_combo,
 
 
 #Plot the tSNE and UMAP
-#UMAP  
+#UMAP by species
 umap_cross_species <- plotReducedDim(sce_combo,
                                      dimred = "UMAP_corrected_50", 
                                      colour_by = "Species",
@@ -216,5 +216,89 @@ ggsave(tSNE_cross_species,filename = here("plots",
 
 save(sce_combo,file = here("processed-data","sce_combo.rda"))
 
+#By celltype
+#First create a new column within sce_combo that is celltype_species
+sce_combo$CellType_Species <- paste(sce_combo$CellType,sce_combo$Species,sep = "_")
+
+#Assign colors
+cluster_cols <- Polychrome::createPalette(length(unique(sce_combo$CellType_Species)),c("#FF0000", "#00FF00", "#0000FF"))
+names(cluster_cols) <- unique(sce_combo$CellType_Species)
+
+#UMAP
+umap_cross_species_ct <- plotReducedDim(sce_combo,
+                                        dimred = "UMAP_corrected_50", 
+                                        colour_by = "CellType_Species",
+                                        text_by = "CellType_Species",
+                                        point_alpha = 0.3) +
+    ggplot2::theme(legend.position = "none")
+ggsave(umap_cross_species_ct,filename = here("plots",
+                                             "Conservation",
+                                             "umap_cross_species_mnn_corrected_byCellType.png"),
+       height = 10, width = 10)
+
+#tSNE
+tSNE_cross_species_ct <- plotReducedDim(sce_combo,
+                                        dimred = "tSNE_corrected_50", 
+                                        colour_by = "CellType_Species",
+                                        text_by = "CellType_Species",
+                                        point_alpha = 0.3) +
+    ggplot2::theme(legend.position = "none")
+ggsave(tSNE_cross_species_ct,filename = here("plots",
+                                             "Conservation",
+                                             "tSNE_cross_species_mnn_corrected_byCellType.png"),
+       height = 10, width = 10)
+
 #These look okay. Will also try Harmony. 
+#Add a duplicate reducedDim that is only called PCA. This is required for RunHarmony 
+reducedDim(sce_combo,"PCA") <- reducedDim(sce_combo,"PCA_corrected")
+sce_harmony_Species <- RunHarmony(sce_combo, group.by.vars = "Species", verbose = TRUE)
+# Transposing data matrix
+# Hard k-means centroids initialization
+# Harmony 1/10
+# 0%   10   20   30   40   50   60   70   80   90   100%
+# [----|----|----|----|----|----|----|----|----|----|
+# **************************************************|
+# Harmony 2/10
+# 0%   10   20   30   40   50   60   70   80   90   100%
+# [----|----|----|----|----|----|----|----|----|----|
+# **************************************************|
+# Harmony 3/10
+# 0%   10   20   30   40   50   60   70   80   90   100%
+# [----|----|----|----|----|----|----|----|----|----|
+# **************************************************|
+# Harmony converged after 3 iterations
+
+#Run tSNE adn UMAP with harmony
+#UMAP
+set.seed(1234)
+sce_harmony_Species <- runUMAP(sce_harmony_Species,
+                               dimred = "HARMONY",
+                               name = "UMAP_HARMONY")
+#tSNE
+set.seed(1234)
+sce_harmony_Species <- runTSNE(sce_harmony_Species,
+                               dimred = "HARMONY",
+                               name = "tSNE_HARMONY")
+#Plot the tSNE and UMAP
+#UMAP by species
+umap_Harmony <- plotReducedDim(sce_harmony_Species,
+                               dimred = "UMAP_HARMONY", 
+                               colour_by = "Species",
+                               point_alpha = 0.3)
+ggsave(umap_Harmony,filename = here("plots",
+                                    "Conservation",
+                                    "umap_cross_species_Harmony_corrected.png"))
+
+#tSNE
+tSNE_Harmony <- plotReducedDim(sce_harmony_Species,
+                               dimred = "tSNE_HARMONY", 
+                               colour_by = "Species",
+                               point_alpha = 0.3)
+ggsave(tSNE_Harmony,filename = here("plots",
+                                    "Conservation",
+                                    "tSNE_cross_species_Harmony.png"))
+
+
+
+
 
