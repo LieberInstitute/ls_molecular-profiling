@@ -230,7 +230,8 @@ names(cluster_cols) <- unique(sce$CellType.Final)
 tSNE_celltype_final <- plotReducedDim(object = sce,
                                       dimred = "tSNE_mnn_15",
                                       colour_by = "CellType.Final",
-                                      text_by = "CellType.Final")
+                                      text_by = "CellType.Final") +
+    scale_color_manual(values = cluster_cols)
 ggsave(plot = tSNE_celltype_final,
        filename = here("plots","Dim_Red","tSNE_mnn_15_20Clusters.pdf"))
 
@@ -295,7 +296,8 @@ names(cluster_cols) <- unique(sce$CellType.Final)
 tSNE_sept_only <- plotReducedDim(object = sce,
                                  dimred = "tSNE_mnn_15",
                                  colour_by = "CellType.Final",
-                                 text_by = "CellType.Final")
+                                 text_by = "CellType.Final") +
+    scale_color_manual(values = cluster_cols)
 ggsave(plot = tSNE_sept_only,
        filename = here("plots","Dim_Red","tSNE_mnn_15_Final_CellTypes.pdf"))
 
