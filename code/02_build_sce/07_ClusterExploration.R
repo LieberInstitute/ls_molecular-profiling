@@ -213,7 +213,153 @@ dev.off()
 # Force-based layout showing the relationships between clusters based on the log-ratio of observed to expected total weights 
 # between nodes in different clusters. The thickness of the edge between a pair of clusters is proportional to the corresponding 
 # log-ratio. - OSCA advanced, chapter 5.2.5, figure 5.6
+                
+
+sce$CellType.Final <- factor(x = sce$CellType.Final,
+                             levels = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
+                                        "MS_Inh_A","MS_Inh_E","MS_Inh_H","Sept_Inh_D",
+                                        "Sept_Inh_F","Str_Inh_A","Str_Inh_B","MS_Excit_A",
+                                        "Excit_A","Excit_B","Oligo","Polydendrocyte",
+                                        "Astrocyte","Ependymal","Microglia","Mural"))
+
+x <- plotExpression(object = sce,features = c("SYT1","GAD1","SLC17A6","MOBP"),
+                    x = "CellType.Final",
+                    swap_rownames = "gene_name",
+                    ncol = 2,colour_by = "CellType.Final") +
+    scale_color_manual(values = cluster_cols) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          legend.position = "none") +
+    stat_summary(fun = median, 
+                 fun.min = median, 
+                 fun.max = median,
+                 geom = "crossbar", 
+                 width = 0.3)
+
+ggsave(file = "plots/Expression_plots/violin_General_markers.pdf",plot = x,height = 8,width = 8)
+
+#############################################
+##Heatmap of genes that I want to highlight##
+#############################################
+#Code from https://github.com/LieberInstitute/septum_lateral/blob/main/snRNAseq_mouse/code/02_analyses/Complex%20Heatmap.R
+splitit <- function(x) split(seq(along = x), x)
+
+cell_idx <- splitit(sce$CellType.Final)
+dat <- as.matrix(logcounts(sce))
+rownames(dat) <- rowData(sce)$gene_name
+dim(dat)
+# [1] 36601  9225
+
+############set up columns for heatmaps. 
+#Set marker genes to be included on the heatmap.
+markers_all <- c("GFAP","SLC1A2",
+                 "CFAP44",
+                 "SYT1","SNAP25",
+                 "SLC17A6","SLC17A7",
+                 "GAD1","GAD2",
+                 "TMEM119",
+                 "RGS5",
+                 "MOBP","MBP",
+                 "PDGFRA")
+
+# # marker labels
+marker_labels <- c(rep("Astrocyte",2),
+                   rep("Ependymal",1),
+                   rep("neuronal",2),
+                   rep("Excitatory",2),
+                   rep("Inhibitory",2),
+                   "Microglia",
+                   "Mural",
+                   rep("Oligodendrocyte",2),
+                   "Polydendrocyte")
+
+marker_labels <- factor(x = marker_labels,
+                        levels = c("Astrocyte","Ependymal","neuronal",
+                                   "Excitatory","Inhibitory","Microglia",
+                                   "Mural","Oligodendrocyte","Polydendrocyte"))
+
+colors_markers <- list(marker = c(neuronal = "black",
+                                  Inhibitory = "#D62728",
+                                  Excitatory = "#98DF8A",
+                                  Oligodendrocyte = "#FF9E4A",
+                                  Polydendrocyte = "#9467BD",
+                                  Astrocyte = "#8C564B",
+                                  Ependymal = "#9EDAE5",
+                                  Microglia = "#17BECF",
+                                  Mural = "#1F77B4"))
+
+col_ha <- ComplexHeatmap::columnAnnotation(marker = marker_labels,
+                                           show_annotation_name = FALSE,show_legend = FALSE,
+                                           col = colors_markers)
+
+###########set up rows for heatmap. 
+# cluster labels
+cluster_pops <- list(Inhibitory = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
+                                    "MS_Inh_A","MS_Inh_E","MS_Inh_H","Sept_Inh_D",
+                                    "Sept_Inh_F","Str_Inh_A","Str_Inh_B"),
+                     Excitatory = c("MS_Excit_A","Excit_A","Excit_B"),
+                     Oligodendrocyte = "Oligodendrocyte",
+                     Polydendrocyte = "Polydendrocyte",
+                     Astrocyte = "Astrocyte",
+                     Ependymal = "Ependymal",
+                     Microglia = "Microglia",
+                     Mural = "Mural")
+
+# cluster labels order
+cluster_pops_order <- unname(unlist(cluster_pops))
+
+# swap values and names of list
+cluster_pops_rev <- rep(names(cluster_pops), times = sapply(cluster_pops, length))
+names(cluster_pops_rev) <- unname(unlist(cluster_pops))
+
+# second set of cluster labels
+neuron_pops <- ifelse(cluster_pops_rev %in% c("Glutamatergic", "Inhibitory"),
+                      "Neuronal",
+                      "Non-neuronal")
+neuron_pops <- factor(x = neuron_pops,levels = c("Neuronal","Non-neuronal"))
 
 
+colors_neurons <- list(class = c(Neuronal = "black",
+                                 `Non-neuronal` = "gray90"))
 
+n <- table(sce$CellType.Final)
+
+#row annotation dataframe. 
+# row annotation
+library(ComplexHeatmap)
+pop_markers <- list(population = c(Inhibitory = "#D62728",
+                                   Excitatory = "#98DF8A",
+                                   Oligodendrocyte = "#FF9E4A",
+                                   Polydendrocyte = "#9467BD",
+                                   Astrocyte = "#8C564B",
+                                   Ependymal = "#9EDAE5",
+                                   Microglia = "#17BECF",
+                                   Mural = "#1F77B4"))
+
+
+row_ha <- rowAnnotation(n = anno_barplot(as.numeric(n), 
+                                         gp = gpar(fill = "navy"), 
+                                         border = FALSE),
+                        class = neuron_pops,
+                        population = cluster_pops_rev,
+                        show_annotation_name = FALSE,
+                        col = c(pop_markers,colors_neurons))
+
+
+hm_mat <- scale(t(do.call(cbind, lapply(cell_idx, function(i) rowMeans(dat[markers_all, i])))))
+
+hm <- ComplexHeatmap::Heatmap(matrix = hm_mat,
+                              cluster_rows = FALSE,
+                              cluster_columns = FALSE,
+                              bottom_annotation = col_ha,
+                              right_annotation = row_ha,
+                              column_split = marker_labels,
+                              column_title = NULL,
+                              row_split = cluster_pops_rev,
+                              row_title = NULL,
+                              rect_gp = gpar(col = "gray50", lwd = 0.5))
+
+
+pdf(here("plots","ComplexHeatmap_figure1.pdf"))
+hm
+dev.off()
 
