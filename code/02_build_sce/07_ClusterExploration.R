@@ -2,6 +2,7 @@
 #cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/
 
 library(SingleCellExperiment)
+library(ComplexHeatmap)
 library(ggplot2)
 library(scater)
 library(dplyr)
@@ -361,7 +362,6 @@ hm <- ComplexHeatmap::Heatmap(matrix = hm_mat,
                               bottom_annotation = col_ha,
                               right_annotation = row_ha,
                               column_split = marker_labels,
-                              #row_order = names(cluster_pops_rev),
                               row_split = cluster_pops_rev,
                               row_title = NULL,
                               rect_gp = gpar(col = "gray50", lwd = 0.5))
@@ -378,11 +378,11 @@ dev.off()
 splitit <- function(x) split(seq(along = x), x)
 
 
-LS_A <- subset(markers_1vALL_enrich_Final,subset=(cellType.target == "LS_Inh_A"))[1:50,"gene_name"]
-LS_B <- subset(markers_1vALL_enrich_Final,subset=(cellType.target == "LS_Inh_B"))[1:50,"gene_name"]
-LS_G <- subset(markers_1vALL_enrich_Final,subset=(cellType.target == "LS_Inh_G"))[1:50,"gene_name"]
-LS_I <- subset(markers_1vALL_enrich_Final,subset=(cellType.target == "LS_Inh_I"))[1:50,"gene_name"]
 
+sce_neuronal <- sce[,sce$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
+                                               "MS_Inh_A","MS_Inh_E","MS_Inh_H","MS_Excit_A",
+                                               "Sept_Inh_D","Sept_Inh_F","Str_Inh_A","Str_Inh_B",
+                                               "Excit_A","Excit_B")]
 
 
 sce_neuronal
@@ -413,63 +413,84 @@ dim(dat)
 markers_all <- c("TRPC4","DGKG", #Broad LS
                  "GPR26","COL25A1", #LS A
                  "MYO5B","FREM2", #LS B
-                 "HDC","OR8A1", #LS G
+                 "HDC","OPRM1", #LS G
                  "SCML4","TMEM215", #LS I 
                  "ELAVL2","ELAVL4",#Broad MS
-                 "CHAT","KIT","SST",
-                 "SLC17A6","SLC17A7")
+                 "TACR1", #MS SUB
+                 "FXYD6","GRIN2D", "KCNC2",#Septal
+                 "CHAT","KIT","SST","CCK","VIP",#Interneuronal. 
+                 "RARB","BCL11B", #Broad striatal 
+                 "ISL1","FOXP2","DRD1","EBF1","DRD2","PENK",#MSN markers
+                 "SLC17A7","SLC17A6") #Excitatory
 
 #marker labels
-marker_labels <- c(rep("LS",10),
-                   rep("MS",2),
-                   rep("Interneuron",3),
+marker_labels <- c(rep("LS-Broad",2),
+                   rep("LS-subclusters",8),
+                   rep("MS-Broad",3),
+                   rep("Septal",3),
+                   rep("Interneuron",5),
+                   rep("Striatal",2),
+                   rep("MSN",6),
                    rep("Excitatory",2))
 
 marker_labels <- factor(x = marker_labels,
-                        levels = c("LS","MS","Interneuron","Excitatory"))
+                        levels = c("LS-Broad","LS-subclusters","MS-Broad","Septal",
+                                   "Interneuron","Striatal","MSN","Excitatory"))
 
-colors_markers <- list(marker = c(LS = "#FF9E4A",
-                                  MS = "#9EDAE5",
+colors_markers <- list(marker = c(`LS-Broad` = "#FF9E4A",
+                                  `LS-subclusters`= "#D62728",
+                                  `MS-Broad` = "#9EDAE5",
+                                  Septal = "#17BECF",
                                   Interneuron = "#9467BD",
-                                  Excitatory = "#98DF8A"))
+                                  Excitatory = "#98DF8A",
+                                  Striatal = "#8C564B",
+                                  MSN = "#1F77B4"))
 
 col_ha <- ComplexHeatmap::columnAnnotation(marker = marker_labels,
                                            show_annotation_name = FALSE,
                                            show_legend = FALSE,
                                            col = colors_markers)
 
+col_ha_legend <- ComplexHeatmap::columnAnnotation(marker = marker_labels,
+                                                  show_annotation_name = TRUE,
+                                                  show_legend = TRUE,
+                                                  col = colors_markers)
+
+
 # ###########set up rows for heatmap. 
 # # cluster labels
-# cluster_pops <- list(LS = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I"),
-#                      MS = c("MS_Inh_A","MS_Inh_E","MS_Inh_H","MS_Excit_A"),
-#                      Sept = c("Sept_Inh_D","Sept_Inh_F"),
-#                      Str = c("Str_Inh_A","Str_Inh_B"),
-#                      Excit = c("MS_Excit_A","Excit_A","Excit_B"))
+cluster_pops <- list(LS = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I"),
+                     MS = c("MS_Inh_A","MS_Inh_E","MS_Inh_H"),
+                     Sept = c("Sept_Inh_D","Sept_Inh_F"),
+                     Str = c("Str_Inh_A","Str_Inh_B"),
+                     Excit = c("MS_Excit_A","Excit_A","Excit_B"))
 # # cluster labels order
-# cluster_pops_order <- unname(unlist(cluster_pops))
-# 
-# # swap values and names of list
-# cluster_pops_rev <- rep(names(cluster_pops), 
-#                         times = sapply(cluster_pops, length))
-# names(cluster_pops_rev) <- unname(unlist(cluster_pops))
-# cluster_pops_rev <- cluster_pops_rev[as.character(sort(cluster_pops_order))]
-# cluster_pops_rev <- factor(cluster_pops_rev, levels = names(cluster_pops))
-# 
-# n <- table(sce_neuronal$CellType.Final)
-# 
-# #row annotation dataframe. 
-# # row annotation
-# library(ComplexHeatmap)
-# pop_markers <- list(population = c(LS = "#FF9E4A",
-#                                    Interneuron = "#9467BD"))
-# 
-# 
-# row_ha <- rowAnnotation(n = anno_barplot(as.numeric(n), 
-#                                          gp = gpar(fill = "navy"), 
-#                                          border = FALSE),
-#                         population = cluster_pops_rev,
-#                         show_annotation_name = FALSE,
-#                         col = pop_markers)
+cluster_pops_order <- unname(unlist(cluster_pops))
+
+# swap values and names of list
+cluster_pops_rev <- rep(names(cluster_pops),
+                        times = sapply(cluster_pops, length))
+names(cluster_pops_rev) <- unname(unlist(cluster_pops))
+cluster_pops_rev <- cluster_pops_rev[as.character(sort(cluster_pops_order))]
+cluster_pops_rev <- factor(cluster_pops_rev, levels = names(cluster_pops))
+
+n <- table(sce_neuronal$CellType.Final)
+
+#row annotation dataframe.
+# row annotation
+pop_markers <- list(population = c(LS = "#FF9E4A",
+                                   MS = "#9EDAE5",
+                                   Sept = "#9467BD",
+                                   Str = "#98DF8A",
+                                   Excit = "#1F77B4"))
+
+
+row_ha <- rowAnnotation(n = anno_barplot(as.numeric(n),
+                                         gp = gpar(fill = "navy"),
+                                         border = FALSE),
+                        population = cluster_pops_rev,
+                        show_annotation_name = FALSE,
+                        col = pop_markers)
 
 
 hm_mat <- scale(t(do.call(cbind, lapply(cell_idx, function(i) rowMeans(dat[markers_all, i])))))
@@ -477,21 +498,42 @@ hm_mat <- scale(t(do.call(cbind, lapply(cell_idx, function(i) rowMeans(dat[marke
 
 hm <- ComplexHeatmap::Heatmap(matrix = hm_mat,
                               name = "centered,scaled",
-                              column_title = "General cell class marker \ngene expression across clusters",
+                              column_title = "Marker gene expression\n across neuronal clusters",
                               column_title_gp = gpar(fontface = "bold"),
                               cluster_rows = FALSE,
                               cluster_columns = FALSE,
                               bottom_annotation = col_ha,
-                              #right_annotation = row_ha,
-                              column_split = marker_labels)
-                              #row_split = cluster_pops_rev,
-                              #row_title = NULL,
-                              #rect_gp = gpar(col = "gray50", lwd = 0.5))
+                              right_annotation = row_ha,
+                              column_split = marker_labels,
+                              row_split = cluster_pops_rev,
+                              row_title = NULL,
+                              rect_gp = gpar(col = "gray50", lwd = 0.5))
 
 
-pdf(here("plots","ComplexHeatmap_Neuronal_cell_class_markers.pdf"))
+pdf(here("plots","ComplexHeatmap_Neuronal_cell_class_markers.pdf"),height = 10,width = 10)
 hm
 dev.off()
+
+
+#####Heatmap with legend. 
+hm <- ComplexHeatmap::Heatmap(matrix = hm_mat,
+                              name = "centered,scaled",
+                              column_title = "Marker gene expression\n across neuronal clusters",
+                              column_title_gp = gpar(fontface = "bold"),
+                              cluster_rows = FALSE,
+                              cluster_columns = FALSE,
+                              bottom_annotation = col_ha_legend,
+                              right_annotation = row_ha,
+                              column_split = marker_labels,
+                              row_split = cluster_pops_rev,
+                              row_title = NULL,
+                              rect_gp = gpar(col = "gray50", lwd = 0.5))
+
+
+pdf(here("plots","ComplexHeatmap_Neuronal_cell_class_markers_with_Legend.pdf"))
+hm
+dev.off()
+
 
 
 
