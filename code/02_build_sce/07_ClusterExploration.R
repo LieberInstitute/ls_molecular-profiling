@@ -312,8 +312,9 @@ cluster_pops_order <- unname(unlist(cluster_pops))
 cluster_pops_rev <- rep(names(cluster_pops), 
                         times = sapply(cluster_pops, length))
 names(cluster_pops_rev) <- unname(unlist(cluster_pops))
-cluster_pops_rev <- cluster_pops_rev[as.character(sort(cluster_pops_order))]
 cluster_pops_rev <- factor(cluster_pops_rev, levels = names(cluster_pops))
+# cluster_pops_rev <- cluster_pops_rev[as.character(sort(cluster_pops_order))]
+# cluster_pops_rev <- factor(cluster_pops_rev, levels = names(cluster_pops))
 
 # second set of cluster labels
 neuron_pops <- ifelse(cluster_pops_rev %in% c("Excitatory", "Inhibitory"),
@@ -399,7 +400,6 @@ sce_neuronal
 # reducedDimNames(18): GLMPCA_approx UMAP_15 ... tSNE_mnn_25 tSNE_mnn_50
 # mainExpName: NULL
 # altExpNames(0):
-
 
 cell_idx <- splitit(sce_neuronal$CellType.Final)
 dat <- as.matrix(logcounts(sce_neuronal))
