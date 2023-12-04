@@ -44,6 +44,28 @@ load(here("processed-data","markers_pairwise_list_CellTypeFinal_20CellTypes.rda"
 #From http://research.libd.org/DeconvoBuddies/articles/DeconvoBuddies.html#using-meanratio-to-find-cell-type-markers: 
 # "To select genes specific for each cell type, you can evaluate the mean ratio for each gene x each cell type, where 
 # mean ratio = mean(Expression of target cell type)/mean(Expression of highest non-target cell type)"
+mean_ratios_CellTypeFinal <- get_mean_ratio2(sce,
+                                             cellType_col = "CellType.Final")
 
+#Check out structure and first couple lines of the dataframe. 
+dim(mean_ratios_CellTypeFinal)
+# [1] 89642     8
 
+mean_ratios_CellTypeFinal[1:5,1:8]
+# A tibble: 5 × 8
+# gene    cellType.target mean.target cellType  mean ratio rank_ratio anno_ratio
+# <chr>   <chr>                 <dbl> <chr>    <dbl> <dbl>      <int> <chr>     
+# 1 ENSG00… LS_Inh_A              0.807 LS_Inh_G 0.372  2.17          1 LS_Inh_A/…
+# 2 ENSG00… LS_Inh_A              2.00  LS_Inh_B 1.09   1.83          2 LS_Inh_A/…
+# 3 ENSG00… LS_Inh_A              1.06  Excit_A  0.593  1.78          3 LS_Inh_A/…
+# 4 ENSG00… LS_Inh_A              4.21  MS_Inh_E 2.38   1.77          4 LS_Inh_A/…
+# 5 ENSG00… LS_Inh_A              1.87  MS_Inh_A 1.07   1.75          5 LS_Inh_A/…
 
+#Add the gene symbol. 
+#The get_mean_ratio2() function has an add_symbol flag, but using that didn't add the symbol.  
+mean_ratios_CellTypeFinal_symbol <- merge(x = as.data.frame(mean_ratios_CellTypeFinal),
+                                          y = as.data.frame(rowData(sce)[,c("gene_id","gene_name")]),
+                                          by.x = "gene",
+                                          by.y = "gene_id")
+dim(mean_ratios_CellTypeFinal_symbol)
+# [1] 89642     9
