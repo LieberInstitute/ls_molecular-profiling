@@ -5,6 +5,7 @@
 library(SingleCellExperiment)
 library(DeconvoBuddies)
 library(sessioninfo)
+library(ggplot2)
 library(here)
 
 #load the SingleCellExperiment object
@@ -44,28 +45,55 @@ load(here("processed-data","markers_pairwise_list_CellTypeFinal_20CellTypes.rda"
 #From http://research.libd.org/DeconvoBuddies/articles/DeconvoBuddies.html#using-meanratio-to-find-cell-type-markers: 
 # "To select genes specific for each cell type, you can evaluate the mean ratio for each gene x each cell type, where 
 # mean ratio = mean(Expression of target cell type)/mean(Expression of highest non-target cell type)"
+
+#Source code for the get_mean_ratio2 function shows that the gene symbol column needs to be called "Symbol" 
+#Currently called "gene_name" so change it. 
+colnames(rowData(sce))[5] <- "Symbol"
+
+
+#Calculate the mean ratio. 
 mean_ratios_CellTypeFinal <- get_mean_ratio2(sce,
-                                             cellType_col = "CellType.Final")
+                                             cellType_col = "CellType.Final",
+                                             add_symbol = TRUE)
 
 #Check out structure and first couple lines of the dataframe. 
 dim(mean_ratios_CellTypeFinal)
-# [1] 89642     8
+#[1] 89642     9
 
-mean_ratios_CellTypeFinal[1:5,1:8]
-# A tibble: 5 × 8
-# gene    cellType.target mean.target cellType  mean ratio rank_ratio anno_ratio
-# <chr>   <chr>                 <dbl> <chr>    <dbl> <dbl>      <int> <chr>     
-# 1 ENSG00… LS_Inh_A              0.807 LS_Inh_G 0.372  2.17          1 LS_Inh_A/…
-# 2 ENSG00… LS_Inh_A              2.00  LS_Inh_B 1.09   1.83          2 LS_Inh_A/…
-# 3 ENSG00… LS_Inh_A              1.06  Excit_A  0.593  1.78          3 LS_Inh_A/…
-# 4 ENSG00… LS_Inh_A              4.21  MS_Inh_E 2.38   1.77          4 LS_Inh_A/…
-# 5 ENSG00… LS_Inh_A              1.87  MS_Inh_A 1.07   1.75          5 LS_Inh_A/…
+mean_ratios_CellTypeFinal[1:5,]
+# # A tibble: 5 × 9
+# gene        cellType.target mean.target cellType  mean ratio rank_ratio Symbol
+# <chr>       <chr>                 <dbl> <chr>    <dbl> <dbl>      <int> <chr> 
+#     1 ENSG000000… LS_Inh_A              0.807 LS_Inh_G 0.372  2.17          1 SLC12…
+# 2 ENSG000001… LS_Inh_A              2.00  LS_Inh_B 1.09   1.83          2 SLC27…
+# 3 ENSG000000… LS_Inh_A              1.06  Excit_A  0.593  1.78          3 CROT  
+# 4 ENSG000001… LS_Inh_A              4.21  MS_Inh_E 2.38   1.77          4 COL25…
+# 5 ENSG000002… LS_Inh_A              1.87  MS_Inh_A 1.07   1.75          5 EPHA5…
+# ℹ 1 more variable: anno_ratio <chr>
 
-#Add the gene symbol. 
-#The get_mean_ratio2() function has an add_symbol flag, but using that didn't add the symbol.  
-mean_ratios_CellTypeFinal_symbol <- merge(x = as.data.frame(mean_ratios_CellTypeFinal),
-                                          y = as.data.frame(rowData(sce)[,c("gene_id","gene_name")]),
-                                          by.x = "gene",
-                                          by.y = "gene_id")
-dim(mean_ratios_CellTypeFinal_symbol)
-# [1] 89642     9
+
+#Plot the top 10 markers of the 
+for(i in unique(CellTypeFinal_top100$cellType.target)){
+    print(i)
+    top_plot <- plot_marker_express(sce       = sce,
+                                    stats     = mean_ratios_CellTypeFinal,
+                                    cell_type = i,
+                                    n_genes   = 10,
+                                    rank_col  = "rank_ratio",
+                                    anno_col  = "anno_ratio",
+                                    cellType_col = "CellType.Final",
+                                    color_pal = new_cluster_cols)
+    ggsave(plot = top_plot,
+           filename = here("plots",
+                           "mean_ratio_plots",
+                           "CellType_Final_plots",
+                           paste0(i,"_Top10_meanratio.pdf")
+                           ),
+           height = 12,
+           width = 8)
+}
+
+
+
+
+
