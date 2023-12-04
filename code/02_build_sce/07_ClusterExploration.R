@@ -662,5 +662,16 @@ ggsave(plot = MYO5B_featureplot,
        filename = here("plots","Expression_plots","myo5b_featureplot.pdf"))
 
 
+#### tSNE with new colors
+tSNE_cbFriendly <- plotReducedDim(object = sce,
+                                  dimred = "tSNE_mnn_15",
+                                  colour_by = "CellType.Final",
+                                  text_by = "CellType.Final") +
+    theme(legend.position = "none") +
+    scale_color_manual(values = new_cluster_cols)
+ggsave(filename = here("plots","tSNE_colorblind_friendly.pdf"),
+       plot = tSNE_cbFriendly,
+       height = 8,width = 8)
+
 
 
