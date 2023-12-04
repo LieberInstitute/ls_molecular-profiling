@@ -50,7 +50,6 @@ load(here("processed-data","markers_pairwise_list_CellTypeFinal_20CellTypes.rda"
 #Currently called "gene_name" so change it. 
 colnames(rowData(sce))[5] <- "Symbol"
 
-
 #Calculate the mean ratio. 
 mean_ratios_CellTypeFinal <- get_mean_ratio2(sce,
                                              cellType_col = "CellType.Final",
@@ -92,6 +91,29 @@ for(i in unique(CellTypeFinal_top100$cellType.target)){
            height = 12,
            width = 8)
 }
+
+#Use the mean ratio method to identify markers of region specific neuronal populations. 
+#To do this first subset to neuronal clusters only. 
+#Going to leave out Excit_A and Excit_B because I am not totally sure where they are coming from. 
+sce_neuronal <- sce[,sce$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
+                                               "MS_Inh_A","MS_Inh_E","MS_Inh_H","MS_Excit_A",
+                                               "Sept_Inh_D","Sept_Inh_F","Str_Inh_A","Str_Inh_B",
+                                               "Excit_A","Excit_B")]
+
+#Make several columns to facilitate region specific vs all others. 
+#Lateral Septum
+sce_neuronal$Lateral_septum <- ifelse(sce_neuronal$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I"),
+                                      "LS",
+                                      "Other")
+
+#Calculate the mean ratio. Focus on lateral septum 
+mean_ratios_LS <- get_mean_ratio2(sce_neuronal,
+                                  cellType_col = "Lateral_septum",
+                                  add_symbol = TRUE)
+
+#Top 100 LS genes
+LS_broad_top100 <- subset(mean_ratios_LS,subset=(cellType.target == "LS" & rank_ratio %in% 1:100))
+
 
 
 
