@@ -251,15 +251,15 @@ dim(dat)
 
 ############set up columns for heatmaps. 
 #Set marker genes to be included on the heatmap.
-markers_all <- c("RBFOX3","SNAP25","SYT1",#Pan-neuronal
-                 "GAD1","GAD2", "SLC32A1", #Inhibitory
-                 "SLC17A6","SLC17A7", #Excitatory
-                 "MOBP","MBP", #Oligodendrocyte
-                 "PDGFRA","CSPG4", #Polydendrocyte
-                 "GFAP","SLC1A2", #Astrocyte
-                 "CFAP44","FOXJ1",#Ependymal
-                 "TMEM119","C3", #Microglia
-                 "RGS5","CLDN5") #Mural
+markers_all <- c("RBFOX3","SNAP25","SYT1",#Pan-neuronal 3
+                 "GAD1","GAD2", "SLC32A1", #Inhibitory 3
+                 "SLC17A7","SLC17A6", #Excitatory 2
+                 "MOBP","MBP", #Oligodendrocyte 2
+                 "PDGFRA","CSPG4", #Polydendrocyte 2
+                 "GFAP","SLC1A2", #Astrocyte 2
+                 "CFAP44","FOXJ1",#Ependymal 2
+                 "TMEM119","C3", #Microglia 2
+                 "RGS5","CLDN5") #Mural 2
 
 #marker labels
 marker_labels <- c(rep("neuronal",3),
@@ -306,20 +306,21 @@ cluster_pops <- list(Inhibitory = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
                      Mural = "Mural")
 
 # cluster labels order
+# # cluster labels order
 cluster_pops_order <- unname(unlist(cluster_pops))
 
 # swap values and names of list
-cluster_pops_rev <- rep(names(cluster_pops), 
+cluster_pops_rev <- rep(names(cluster_pops),
                         times = sapply(cluster_pops, length))
 names(cluster_pops_rev) <- unname(unlist(cluster_pops))
+cluster_pops_rev <- cluster_pops_rev[as.character(sort(cluster_pops_order))]
 cluster_pops_rev <- factor(cluster_pops_rev, levels = names(cluster_pops))
-# cluster_pops_rev <- cluster_pops_rev[as.character(sort(cluster_pops_order))]
-# cluster_pops_rev <- factor(cluster_pops_rev, levels = names(cluster_pops))
 
 # second set of cluster labels
-neuron_pops <- ifelse(cluster_pops_rev %in% c("Excitatory", "Inhibitory"),
+neuron_pops <- ifelse(cluster_pops_rev %in% c("Inhibitory","Excitatory"),
                       "Neuronal",
                       "Non-neuronal")
+
 neuron_pops <- factor(x = neuron_pops,levels = c("Neuronal","Non-neuronal"))
 
 
@@ -367,6 +368,7 @@ hm <- ComplexHeatmap::Heatmap(matrix = hm_mat,
                               rect_gp = gpar(col = "gray50", lwd = 0.5))
 
 
+
 pdf(here("plots","ComplexHeatmap_General_cell_class_markers.pdf"))
 hm
 dev.off()
@@ -376,8 +378,6 @@ dev.off()
 ###################################################
 #Code from https://github.com/LieberInstitute/septum_lateral/blob/main/snRNAseq_mouse/code/02_analyses/Complex%20Heatmap.R
 splitit <- function(x) split(seq(along = x), x)
-
-
 
 sce_neuronal <- sce[,sce$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
                                                "MS_Inh_A","MS_Inh_E","MS_Inh_H","MS_Excit_A",
@@ -417,7 +417,7 @@ markers_all <- c("TRPC4","DGKG","CRHR2",#Broad LS
                  "ELAVL2","ELAVL4",#Broad MS
                  "TACR1", #MS SUB
                  "FXYD6","GRIN2D", "KCNC2",#Septal
-                 "CHAT","KIT","SST","CCK","VIP",#Interneuronal. 
+                 "CHAT","KIT","CCK","VIP","SST",#Interneuronal. 
                  "RARB","BCL11B", #Striatal 
                  "ISL1","FOXP2", "DRD1","EBF1","DRD2","PENK",#MSN markers
                  "SLC17A7","SLC17A6") #Excitatory
@@ -533,11 +533,7 @@ hm
 dev.off()
 
 
-
 #####Violin plots for figure 2. 
-load(here("processed-data","Final_CellTypes_colors.rda"),verbose = TRUE)
-
-
 sce_neuronal$CellType.Final <- factor(sce_neuronal$CellType.Final,
                                       levels = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
                                                  "MS_Inh_A","MS_Inh_E","MS_Inh_H","MS_Excit_A",
@@ -559,7 +555,7 @@ vln_fig2 <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = cluster_cols) +
+    scale_color_manual(values  = new_cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 
@@ -578,7 +574,7 @@ trpc4_vln <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = cluster_cols) +
+    scale_color_manual(values  = new_cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 ggsave(plot = trpc4_vln,
@@ -594,7 +590,7 @@ fxyd6_vln <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = cluster_cols) +
+    scale_color_manual(values  = new_cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 ggsave(plot = fxyd6_vln,
@@ -611,7 +607,7 @@ OPRM1_vln <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = cluster_cols) +
+    scale_color_manual(values  = new_cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 ggsave(plot = OPRM1_vln,
@@ -627,7 +623,7 @@ FREM2_vln <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = cluster_cols) +
+    scale_color_manual(values  = new_cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 ggsave(plot = FREM2_vln,
@@ -644,7 +640,7 @@ MYO5B_vln <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = cluster_cols) +
+    scale_color_manual(values  = new_cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 ggsave(plot = MYO5B_vln,
