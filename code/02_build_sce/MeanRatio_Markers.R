@@ -6,6 +6,7 @@ library(SingleCellExperiment)
 library(DeconvoBuddies)
 library(sessioninfo)
 library(ggplot2)
+library(scater)
 library(here)
 
 #load the SingleCellExperiment object
@@ -91,6 +92,25 @@ for(i in unique(mean_ratios_CellTypeFinal$cellType.target)){
            width = 8)
 }
 
+#plot the top 10 marker genes for each cluster. 
+for(i in unique(mean_ratios_CellTypeFinal$cellType.target)){
+    x <- subset(mean_ratios_CellTypeFinal,subset=(cellType.target == i))
+    for(l in 1:10){
+        y <- plotReducedDim(object = sce,
+                            dimred = "tSNE_mnn_15",
+                            colour_by = as.character(x[l,"Symbol"]),
+                            swap_rownames = "Symbol") +
+            scale_color_gradientn(colours = c("lightgrey","orange","red"))
+        ggsave(filename = here("plots",
+                               "mean_ratio_plots",
+                               "CellType_Final_plots",
+                               "Feature_Plots",
+                               paste(i,x[l,"Symbol"],"FeaturePlot_tSNE.pdf",sep = "_")),
+               plot = y,
+               height = 8,
+               width = 8)
+    }
+}
 
 #Subset the top 100 by each cluster. 
 mean_ratios_CTF_top100 <- subset(mean_ratios_CellTypeFinal,subset=(rank_ratio %in% 1:100))
@@ -98,6 +118,8 @@ mean_ratios_CTF_top100 <- subset(mean_ratios_CellTypeFinal,subset=(rank_ratio %i
 #Write out the file. 
 write.csv(x = mean_ratios_CTF_top100,
           file = here("processed-data","mean_ratios_top100_CellTypeFinal.csv"))
+
+
 
 #Use the mean ratio method to identify markers of region specific neuronal populations. 
 #To do this first subset to neuronal clusters only. 
@@ -143,5 +165,24 @@ ggsave(plot = top_LS_plot,
        width = 8)
 
 
+#plot the top 10 marker genes for each cluster. 
+for(i in unique(mean_ratios_CellTypeFinal$cellType.target)){
+    x <- subset(mean_ratios_CellTypeFinal,subset=(cellType.target == i))
+    for(l in 1:10){
+        y <- plotReducedDim(object = sce,
+                            dimred = "tSNE_mnn_15",
+                            colour_by = as.character(x[l,"Symbol"]),
+                            swap_rownames = "Symbol") +
+            scale_color_gradientn(colours = c("lightgrey","orange","red"))
+        ggsave(filename = here("plots",
+                               "mean_ratio_plots",
+                               "CellType_Final_plots",
+                               "Feature_Plots",
+                               paste(i,x[l,"Symbol"],"FeaturePlot_tSNE.pdf",sep = "_")),
+               plot = y,
+               height = 8,
+               width = 8)
+    }
+}
 
 
