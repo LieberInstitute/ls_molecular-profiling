@@ -57,7 +57,7 @@ mean_ratios_CellTypeFinal <- get_mean_ratio2(sce,
 
 #Check out structure and first couple lines of the dataframe. 
 dim(mean_ratios_CellTypeFinal)
-#[1] 89642     9
+# [1] 89642     9
 
 mean_ratios_CellTypeFinal[1:5,]
 # # A tibble: 5 × 9
@@ -68,11 +68,10 @@ mean_ratios_CellTypeFinal[1:5,]
 # 3 ENSG000000… LS_Inh_A              1.06  Excit_A  0.593  1.78          3 CROT  
 # 4 ENSG000001… LS_Inh_A              4.21  MS_Inh_E 2.38   1.77          4 COL25…
 # 5 ENSG000002… LS_Inh_A              1.87  MS_Inh_A 1.07   1.75          5 EPHA5…
-# ℹ 1 more variable: anno_ratio <chr>
+# # ℹ 1 more variable: anno_ratio <chr>
 
-
-#Plot the top 10 markers of the 
-for(i in unique(CellTypeFinal_top100$cellType.target)){
+#Plot the top 10 markers of each cluster. 
+for(i in unique(mean_ratios_CellTypeFinal$cellType.target)){
     print(i)
     top_plot <- plot_marker_express(sce       = sce,
                                     stats     = mean_ratios_CellTypeFinal,
@@ -91,6 +90,14 @@ for(i in unique(CellTypeFinal_top100$cellType.target)){
            height = 12,
            width = 8)
 }
+
+
+#Subset the top 100 by each cluster. 
+mean_ratios_CTF_top100 <- subset(mean_ratios_CellTypeFinal,subset=(rank_ratio %in% 1:100))
+
+#Write out the file. 
+write.csv(x = mean_ratios_CTF_top100,
+          file = here("processed-data","mean_ratios_top100_CellTypeFinal.csv"))
 
 #Use the mean ratio method to identify markers of region specific neuronal populations. 
 #To do this first subset to neuronal clusters only. 
@@ -114,7 +121,26 @@ mean_ratios_LS <- get_mean_ratio2(sce_neuronal,
 #Top 100 LS genes
 LS_broad_top100 <- subset(mean_ratios_LS,subset=(cellType.target == "LS" & rank_ratio %in% 1:100))
 
+#Write out the file. 
+write.csv(x = LS_broad_top100,
+          file = here("processed-data","mean_ratios_top100_LS-broad.csv"))
 
+#Plot top 10 broad LS
+top_LS_plot <- plot_marker_express(sce          = sce_neuronal,
+                                   stats        = LS_broad_top100,
+                                   cell_type    = "LS",
+                                   n_genes      = 10,
+                                   rank_col     = "rank_ratio",
+                                   anno_col     = "anno_ratio",
+                                   cellType_col = "Lateral_septum")
+
+ggsave(plot = top_LS_plot,
+       filename = here("plots",
+                       "mean_ratio_plots",
+                       "Lateral_Septum_Broad",
+                       "LS-Broad_Top10_meanratio.pdf"),
+       height = 12,
+       width = 8)
 
 
 
