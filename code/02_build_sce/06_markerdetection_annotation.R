@@ -62,10 +62,15 @@ ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
 
 #Plot these genes on top of the tSNE
 #Add several additional markers of MSNs. 
-for(i in c(genes,"FOXP2","PDE1B","KIAA1211L","PDE2A","SLIT3","NGEF")){
+for(i in c(genes,
+           "RXFP1","EBF1","PDYN", "CHST9","SEMA5B","TAC1","STXBP6",#Additional D1 markers including D1 islands. 
+           "DRD2","PENK","ADORA2A", #D2 markers. 
+           "CRYM",#Medial dorsal Striatum marker
+           "DLK1",#ventral medial dorsal striaum 
+           "FOXP2","PDE1B","KIAA1211L","PDE2A","SLIT3","NGEF")){
     print(i)
     x <- plotReducedDim(object = sce,
-                        dimred = "tSNE_mnn_15",
+                        dimred = "tSNE_mnn_50",
                         colour_by = i,
                         swap_rownames = "gene_name") +
         scale_color_gradientn(colours = c("lightgrey","orange","red"))
@@ -98,15 +103,17 @@ sce$CellType_k_20_louvain <- factor(sce$CellType_k_20_louvain,
                                                "Astrocyte","Ependymal","Microglia","Mural"))
 
 #Annotate the tSNE
-cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType_k_20_louvain)),c("#FF0000", "#00FF00", "#0000FF"))
+cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType_k_20_louvain)),
+                                          c("#D81B60", "#1E88E5","#FFC107","#009E73"))
 names(cluster_cols) <- unique(sce$CellType_k_20_louvain)
 
 annotated_tSNE <- plotReducedDim(object = sce,
-                                 dimred = "tSNE_mnn_15",
+                                 dimred = "tSNE_mnn_50",
                                  colour_by = "CellType_k_20_louvain",
                                  text_by = "CellType_k_20_louvain") +
-    scale_color_manual(values = cluster_cols)
-ggsave(filename = here("plots","Dim_Red","tSNE_mnn_15_annotated_CellType_k20_louvain.pdf"),
+    scale_color_manual(values = cluster_cols) +
+    theme(legend.position = "none")
+ggsave(filename = here("plots","Dim_Red","tSNE_mnn_50_annotated_CellType_k20_louvain.pdf"),
        plot = annotated_tSNE)
 
 ########Calculate modularity scores.
@@ -151,32 +158,33 @@ markers_1vALL_enrich <- findMarkers_1vAll(sce,
                                           assay_name = "logcounts", 
                                           cellType_col = "CellType_k_20_louvain", 
                                           mod = "~Sample")
-# Sept_Inh_A - '2023-11-08 09:41:12.810285
-# Str_Inh_A - '2023-11-08 09:41:29.786506
-# Excit_A - '2023-11-08 09:41:46.657498
-# Polydendrocyte - '2023-11-08 09:42:03.591051
-# Microglia - '2023-11-08 09:42:20.535435
-# Sept_Inh_B - '2023-11-08 09:42:37.437445
-# Oligo_A - '2023-11-08 09:42:54.335511
-# Ependymal - '2023-11-08 09:43:11.236241
-# Oligo_B - '2023-11-08 09:43:28.417719
-# Str_Inh_B - '2023-11-08 09:43:45.380726
-# Sept_Inh_C - '2023-11-08 09:44:02.623924
-# Sept_Inh_D - '2023-11-08 09:44:19.597667
-# Sept_Inh_E - '2023-11-08 09:44:36.583435
-# Str_Inh_C - '2023-11-08 09:44:53.842077
-# Sept_Inh_F - '2023-11-08 09:45:11.948174
-# Sept_Excit_A - '2023-11-08 09:45:29.059849
-# Excit_B - '2023-11-08 09:45:45.996569
-# Sept_Inh_G - '2023-11-08 09:46:02.548759
-# Mural - '2023-11-08 09:46:19.526886
-# Astrocyte - '2023-11-08 09:46:36.846822
-# Sept_Inh_H - '2023-11-08 09:46:53.798798
-# Sept_Inh_I - '2023-11-08 09:47:10.814651
-# Oligo_C - '2023-11-08 09:47:27.890011
-# Str_Inh_D - '2023-11-08 09:47:44.854139
-# Building Table - 2023-11-08 09:48:02.068503
+# Sept_Inh_A - '2023-12-07 19:28:59.685828
+# Str_Inh_A - '2023-12-07 19:29:07.13502
+# Excit_A - '2023-12-07 19:29:14.599377
+# Polydendrocyte - '2023-12-07 19:29:22.050117
+# Microglia - '2023-12-07 19:29:29.537919
+# Sept_Inh_B - '2023-12-07 19:29:37.02985
+# Oligo_A - '2023-12-07 19:29:44.478281
+# Ependymal - '2023-12-07 19:29:51.926905
+# Oligo_B - '2023-12-07 19:29:59.37523
+# Str_Inh_B - '2023-12-07 19:30:06.866098
+# Sept_Inh_C - '2023-12-07 19:30:14.300814
+# Sept_Inh_D - '2023-12-07 19:30:21.751989
+# Sept_Inh_E - '2023-12-07 19:30:29.24515
+# Str_Inh_C - '2023-12-07 19:30:36.710745
+# Sept_Inh_F - '2023-12-07 19:30:44.155957
+# Sept_Excit_A - '2023-12-07 19:30:51.612917
+# Excit_B - '2023-12-07 19:30:59.06211
+# Sept_Inh_G - '2023-12-07 19:31:06.293763
+# Mural - '2023-12-07 19:31:13.774022
+# Astrocyte - '2023-12-07 19:31:21.2262
+# Sept_Inh_H - '2023-12-07 19:31:28.683
+# Sept_Inh_I - '2023-12-07 19:31:36.172743
+# Oligo_C - '2023-12-07 19:31:43.673966
+# Str_Inh_D - '2023-12-07 19:31:51.146161
+# Building Table - 2023-12-07 19:31:58.635063
 # ** Done! **
+
 
 #Add symbol information to the table
 #First change the ensembl gene id column to have same name as what is in rowData(sce)
@@ -191,7 +199,6 @@ save(markers_1vALL_df,file = here("processed-data","markers_1vAll_ttest_k_20_lou
 
 #Modularity scores suggest Str_Inh_A, Str_Inh_B, and Str_Inh_C are related. 
 #Check out their gene markers and see if their is significant overlap. 
-
 #DEGs: logFC>=0.5 & FDR<=0.001
 str_a <- subset(markers_1vALL_df,subset=(cellType.target == "Str_Inh_A" & logFC >= 0.5 & log.FDR < 0.001))
 str_c <- subset(markers_1vALL_df,subset=(cellType.target == "Str_Inh_C" & logFC >= 0.5 & log.FDR < 0.001))
@@ -211,7 +218,32 @@ length(intersect(str_a$gene_name,str_d$gene_name))
 # [1] 812
 length(intersect(str_c$gene_name,str_d$gene_name))
 # [1] 932
-#61-92% of DEGs are shared between these populations. Will merge these. 
+
+#subset for just striatal populations and plot some Drd1 and Drd2 marker genes. 
+#str_a,c, and d might not be separated well because they represent D1/D2 MSNs. 
+#These cells do have a ton of CRYM which is a known marker of the medial striatum. 
+str_vln <- plotExpression(object = sce[,sce$CellType_k_20_louvain %in% c("Str_Inh_A","Str_Inh_B","Str_Inh_C","Str_Inh_D")],
+               features = c("DRD1","TAC1","PDYN",#D1-MSN markers. 
+                            "OPRM1","SEMA5B", #Patch
+                            "CRYM", #MEDIAL DORSAL STRIATUM
+                            "DLK1", #VENTRAL MEDIAL DORSAL STRIAUM
+                            "STXBP6","RELN",
+                            "DRD2","ADORA2A","PENK",#Drd2 markers
+                            "RARB","PPP1R1B","BCL11B", #Striatum/MSN
+                            "TRPC4","DGKG","FREM2"), 
+               x = "CellType_k_20_louvain",
+               colour_by = "CellType_k_20_louvain",
+               ncol = 3,
+               swap_rownames = "gene_name") +
+    theme(axis.text.x = element_text(angle = 90,vjust = 1),legend.position = "none")
+ggsave(plot = str_vln,
+       filename = here("plots","Expression_plots","Striatal_markers_violin_plot.pdf"),
+       height = 12,width = 8)
+
+#Str_A Str_A-Drd1-MSN
+#Str_B Str_B_Drd1-Patch
+#Str_C Str_C_Drd2-MSN
+#Str_D Str_D_Drd1-Matrix
 ###############################
 
 ##################################################
