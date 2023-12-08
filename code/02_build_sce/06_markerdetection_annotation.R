@@ -253,19 +253,20 @@ ggsave(plot = str_vln,
 sce$CellType.Final <- as.character(sce$CellType_k_20_louvain)
 
 #Combine str_a,c,d and then combine the three oligo populations. 
-sce$CellType.Final[sce$CellType.Final %in% c("Str_Inh_A", "Str_Inh_C","Str_Inh_D")] <- "Str_Inh_A"
 sce$CellType.Final[sce$CellType.Final %in% c("Oligo_A", "Oligo_B","Oligo_C")] <- "Oligo"
 
 #Check out the tSNE
-cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType.Final)),c("#FF0000", "#00FF00", "#0000FF"))
+cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType.Final)),
+                                          c("#D81B60", "#1E88E5","#FFC107","#009E73"))
 names(cluster_cols) <- unique(sce$CellType.Final)
 tSNE_celltype_final <- plotReducedDim(object = sce,
-                                      dimred = "tSNE_mnn_15",
+                                      dimred = "tSNE_mnn_50",
                                       colour_by = "CellType.Final",
                                       text_by = "CellType.Final") +
-    scale_color_manual(values = cluster_cols)
+    scale_color_manual(values = cluster_cols) +
+    theme(legend.position = "none")
 ggsave(plot = tSNE_celltype_final,
-       filename = here("plots","Dim_Red","tSNE_mnn_15_20Clusters.pdf"))
+       filename = here("plots","Dim_Red","tSNE_mnn_50_22Clusters.pdf"))
 
 ###Begin annotation of Septal clusters. 
 #subset sce for just the septal clusters to investigate. 
@@ -273,11 +274,11 @@ sce_sept <- sce[,grep("Sept",sce$CellType.Final)]
 
 #Plot tSNE to ensure the subset worked. 
 tSNE_sept_only <- plotReducedDim(object = sce_sept,
-                                 dimred = "tSNE_mnn_1f5",
+                                 dimred = "tSNE_mnn_50",
                                  colour_by = "CellType.Final",
                                  text_by = "CellType.Final")
 ggsave(plot = tSNE_sept_only,
-       filename = here("plots","Dim_Red","tSNE_mnn_15_SeptOnly.pdf"))
+       filename = here("plots","Dim_Red","tSNE_mnn_50_SeptOnly.pdf"))
 
 
 #Septal violin plots
@@ -320,18 +321,23 @@ sce$CellType.Final[grep("Sept_Inh_E", sce$CellType.Final)] <- "MS_Inh_E"
 sce$CellType.Final[grep("Sept_Inh_G", sce$CellType.Final)] <- "LS_Inh_G"
 sce$CellType.Final[grep("Sept_Inh_H", sce$CellType.Final)] <- "MS_Inh_H"
 sce$CellType.Final[grep("Sept_Inh_I", sce$CellType.Final)] <- "LS_Inh_I"
-
+sce$CellType.Final[grep("Str_Inh_A", sce$CellType.Final)] <- "Str_Drd1-MSN"
+sce$CellType.Final[grep("Str_Inh_B", sce$CellType.Final)] <- "Str_Drd1-Patch"
+sce$CellType.Final[grep("Str_Inh_C", sce$CellType.Final)] <- "Str_Drd2-MSN"
+sce$CellType.Final[grep("Str_Inh_C", sce$CellType.Final)] <- "Str_Drd1-Matrix"
 
 #Plot the tSNE with final celltypes annotated. 
-cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType.Final)),c("#FF0000", "#00FF00", "#0000FF"))
+cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType.Final)),
+                                          c("#D81B60", "#1E88E5","#FFC107","#009E73"))
 names(cluster_cols) <- unique(sce$CellType.Final)
-tSNE_sept_only <- plotReducedDim(object = sce,
-                                 dimred = "tSNE_mnn_15",
-                                 colour_by = "CellType.Final",
-                                 text_by = "CellType.Final") +
-    scale_color_manual(values = cluster_cols)
-ggsave(plot = tSNE_sept_only,
-       filename = here("plots","Dim_Red","tSNE_mnn_15_Final_CellTypes.pdf"))
+tSNE_final <- plotReducedDim(object = sce,
+                             dimred = "tSNE_mnn_50",
+                             colour_by = "CellType.Final",
+                             text_by = "CellType.Final") +
+    scale_color_manual(values = cluster_cols) +
+    theme(legend.position = "none")
+ggsave(plot = tSNE_final,
+       filename = here("plots","Dim_Red","tSNE_mnn_50_Final_CellTypes.pdf"))
 
 #Save the cluster_cols vector as well (
 save(cluster_cols,file = here("processed-data","Final_CellTypes_colors.rda"))
@@ -348,27 +354,30 @@ markers_1vALL_enrich_Final <- findMarkers_1vAll(sce,
                                                 assay_name = "logcounts", 
                                                 cellType_col = "CellType.Final", 
                                                 mod = "~Sample")
-# LS_Inh_A - '2023-11-09 08:44:48.264284
-# Str_Inh_A - '2023-11-09 08:45:07.804005
-# Excit_A - '2023-11-09 08:45:27.281616
-# Polydendrocyte - '2023-11-09 08:45:46.946403
-# Microglia - '2023-11-09 08:46:06.185961
-# LS_Inh_B - '2023-11-09 08:46:25.81612
-# Oligo - '2023-11-09 08:46:45.220754
-# Ependymal - '2023-11-09 08:47:04.783594
-# Str_Inh_B - '2023-11-09 08:47:24.599634
-# MS_Inh_A - '2023-11-09 08:47:43.815873
-# Sept_Inh_D - '2023-11-09 08:48:03.196129
-# MS_Inh_E - '2023-11-09 08:48:23.233959
-# Sept_Inh_F - '2023-11-09 08:48:42.804301
-# MS_Excit_A - '2023-11-09 08:49:02.525566
-# Excit_B - '2023-11-09 08:49:22.217644
-# LS_Inh_G - '2023-11-09 08:49:41.288085
-# Mural - '2023-11-09 08:50:00.989209
-# Astrocyte - '2023-11-09 08:50:20.722238
-# MS_Inh_H - '2023-11-09 08:50:40.270978
-# LS_Inh_I - '2023-11-09 08:50:59.823694
-# Building Table - 2023-11-09 08:51:19.37887
+
+# LS_Inh_A - '2023-12-07 20:50:09.745547
+# Str_A-Drd1-MSN - '2023-12-07 20:50:17.194498
+# Excit_A - '2023-12-07 20:50:24.686285
+# Polydendrocyte - '2023-12-07 20:50:32.317122
+# Microglia - '2023-12-07 20:50:39.805091
+# LS_Inh_B - '2023-12-07 20:50:47.250233
+# Oligo - '2023-12-07 20:50:54.693567
+# Ependymal - '2023-12-07 20:51:02.264377
+# Str_B_Drd1-Patch - '2023-12-07 20:51:09.853107
+# MS_Inh_A - '2023-12-07 20:51:17.430963
+# Sept_Inh_D - '2023-12-07 20:51:24.949581
+# MS_Inh_E - '2023-12-07 20:51:32.446033
+# Str_B_Drd2-MSN - '2023-12-07 20:51:39.968984
+# Sept_Inh_F - '2023-12-07 20:51:47.46207
+# MS_Excit_A - '2023-12-07 20:51:54.896767
+# Excit_B - '2023-12-07 20:52:02.348462
+# LS_Inh_G - '2023-12-07 20:52:09.598891
+# Mural - '2023-12-07 20:52:17.040425
+# Astrocyte - '2023-12-07 20:52:24.484862
+# MS_Inh_H - '2023-12-07 20:52:31.991172
+# LS_Inh_I - '2023-12-07 20:52:39.550296
+# Str_Inh_D - '2023-12-07 20:52:47.039126
+# Building Table - 2023-12-07 20:52:54.520678
 # ** Done! **
 
 #Add symbol information to the table
@@ -379,7 +388,7 @@ markers_1vALL_enrich_Final <- dplyr::left_join(x = as.data.frame(markers_1vALL_e
                                                by = "gene_id")
 
 #save the dataframe. 
-save(markers_1vALL_enrich_Final,file = here("processed-data","markers_1vAll_ttest_CellTypeFinal_20Clusters.rda"))
+save(markers_1vALL_enrich_Final,file = here("processed-data","markers_1vAll_ttest_CellTypeFinal_22Clusters.rda"))
 
 ##################################################
 ###############run pairwise testing###############
@@ -399,17 +408,21 @@ markers_pairwise <- findMarkers(sce,
 
 #How many DEGs for each cluster? 
 sapply(markers_pairwise, function(x){table(x$FDR<0.05)})
-#       Astrocyte Ependymal Excit_A Excit_B LS_Inh_A LS_Inh_B LS_Inh_G LS_Inh_I
-# FALSE     33246     31852   33284   33212    33511    33545    33379    33518
-# TRUE        310      1704     272     344       45       11      177       38
-#       Microglia MS_Excit_A MS_Inh_A MS_Inh_E MS_Inh_H Mural Oligo
-# FALSE     32623      33411    33377    33365    33409 32553 32983
-# TRUE        933        145      179      191      147  1003   573
-#       Polydendrocyte Sept_Inh_D Sept_Inh_F Str_Inh_A Str_Inh_B
-# FALSE          33202      33552      33397     33139     33472
-# TRUE             354          4        159       417        84
+# Astrocyte Ependymal Excit_A Excit_B LS_Inh_A LS_Inh_B LS_Inh_G LS_Inh_I
+# FALSE     33253     31873   33304   33229    33511    33544    33383    33524
+# TRUE        303      1683     252     327       45       12      173       32
+# Microglia MS_Excit_A MS_Inh_A MS_Inh_E MS_Inh_H Mural Oligo
+# FALSE     32635      33413    33386    33369    33409 32566 32998
+# TRUE        921        143      170      187      147   990   558
+# Polydendrocyte Sept_Inh_D Sept_Inh_F Str_A-Drd1-MSN Str_B_Drd1-Patch
+# FALSE          33207      33551      33402          33503            33488
+# TRUE             349          5        154             53               68
+# Str_B_Drd2-MSN Str_Inh_D
+# FALSE          33515     33288
+# TRUE              41       268
 
-#Add gene info to each list. 
+
+#Add gene info to each list.
 for(i in names(markers_pairwise)){
     markers_pairwise[[i]] <- as.data.frame(markers_pairwise[[i]])
     markers_pairwise[[i]]$gene_id <- row.names(markers_pairwise[[i]])
@@ -418,7 +431,7 @@ for(i in names(markers_pairwise)){
                                               by = "gene_id")
 }
 
-save(markers_pairwise,file = here("processed-data","markers_pairwise_list_CellTypeFinal_20CellTypes.rda"))
+save(markers_pairwise,file = here("processed-data","markers_pairwise_list_CellTypeFinal_22CellTypes.rda"))
 
 
 print("Reproducibility information:")
@@ -427,10 +440,10 @@ proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2023-11-08 13:26:55 EST"
+# [1] "2023-12-07 20:56:28 EST"
 #     user    system   elapsed 
-# 2118.932    11.582 14723.463 
-# ─ Session info ──────────────────────────────────────────────────────────────────
+# 1149.402     6.619 15911.793
+# ─ Session info ─────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -440,10 +453,10 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-11-08
+# date     2023-12-07
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ──────────────────────────────────────────────────────────────────────
+# ─ Packages ─────────────────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # beachmat               2.16.0    2023-04-25 [2] Bioconductor
@@ -458,11 +471,11 @@ session_info()
 # cli                    3.6.1     2023-03-23 [2] CRAN (R 4.3.1)
 # cluster                2.1.4     2022-08-22 [3] CRAN (R 4.3.1)
 # codetools              0.2-19    2023-02-01 [3] CRAN (R 4.3.1)
-# colorout             * 1.2-2     2023-09-22 [1] Github (jalvesaq/colorout@79931fd)
+# colorout             * 1.3-0.1   2023-12-01 [1] Github (jalvesaq/colorout@deda341)
 # colorspace             2.1-0     2023-01-23 [2] CRAN (R 4.3.1)
-# cowplot                1.1.1     2020-12-30 [1] CRAN (R 4.3.1)
+# cowplot                1.1.1     2020-12-30 [2] CRAN (R 4.3.1)
 # crayon                 1.5.2     2022-09-29 [2] CRAN (R 4.3.1)
-# DeconvoBuddies       * 0.99.0    2023-10-23 [1] Github (LieberInstitute/DeconvoBuddies@9ce4a42)
+# DeconvoBuddies       * 0.99.0    2023-12-04 [1] Github (LieberInstitute/DeconvoBuddies@9ce4a42)
 # DelayedArray           0.26.7    2023-07-28 [2] Bioconductor
 # DelayedMatrixStats     1.22.6    2023-08-28 [2] Bioconductor
 # dplyr                  1.1.3     2023-09-03 [2] CRAN (R 4.3.1)
@@ -541,4 +554,4 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
-# ─────────────────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────────────
