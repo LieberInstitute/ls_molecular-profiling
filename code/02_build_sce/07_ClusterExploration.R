@@ -407,10 +407,10 @@ ggsave(plot = tSNE_Legend,filename = here("plots","tSNE_final_withLegend.pdf"),h
 splitit <- function(x) split(seq(along = x), x)
 
 sce_neuronal <- sce[,sce$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
-                                               "MS_Inh_A","MS_Inh_E","MS_Inh_H","MS_Excit_A",
-                                               "Sept_Inh_D","Sept_Inh_F","Str_Inh_A","Str_Inh_B",
+                                               "MS_Inh_A","MS_Inh_E","MS_Inh_H","Sept_Inh_D",
+                                               "Sept_Inh_F","Str_Drd1-MSN" ,"Str_Drd1-Matrix",
+                                               "Str_Drd1-Patch","Str_Drd2-MSN","MS_Excit_A",
                                                "Excit_A","Excit_B")]
-
 
 sce_neuronal
 # class: SingleCellExperiment 
@@ -427,6 +427,8 @@ sce_neuronal
 # reducedDimNames(18): GLMPCA_approx UMAP_15 ... tSNE_mnn_25 tSNE_mnn_50
 # mainExpName: NULL
 # altExpNames(0):
+
+sce_neuronal$CellType.Final <- as.character(sce_neuronal$CellType.Final)
 
 cell_idx <- splitit(sce_neuronal$CellType.Final)
 dat <- as.matrix(logcounts(sce_neuronal))
@@ -488,7 +490,8 @@ col_ha_legend <- ComplexHeatmap::columnAnnotation(marker = marker_labels,
 cluster_pops <- list(LS = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I"),
                      MS = c("MS_Inh_A","MS_Inh_E","MS_Inh_H"),
                      Sept = c("Sept_Inh_D","Sept_Inh_F"),
-                     Str = c("Str_Inh_A","Str_Inh_B"),
+                     Str = c("Str_Drd1-MSN" ,"Str_Drd1-Matrix",
+                             "Str_Drd1-Patch","Str_Drd2-MSN"),
                      Excit = c("MS_Excit_A","Excit_A","Excit_B"))
 # # cluster labels order
 cluster_pops_order <- unname(unlist(cluster_pops))
