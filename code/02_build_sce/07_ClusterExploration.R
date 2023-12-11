@@ -29,15 +29,15 @@ sce
 # altExpNames(0):
 
 #load in the colors. 
-load(here("processed-data","Final_CellTypes_colors_cb_Friendly.rda"),verbose = TRUE)
+load(here("processed-data","Final_CellTypes_colors.rda"),verbose = TRUE)
 # Loading objects:
-#     new_cluster_cols
+#     cluster_cols
 
 #bargraph of number of cells in each population. 
 celltype_bar <- as.data.frame(table(sce$CellType.Final)) %>% 
     rename(CellType = Var1, Number_Nuclei = Freq) %>%
     ggplot(aes(x = reorder(CellType,-Number_Nuclei), y = Number_Nuclei,fill = CellType)) +
-    scale_fill_manual(values = new_cluster_cols) +
+    scale_fill_manual(values = cluster_cols) +
     geom_bar(stat = "identity") +
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1),
@@ -48,10 +48,10 @@ celltype_bar <- as.data.frame(table(sce$CellType.Final)) %>%
 ggsave(celltype_bar,filename = here("plots","No_Nuclei_per_CellType_bar.png"))
 
 #load the DEG lists. 
-load(here("processed-data","markers_1vAll_ttest_CellTypeFinal_20Clusters.rda"),verbose = TRUE)
+load(here("processed-data","markers_1vAll_ttest_CellTypeFinal_22Clusters.rda"),verbose = TRUE)
 # Loading objects:
 #     markers_1vALL_enrich_Final
-load(here("processed-data","markers_pairwise_list_CellTypeFinal_20CellTypes.rda"),verbose = TRUE) 
+load(here("processed-data","markers_pairwise_list_CellTypeFinal_22CellTypes.rda"),verbose = TRUE) 
 # Loading objects:
 #     markers_pairwise
 
@@ -111,13 +111,13 @@ domain_markers <- c("CBLN2","CBLN4","PAX6","SEMA3A", #Rostrocaudal Deep
 
 for(i in domain_markers){
     tSNE_domain <- plotReducedDim(object = sce,
-                                  dimred = "tSNE_mnn_15",
+                                  dimred = "tSNE_mnn_50",
                                   colour_by = i,
                                   swap_rownames = "gene_name") +
         scale_color_gradientn(colours = c("lightgrey","red")) +
         ggtitle(i) +
         theme(plot.title = element_text(hjust = 0.5))
-    ggsave(filename = paste0("plots/Expression_plots/domain_markers_tSNE_mnn_15/",i,"_expression_tSNE_15_dims.pdf"),
+    ggsave(filename = paste0("plots/Expression_plots/domain_markers_tSNE_mnn_50/",i,"_expression_tSNE_15_dims.pdf"),
            plot = tSNE_domain,
            height = 8,width = 8)
 }
@@ -195,7 +195,7 @@ pheatmap(log2(k_20_modularity+1),
          display_numbers=TRUE, 
          number_format="%.2f", 
          fontsize_number=6.5,
-         main = "Modularity ratio for 20 graph-based clusters in human LS (n=3)",
+         main = "Modularity ratio for 22 graph-based clusters in human LS (n=3)",
          color=colorRampPalette(c("white","orange","red"))(100))
 dev.off()
 # "Indeed, concentration of the weight on the diagonal of (Figure 5.5) indicates 
@@ -214,11 +214,12 @@ dev.off()
 # Force-based layout showing the relationships between clusters based on the log-ratio of observed to expected total weights 
 # between nodes in different clusters. The thickness of the edge between a pair of clusters is proportional to the corresponding 
 # log-ratio. - OSCA advanced, chapter 5.2.5, figure 5.6
-                
+            
 sce$CellType.Final <- factor(x = sce$CellType.Final,
                              levels = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
                                         "MS_Inh_A","MS_Inh_E","MS_Inh_H","Sept_Inh_D",
-                                        "Sept_Inh_F","Str_Inh_A","Str_Inh_B","MS_Excit_A",
+                                        "Sept_Inh_F","Str_Drd1-MSN" ,"Str_Drd1-Matrix",
+                                        "Str_Drd1-Patch","Str_Drd2-MSN", "MS_Excit_A",
                                         "Excit_A","Excit_B","Oligo","Polydendrocyte",
                                         "Astrocyte","Ependymal","Microglia","Mural"))
 
@@ -226,7 +227,7 @@ x <- plotExpression(object = sce,features = c("SYT1","GAD1","SLC17A6","MOBP"),
                     x = "CellType.Final",
                     swap_rownames = "gene_name",
                     ncol = 2,colour_by = "CellType.Final") +
-    scale_color_manual(values = new_cluster_cols) +
+    scale_color_manual(values = cluster_cols) +
     theme(axis.text.x = element_text(angle = 45, hjust = 1),
           legend.position = "none") +
     stat_summary(fun = median, 
@@ -253,7 +254,7 @@ dim(dat)
 #Set marker genes to be included on the heatmap.
 markers_all <- c("RBFOX3","SNAP25","SYT1",#Pan-neuronal 3
                  "GAD1","GAD2", "SLC32A1", #Inhibitory 3
-                 "SLC17A7","SLC17A6", #Excitatory 2
+                 "SLC17A6","SLC17A7", #Excitatory 2
                  "MOBP","MBP", #Oligodendrocyte 2
                  "PDGFRA","CSPG4", #Polydendrocyte 2
                  "GFAP","SLC1A2", #Astrocyte 2
@@ -296,9 +297,10 @@ col_ha <- ComplexHeatmap::columnAnnotation(marker = marker_labels,
 # cluster labels
 cluster_pops <- list(Inhibitory = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
                                     "MS_Inh_A","MS_Inh_E","MS_Inh_H","Sept_Inh_D",
-                                    "Sept_Inh_F","Str_Inh_A","Str_Inh_B"),
+                                    "Sept_Inh_F","Str_Drd1-MSN" ,"Str_Drd1-Matrix",
+                                    "Str_Drd1-Patch","Str_Drd2-MSN"),
                      Excitatory = c("MS_Excit_A","Excit_A","Excit_B"),
-                     Oligodendrocyte = "Oligodendrocyte",
+                     Oligodendrocyte = "Oligo",
                      Polydendrocyte = "Polydendrocyte",
                      Astrocyte = "Astrocyte",
                      Ependymal = "Ependymal",
@@ -313,7 +315,7 @@ cluster_pops_order <- unname(unlist(cluster_pops))
 cluster_pops_rev <- rep(names(cluster_pops),
                         times = sapply(cluster_pops, length))
 names(cluster_pops_rev) <- unname(unlist(cluster_pops))
-cluster_pops_rev <- cluster_pops_rev[as.character(sort(cluster_pops_order))]
+#cluster_pops_rev <- cluster_pops_rev[as.character(sort(cluster_pops_order))]
 cluster_pops_rev <- factor(cluster_pops_rev, levels = names(cluster_pops))
 
 # second set of cluster labels
@@ -372,6 +374,31 @@ hm <- ComplexHeatmap::Heatmap(matrix = hm_mat,
 pdf(here("plots","ComplexHeatmap_General_cell_class_markers.pdf"))
 hm
 dev.off()
+
+###################################################
+#########tSNE with and without legened#############
+###################################################
+#No legend
+tSNE_no_Legend <- plotReducedDim(object = sce,
+                                 dimred = "tSNE_mnn_50",
+                                 colour_by = "CellType.Final",
+                                 text_by = "CellType.Final") +
+    theme(legend.position = "none") +
+    scale_color_manual(values = cluster_cols)
+
+ggsave(plot = tSNE_no_Legend,filename = here("plots","tSNE_final_noLegend.pdf"),height = 8,width = 8)
+
+#with legend
+tSNE_Legend <- plotReducedDim(object = sce,
+                                 dimred = "tSNE_mnn_50",
+                                 colour_by = "CellType.Final",
+                                 text_by = "CellType.Final") +
+    scale_color_manual(values = cluster_cols)
+
+ggsave(plot = tSNE_Legend,filename = here("plots","tSNE_final_withLegend.pdf"),height = 8,width = 8)
+
+
+
 
 ###################################################
 ##HEATMAP HIGHLIGHTING  NEURONAL POPULATIONS ONLY##
