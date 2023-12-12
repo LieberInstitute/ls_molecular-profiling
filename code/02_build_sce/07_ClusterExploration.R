@@ -567,8 +567,10 @@ dev.off()
 sce_neuronal$CellType.Final <- factor(sce_neuronal$CellType.Final,
                                       levels = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
                                                  "MS_Inh_A","MS_Inh_E","MS_Inh_H","MS_Excit_A",
-                                                 "Sept_Inh_D","Sept_Inh_F","Excit_A","Excit_B",
-                                                 "Str_Inh_A","Str_Inh_B"))
+                                                 "Sept_Inh_D","Sept_Inh_F",
+                                                 "Excit_A","Excit_B",
+                                                 "Str_Drd1-MSN","Str_Drd1-Patch",
+                                                 "Str_Drd1-Matrix","Str_Drd2-MSN"))
 
 vln_fig2 <- plotExpression(object = sce_neuronal,
                            features = c("TRPC4","DGKG",
@@ -585,7 +587,7 @@ vln_fig2 <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = new_cluster_cols) +
+    scale_color_manual(values  = cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 
@@ -604,7 +606,7 @@ trpc4_vln <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = new_cluster_cols) +
+    scale_color_manual(values  = cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 ggsave(plot = trpc4_vln,
@@ -620,7 +622,7 @@ fxyd6_vln <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = new_cluster_cols) +
+    scale_color_manual(values  = cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 ggsave(plot = fxyd6_vln,
@@ -637,7 +639,7 @@ OPRM1_vln <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = new_cluster_cols) +
+    scale_color_manual(values  = cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 ggsave(plot = OPRM1_vln,
@@ -653,7 +655,7 @@ FREM2_vln <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = new_cluster_cols) +
+    scale_color_manual(values  = cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 ggsave(plot = FREM2_vln,
@@ -670,7 +672,7 @@ MYO5B_vln <- plotExpression(object = sce_neuronal,
                  fun.max = median,
                  geom = "crossbar", 
                  width = 0.3) +
-    scale_color_manual(values  = new_cluster_cols) +
+    scale_color_manual(values  = cluster_cols) +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 90))
 ggsave(plot = MYO5B_vln,
@@ -692,16 +694,6 @@ ggsave(plot = MYO5B_featureplot,
        filename = here("plots","Expression_plots","myo5b_featureplot.pdf"))
 
 
-#### tSNE with new colors
-tSNE_cbFriendly <- plotReducedDim(object = sce,
-                                  dimred = "tSNE_mnn_15",
-                                  colour_by = "CellType.Final",
-                                  text_by = "CellType.Final") +
-    theme(legend.position = "none") +
-    scale_color_manual(values = new_cluster_cols)
-ggsave(filename = here("plots","tSNE_colorblind_friendly.pdf"),
-       plot = tSNE_cbFriendly,
-       height = 8,width = 8)
 
 
 
