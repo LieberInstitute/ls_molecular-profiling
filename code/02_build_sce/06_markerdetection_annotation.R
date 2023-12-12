@@ -158,32 +158,33 @@ markers_1vALL_enrich <- findMarkers_1vAll(sce,
                                           assay_name = "logcounts", 
                                           cellType_col = "CellType_k_20_louvain", 
                                           mod = "~Sample")
-# Sept_Inh_A - '2023-12-08 09:34:03.357655
-# Str_Inh_A - '2023-12-08 09:34:31.410573
-# Excit_A - '2023-12-08 09:34:58.293269
-# Polydendrocyte - '2023-12-08 09:35:25.292636
-# Microglia - '2023-12-08 09:35:52.505842
-# Sept_Inh_B - '2023-12-08 09:36:19.828381
-# Oligo_A - '2023-12-08 09:36:46.716865
-# Ependymal - '2023-12-08 09:37:13.470004
-# Oligo_B - '2023-12-08 09:37:39.993648
-# Str_Inh_B - '2023-12-08 09:38:07.057986
-# Sept_Inh_C - '2023-12-08 09:38:33.341049
-# Sept_Inh_D - '2023-12-08 09:38:59.867286
-# Sept_Inh_E - '2023-12-08 09:39:26.45466
-# Str_Inh_C - '2023-12-08 09:39:53.230684
-# Sept_Inh_F - '2023-12-08 09:40:20.98131
-# Sept_Excit_A - '2023-12-08 09:40:47.121283
-# Excit_B - '2023-12-08 09:41:13.534617
-# Sept_Inh_G - '2023-12-08 09:41:39.272678
-# Mural - '2023-12-08 09:42:05.578006
-# Astrocyte - '2023-12-08 09:42:32.089838
-# Sept_Inh_H - '2023-12-08 09:42:59.001963
-# Sept_Inh_I - '2023-12-08 09:43:25.420513
-# Oligo_C - '2023-12-08 09:43:51.70494
-# Str_Inh_D - '2023-12-08 09:44:18.039134
-# Building Table - 2023-12-08 09:44:44.270452
+# Sept_Inh_A - '2023-12-12 11:23:46.284014
+# Str_Inh_A - '2023-12-12 11:24:02.359737
+# Excit_A - '2023-12-12 11:24:18.152777
+# Polydendrocyte - '2023-12-12 11:24:34.09078
+# Microglia - '2023-12-12 11:24:50.179709
+# Sept_Inh_B - '2023-12-12 11:25:06.479661
+# Oligo_A - '2023-12-12 11:25:22.419539
+# Ependymal - '2023-12-12 11:25:38.267684
+# Oligo_B - '2023-12-12 11:25:54.168529
+# Str_Inh_B - '2023-12-12 11:26:10.292775
+# Sept_Inh_C - '2023-12-12 11:26:26.05182
+# Sept_Inh_D - '2023-12-12 11:26:41.647036
+# Sept_Inh_E - '2023-12-12 11:26:57.186265
+# Str_Inh_C - '2023-12-12 11:27:12.719351
+# Sept_Inh_F - '2023-12-12 11:27:29.891249
+# Sept_Excit_A - '2023-12-12 11:27:45.818432
+# Excit_B - '2023-12-12 11:28:02.109243
+# Sept_Inh_G - '2023-12-12 11:28:18.088421
+# Mural - '2023-12-12 11:28:35.293292
+# Astrocyte - '2023-12-12 11:28:52.029393
+# Sept_Inh_H - '2023-12-12 11:29:07.957003
+# Sept_Inh_I - '2023-12-12 11:29:23.908793
+# Oligo_C - '2023-12-12 11:29:39.943624
+# Str_Inh_D - '2023-12-12 11:29:55.537288
+# Building Table - 2023-12-12 11:30:12.19358
 # ** Done! **
+
 
 #Add symbol information to the table
 #First change the ensembl gene id column to have same name as what is in rowData(sce)
@@ -204,19 +205,19 @@ str_c <- subset(markers_1vALL_df,subset=(cellType.target == "Str_Inh_C" & logFC 
 str_d <- subset(markers_1vALL_df,subset=(cellType.target == "Str_Inh_D" & logFC >= 0.5 & log.FDR < 0.001))
 
 dim(str_a)
-# [1] 964   9
+#[1] 964   9
 dim(str_c)
-# [1] 1011    9
+#[1] 1011    9
 dim(str_d)
-# [1] 1321    9
+#[1] 1321    9
 
 #Check how many genes intersect
 length(intersect(str_a$gene_name,str_c$gene_name))
-# [1] 763
+#[1] 763
 length(intersect(str_a$gene_name,str_d$gene_name))
-# [1] 812
+#[1] 812
 length(intersect(str_c$gene_name,str_d$gene_name))
-# [1] 932
+#[1] 932
 
 #subset for just striatal populations and plot some Drd1 and Drd2 marker genes. 
 #str_a,c, and d might not be separated well because they represent D1/D2 MSNs. 
@@ -338,12 +339,11 @@ tSNE_final <- plotReducedDim(object = sce,
 ggsave(plot = tSNE_final,
        filename = here("plots","Dim_Red","tSNE_mnn_50_Final_CellTypes.pdf"))
 
-#Save the cluster_cols vector as well (
+#Save the cluster_cols vector as well 
 save(cluster_cols,file = here("processed-data","Final_CellTypes_colors.rda"))
 
 #Save the object with the final celltypes. 
 save(sce,file = here("processed-data","sce_with_CellType.rda"))
-
 
 #Rerun DEG testing with new celltype designations. 
 ##################################################
@@ -353,29 +353,29 @@ markers_1vALL_enrich_Final <- findMarkers_1vAll(sce,
                                                 assay_name = "logcounts", 
                                                 cellType_col = "CellType.Final", 
                                                 mod = "~Sample")
-# LS_Inh_A - '2023-12-11 14:25:42.758302
-# Str_Drd1-MSN - '2023-12-11 14:25:53.132007
-# Excit_A - '2023-12-11 14:26:03.387258
-# Polydendrocyte - '2023-12-11 14:26:13.318529
-# Microglia - '2023-12-11 14:26:23.600446
-# LS_Inh_B - '2023-12-11 14:26:33.773973
-# Oligo - '2023-12-11 14:26:43.772765
-# Ependymal - '2023-12-11 14:26:54.009164
-# Str_Drd1-Patch - '2023-12-11 14:27:04.306281
-# MS_Inh_A - '2023-12-11 14:27:14.263405
-# Sept_Inh_D - '2023-12-11 14:27:24.40818
-# MS_Inh_E - '2023-12-11 14:27:34.763483
-# Str_Drd2-MSN - '2023-12-11 14:27:45.118414
-# Sept_Inh_F - '2023-12-11 14:27:55.49254
-# MS_Excit_A - '2023-12-11 14:28:05.908915
-# Excit_B - '2023-12-11 14:28:16.334723
-# LS_Inh_G - '2023-12-11 14:28:26.436024
-# Mural - '2023-12-11 14:28:36.47635
-# Astrocyte - '2023-12-11 14:28:46.535918
-# MS_Inh_H - '2023-12-11 14:28:56.790901
-# LS_Inh_I - '2023-12-11 14:29:07.011881
-# Str_Drd1-Matrix - '2023-12-11 14:29:17.386279
-# Building Table - 2023-12-11 14:29:27.993341
+# LS_Inh_A - '2023-12-12 11:40:15.483758
+# Str_Drd1-MSN - '2023-12-12 11:40:30.806542
+# Excit_A - '2023-12-12 11:40:46.037088
+# Polydendrocyte - '2023-12-12 11:41:01.122814
+# Microglia - '2023-12-12 11:41:16.21728
+# LS_Inh_B - '2023-12-12 11:41:31.274393
+# Oligo - '2023-12-12 11:41:46.367283
+# Ependymal - '2023-12-12 11:42:01.770818
+# Str_Drd1-Patch - '2023-12-12 11:42:16.951164
+# MS_Inh_A - '2023-12-12 11:42:32.022515
+# Sept_Inh_D - '2023-12-12 11:42:47.348327
+# MS_Inh_E - '2023-12-12 11:43:02.734795
+# Str_Drd2-MSN - '2023-12-12 11:43:18.740477
+# Sept_Inh_F - '2023-12-12 11:43:34.016976
+# MS_Excit_A - '2023-12-12 11:43:49.282462
+# Excit_B - '2023-12-12 11:44:04.411233
+# LS_Inh_G - '2023-12-12 11:44:19.083562
+# Mural - '2023-12-12 11:44:34.388507
+# Astrocyte - '2023-12-12 11:44:49.422459
+# MS_Inh_H - '2023-12-12 11:45:04.731259
+# LS_Inh_I - '2023-12-12 11:45:20.002633
+# Str_Drd1-Matrix - '2023-12-12 11:45:35.299992
+# Building Table - 2023-12-12 11:45:50.578064
 # ** Done! **
 
 
@@ -408,17 +408,17 @@ markers_pairwise <- findMarkers(sce,
 #How many DEGs for each cluster? 
 sapply(markers_pairwise, function(x){table(x$FDR<0.05)})
 # Astrocyte Ependymal Excit_A Excit_B LS_Inh_A LS_Inh_B LS_Inh_G LS_Inh_I
-# FALSE     36298     34926   36352   36277    36557    36590    36432    36569
-# TRUE        303      1675     249     324       44       11      169       32
+# FALSE     33253     31873   33304   33229    33511    33544    33383    33524
+# TRUE        303      1683     252     327       45       12      173       32
 # Microglia MS_Excit_A MS_Inh_A MS_Inh_E MS_Inh_H Mural Oligo
-# FALSE     35684      36460    36431    36414    36456 35617 36046
-# TRUE        917        141      170      187      145   984   555
+# FALSE     32635      33413    33386    33369    33409 32566 32998
+# TRUE        921        143      170      187      147   990   558
 # Polydendrocyte Sept_Inh_D Sept_Inh_F Str_Drd1-Matrix Str_Drd1-MSN
-# FALSE          36254      36597      36451           36335        36548
-# TRUE             347          4        150             266           53
+# FALSE          33207      33551      33402           33288        33503
+# TRUE             349          5        154             268           53
 # Str_Drd1-Patch Str_Drd2-MSN
-# FALSE          36534        36561
-# TRUE              67           40
+# FALSE          33488        33515
+# TRUE              68           41
 
 #Add gene info to each list.
 for(i in names(markers_pairwise)){
@@ -438,9 +438,9 @@ proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2023-12-11 14:37:41 EST"  
-# user   system  elapsed 
-# 428.098    2.584 1281.674 
+# [1] "2023-12-12 11:50:51 EST"
+#     user   system  elapsed 
+# 1243.596   14.275 2208.695
 # ─ Session info ─────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
@@ -451,7 +451,7 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-12-11
+# date     2023-12-12
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
 # ─ Packages ─────────────────────────────────────────────────────────────────────
@@ -506,6 +506,7 @@ session_info()
 # matrixStats          * 1.0.0     2023-06-02 [2] CRAN (R 4.3.1)
 # metapod                1.8.0     2023-04-25 [2] Bioconductor
 # munsell                0.5.0     2018-06-12 [2] CRAN (R 4.3.1)
+# pheatmap             * 1.0.12    2019-01-04 [2] CRAN (R 4.3.1)
 # pillar                 1.9.0     2023-03-22 [2] CRAN (R 4.3.1)
 # pkgconfig              2.0.3     2019-09-22 [2] CRAN (R 4.3.1)
 # Polychrome           * 1.5.1     2022-05-03 [1] CRAN (R 4.3.1)
@@ -552,3 +553,6 @@ session_info()
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
 # ────────────────────────────────────────────────────────────────────────────────
+# 
+# 
+# 

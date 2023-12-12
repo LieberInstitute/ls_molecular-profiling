@@ -14,10 +14,10 @@ load(here("processed-data","sce_with_CellType.rda"))
 
 sce
 # class: SingleCellExperiment 
-# dim: 36601 9225 
+# dim: 33556 9225 
 # metadata(1): Samples
 # assays(3): counts binomial_deviance_residuals logcounts
-# rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
+# rownames(33556): ENSG00000243485 ENSG00000238009 ... ENSG00000278817
 # ENSG00000277196
 # rowData names(7): source type ... gene_type binomial_deviance
 # colnames(9225): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
@@ -248,7 +248,7 @@ cell_idx <- splitit(sce$CellType.Final)
 dat <- as.matrix(logcounts(sce))
 rownames(dat) <- rowData(sce)$gene_name
 dim(dat)
-# [1] 36601  9225
+# [1] 33556  9225
 
 ############set up columns for heatmaps. 
 #Set marker genes to be included on the heatmap.
@@ -398,8 +398,6 @@ tSNE_Legend <- plotReducedDim(object = sce,
 ggsave(plot = tSNE_Legend,filename = here("plots","tSNE_final_withLegend.pdf"),height = 8,width = 8)
 
 
-
-
 ###################################################
 ##HEATMAP HIGHLIGHTING  NEURONAL POPULATIONS ONLY##
 ###################################################
@@ -414,10 +412,10 @@ sce_neuronal <- sce[,sce$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_Inh_G",
 
 sce_neuronal
 # class: SingleCellExperiment 
-# dim: 36601 5387 
+# dim: 33556 5387 
 # metadata(1): Samples
 # assays(3): counts binomial_deviance_residuals logcounts
-# rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
+# rownames(33556): ENSG00000243485 ENSG00000238009 ... ENSG00000278817
 # ENSG00000277196
 # rowData names(7): source type ... gene_type binomial_deviance
 # colnames(5387): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
@@ -434,7 +432,7 @@ cell_idx <- splitit(sce_neuronal$CellType.Final)
 dat <- as.matrix(logcounts(sce_neuronal))
 rownames(dat) <- rowData(sce_neuronal)$gene_name
 dim(dat)
-# [1] 36601  5387
+#[1] 33556  5387
 
 ############set up columns for heatmaps. 
 #Set marker genes to be included on the heatmap.
