@@ -447,8 +447,8 @@ markers_all <- c("TRPC4","DGKG","CRHR2",#Broad LS
                  "TACR1", #MS SUB
                  "FXYD6","GRIN2D", "KCNC2",#Septal
                  "CHAT","KIT","CCK","VIP","SST",#Interneuronal. 
-                 "RARB","BCL11B", #Striatal 
-                 "ISL1","FOXP2", "DRD1","EBF1","DRD2","PENK",#MSN markers
+                 "RARB","BCL11B","PPP1R1B", #Striatal 
+                 "ISL1","FOXP2", "DRD1","DRD2",#MSN markers
                  "SLC17A7","SLC17A6") #Excitatory
 
 #marker labels
@@ -457,8 +457,8 @@ marker_labels <- c(rep("LS-Broad",3),
                    rep("MS-Broad",3),
                    rep("Septal",3),
                    rep("Interneuron",5),
-                   rep("Striatal",2),
-                   rep("MSN",6),
+                   rep("Striatal",3),
+                   rep("MSN",4),
                    rep("Excitatory",2))
 
 marker_labels <- factor(x = marker_labels,
@@ -679,19 +679,62 @@ ggsave(plot = MYO5B_vln,
        filename = here("plots","Expression_plots","MYO5B_violin.pdf"),height = 5, width = 5)
 
 
+PPP1R1B_vln <- plotExpression(object = sce_neuronal,
+                            features = "PPP1R1B",
+                            colour_by = "CellType.Final",
+                            x = "CellType.Final",
+                            swap_rownames = "gene_name") +
+    stat_summary(fun = median, 
+                 fun.min = median, 
+                 fun.max = median,
+                 geom = "crossbar", 
+                 width = 0.3) +
+    scale_color_manual(values  = cluster_cols) +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 90))
+ggsave(plot = MYO5B_vln,
+       filename = here("plots","Expression_plots","PPP1R1B_violin.pdf"),height = 5, width = 5)
+
+
+OPRM1_vln <- plotExpression(object = sce_neuronal,
+                              features = "OPRM1",
+                              colour_by = "CellType.Final",
+                              x = "CellType.Final",
+                              swap_rownames = "gene_name") +
+    stat_summary(fun = median, 
+                 fun.min = median, 
+                 fun.max = median,
+                 geom = "crossbar", 
+                 width = 0.3) +
+    scale_color_manual(values  = cluster_cols) +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 90))
+ggsave(plot = OPRM1_vln,
+       filename = here("plots","Expression_plots","OPRM1_violin.pdf"),height = 5, width = 5)
+
+
+
+oprm1_featureplot <- plotReducedDim(object = sce,dimred = "tSNE_mnn_50",
+                                    color_by = "OPRM1",swap_rownames = "gene_name") +
+    scale_color_gradientn(colours = c("lightgrey","orange","red"))
+ggsave(plot = oprm1_featureplot,
+       filename = here("plots","Expression_plots","OPRM1_featureplot.pdf"))
+
+
 #FREM2 feature plot
-frem2_featureplot <- plotReducedDim(object = sce,dimred = "tSNE_mnn_15",
+frem2_featureplot <- plotReducedDim(object = sce,dimred = "tSNE_mnn_50",
                                     color_by = "FREM2",swap_rownames = "gene_name") +
     scale_color_gradientn(colours = c("lightgrey","orange","red"))
 ggsave(plot = frem2_featureplot,
        filename = here("plots","Expression_plots","FREM2_featureplot.pdf"))
 
 #MYO5B feature plot
-MYO5B_featureplot <- plotReducedDim(object = sce,dimred = "tSNE_mnn_15",
+MYO5B_featureplot <- plotReducedDim(object = sce,dimred = "tSNE_mnn_50",
                                     color_by = "MYO5B",swap_rownames = "gene_name") +
     scale_color_gradientn(colours = c("lightgrey","orange","red"))
 ggsave(plot = MYO5B_featureplot,
        filename = here("plots","Expression_plots","myo5b_featureplot.pdf"))
+
 
 
 
