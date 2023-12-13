@@ -35,9 +35,11 @@ sce
 # altExpNames(0):
 
 #load human DEG list from human
-load(here("processed-data","markers_1vAll_ttest_CellTypeFinal_20Clusters.rda"),verbose = TRUE) #markers_1vALL_enrich_Final
+load(here("processed-data","markers_1vAll_ttest_CellTypeFinal_22Clusters.rda"),verbose = TRUE) 
+# Loading objects:
+#     markers_1vALL_enrich_Final
 dim(markers_1vALL_enrich_Final)
-# [1] 671120      9
+#[1] 738232      9
 
 #Split the markers_1vALL_df into a lsit
 markers_1vALL_list <- split(markers_1vALL_enrich_Final,
@@ -133,7 +135,8 @@ for (i in names(markers.ls.t.1vAll)) {
 }
 
 #save the list. 
-save(markers.ls.t.1vAll,file = here("processed-data","mouse_markers_1vAll_ttest_withnon0median.rda"))
+save(markers.ls.t.1vAll,
+     file = here("processed-data","mouse_markers_1vAll_ttest_withnon0median.rda"))
 
 #rename the objects to make more sense. 
 sce_human_ls <- sce 
@@ -158,7 +161,7 @@ sce_mouse_ls <- sce_mouse_ls[!rowSums(assay(sce_mouse_ls, "counts"))==0, ]
 #sanity check
 table(rowSums(assay(sce_mouse_ls, "counts"))==0)
 # FALSE 
-# 27797 
+# 27797
 
 ##Add entrez gene ids and jax ids to the human object
 #Entrez ids 
@@ -166,12 +169,11 @@ hs.entrezIds <- mapIds(org.Hs.eg.db,
                        keys=rowData(sce_human_ls)$gene_id, 
                        column="ENTREZID", 
                        keytype="ENSEMBL")
-# 'select()' returned 1:many mapping between keys and columns
+#'select()' returned 1:many mapping between keys and columns
 
 table(is.na(hs.entrezIds))
 # FALSE  TRUE 
 # 22561 10995 
-#22561 valid entries. 
 
 #Which genes do not have entrez ids
 withoutEntrez <- names(hs.entrezIds)[is.na(hs.entrezIds)]
@@ -186,7 +188,7 @@ hom <-  read.delim("http://www.informatics.jax.org/downloads/reports/HOM_AllOrga
 
 #Save dataframe with date. In case we need to use later and it gets updated. 
 write.table(x = hom,
-            file = here("processed-data","HOM_AllOrganism_JAX_110923.csv"),
+            file = here("processed-data","HOM_AllOrganism_JAX_121223.csv"),
             sep = ",",col.names = TRUE,row.names = FALSE,quote = FALSE)
 
 #Subset for human 
@@ -209,7 +211,7 @@ mm.entrezIds <- mapIds(org.Mm.eg.db,
 
 table(is.na(mm.entrezIds))
 # FALSE  TRUE 
-# 21576  6221 
+# 21576  6221
 
 #Which genes do not have entrez ids
 withoutEntrez_mouse <- names(mm.entrezIds)[is.na(mm.entrezIds)]
@@ -232,7 +234,7 @@ rowData(sce_mouse_ls)$JAX.geneID <- hom_mm$DB.Class.Key[match(rowData(sce_mouse_
 length(intersect(rowData(sce_human_ls)$JAX.geneID,
                  rowData(sce_mouse_ls)$JAX.geneID)) 
 # [1] 16573
-#16,573 shared genes. 
+
 
 shared_homologs <- intersect(rowData(sce_human_ls)$JAX.geneID,
                              rowData(sce_mouse_ls)$JAX.geneID)
@@ -246,25 +248,23 @@ length(setdiff(rowData(sce_human_ls)$JAX.geneID,
 # Mouse not in human
 length(setdiff(rowData(sce_mouse_ls)$JAX.geneID,
                rowData(sce_human_ls)$JAX.geneID)) 
-#[1] 2213
+# [1] 2213
 
 # Subset for shared homologs
 sce_human_sub <- sce_human_ls[rowData(sce_human_ls)$JAX.geneID %in% shared_homologs, ]
 dim(sce_human_sub)
-# [1] 16997  9225
-#16997 genes and 9225 cells
+#[1] 16997  9225
 
 sce_mouse_sub <- sce_mouse_ls[rowData(sce_mouse_ls)$JAX.geneID %in% shared_homologs, ]
 dim(sce_mouse_sub)
 #[1] 16588 22860
-#16588 genes and 22860 cells
 
 #Are any of the JAX IDs duplicated
 length(rowData(sce_human_sub)$gene_name[duplicated(rowData(sce_human_sub)$JAX.geneID)])
 #[1] 425
 
 length(rowData(sce_mouse_sub)$gene_name[duplicated(rowData(sce_mouse_sub)$JAX.geneID)])
-# [1] 16
+#[1] 16
 
 ######Need to identify genes that are duplicated and keep the higher expressing. 
 ###Mouse first. 
@@ -286,13 +286,11 @@ sce_mouse_sub <- sce_mouse_sub[c(non_dups_mouse, unique(mouse_genes_to_keep)), ]
 
 table(rowData(sce_mouse_sub)$JAX.geneID %in% shared_homologs)
 # TRUE 
-# 16572 
+# 16572
 
 table(duplicated(rowData(sce_mouse_sub)$JAX.geneID))
 # FALSE 
 # 16572 
-
-#Nothing is duplicated so can move forward. 
 
 ###human first. 
 human_dups <- rowData(sce_human_sub)[which(duplicated(rowData(sce_human_sub)$JAX.geneID)),"JAX.geneID"]
@@ -358,7 +356,7 @@ lapply(mouse_enriched,function(x){ table(m_missing %in% rownames(x)) }) #All FAL
 # Subset for those with homologous genes in human
 mouse_t_stats_hom <- mouse_t_stats[rownames(mouse_t_stats) %in% rownames(sce_mouse_sub), ]
 dim(mouse_t_stats_hom)
-# [1] 16562    33
+#[1] 16562    33
 
 # Need to change the rownames to JAX.geneID so we can assure everything is in the same order. 
 mouse_t_stats_df <- as.data.frame(mouse_t_stats_hom)
@@ -403,7 +401,7 @@ human_t_stats_df <- dplyr::left_join(x = human_t_stats_df,
 #Make rownames the JAx ID
 rownames(human_t_stats_df) <- human_t_stats_df$JAX.geneID
 #Convert it to a matrix. 
-human_t_stats_mat <- as.matrix(human_t_stats_df[,c(1:20)]) #Just keeping the celltype columns and removing both gene columns
+human_t_stats_mat <- as.matrix(human_t_stats_df[,c(1:22)]) #Just keeping the celltype columns and removing both gene columns
 
 
 #Save the subset objects and t stat matrices. 
@@ -438,7 +436,7 @@ mouse_top_100 <- mapply(as.data.frame(mouse_t_stats_mat), FUN = function(t) {
 #get the unique identifiers for each species plus the shared. 
 human_unique <- unique(as.numeric(human_top_100))
 length(human_unique)
-#[1] 1546
+#[1] 1609
 
 mouse_unique <- unique(as.numeric(mouse_top_100))
 length(mouse_unique)
@@ -447,7 +445,7 @@ length(mouse_unique)
 shared_identifiers <- intersect(rownames(human_t_stats_mat)[human_unique], 
                                 rownames(mouse_t_stats_mat)[mouse_unique])
 length(shared_identifiers)
-#[1] 865
+#[1] 885
 
 
 #Correlate with just the human identifiers. 
@@ -456,7 +454,7 @@ cor_t_human_unique <- cor(human_t_stats_mat[human_unique, ],
 rownames(cor_t_human_unique) <- paste0(rownames(cor_t_human_unique),"_Human")
 colnames(cor_t_human_unique) <- paste0(colnames(cor_t_human_unique),"_Mouse")
 range(cor_t_human_unique)
-# [1] -0.5175540  0.7730306
+# [1] -0.5161005  0.7719024
 
 
 #Correlate with just the mouse identifiers. 
@@ -473,7 +471,7 @@ cor_t_shared <- cor(human_t_stats_mat[shared_identifiers, ],
 rownames(cor_t_shared) <- paste0(rownames(cor_t_shared),"_Human")
 colnames(cor_t_shared) <- paste0(colnames(cor_t_shared),"_Mouse")
 range(cor_t_shared)
-# [1] -0.5626473  0.8641498
+# [1] -0.5616146  0.8629469
 
 #Save all of the correlation matrices. 
 save(cor_t_all,cor_t_human_unique,cor_t_mouse_unique,cor_t_shared,
@@ -587,10 +585,10 @@ proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2023-11-09 13:57:43 EST"
+# [1] "2023-12-12 12:56:15 EST"
 #    user   system  elapsed 
-# 675.350   36.125 2598.221 
-# ─ Session info ────────────────────────────────────────────────────────────────
+# 995.153   25.107 1948.881
+# ─ Session info ─────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -600,10 +598,10 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-11-09
+# date     2023-12-12
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ────────────────────────────────────────────────────────────────────
+# ─ Packages ─────────────────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # AnnotationDbi        * 1.62.2    2023-07-02 [2] Bioconductor
@@ -616,7 +614,7 @@ session_info()
 # blob                   1.2.4     2023-03-17 [2] CRAN (R 4.3.1)
 # cachem                 1.0.8     2023-05-01 [2] CRAN (R 4.3.1)
 # cli                    3.6.1     2023-03-23 [2] CRAN (R 4.3.1)
-# colorout             * 1.2-2     2023-09-22 [1] Github (jalvesaq/colorout@79931fd)
+# colorout             * 1.3-0.1   2023-12-01 [1] Github (jalvesaq/colorout@deda341)
 # colorspace             2.1-0     2023-01-23 [2] CRAN (R 4.3.1)
 # crayon                 1.5.2     2022-09-29 [2] CRAN (R 4.3.1)
 # DBI                    1.1.3     2022-06-18 [2] CRAN (R 4.3.1)
@@ -643,7 +641,7 @@ session_info()
 # memoise                2.0.1     2021-11-26 [2] CRAN (R 4.3.1)
 # munsell                0.5.0     2018-06-12 [2] CRAN (R 4.3.1)
 # org.Hs.eg.db         * 3.17.0    2023-07-20 [2] Bioconductor
-# org.Mm.eg.db         * 3.17.0    2023-10-26 [1] Bioconductor
+# org.Mm.eg.db         * 3.17.0    2023-12-12 [1] Bioconductor
 # pheatmap             * 1.0.12    2019-01-04 [2] CRAN (R 4.3.1)
 # pillar                 1.9.0     2023-03-22 [2] CRAN (R 4.3.1)
 # pkgconfig              2.0.3     2019-09-22 [2] CRAN (R 4.3.1)
@@ -674,4 +672,4 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
-# ───────────────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────────────
