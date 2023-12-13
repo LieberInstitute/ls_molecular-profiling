@@ -50,7 +50,7 @@ sce_human_sub
 
 #Everything should be in order, but check to make sure? 
 all(rowData(sce_human_sub)$JAX.geneID == rowData(sce_mouse_sub)$JAX.geneID) 
-# [1] TRUE
+#[1] TRUE
 
 #Add coldata column that corresponds to the species. 
 sce_human_sub$Species <- "Human"
@@ -117,7 +117,6 @@ sce_combo <- nullResiduals(sce_combo,
 #Take top 2000 highly deviant genes
 hdgs <- rownames(sce_combo)[order(rowData(sce_combo)$binomial_deviance, decreasing = T)][1:2000]
 
-
 #current object doesn't include gene name info. Pull from the sce_human_sub object. 
 hdgs.symbols <- rowData(sce_human_sub)$gene_name[match(hdgs, rowData(sce_human_sub)$gene_id)]
 
@@ -151,16 +150,6 @@ sce_combo <- runTSNE(sce_combo,
                      n_dimred = 50,
                      name = "tSNE_50")
 
-#Plot the tSNE and UMAP
-#UMAP  
-umap_cross_species <- plotReducedDim(sce_combo,
-                                     dimred = "UMAP_50", 
-                                     colour_by = "Species",
-                                     point_alpha = 0.3)
-ggsave(umap_cross_species,filename = here("plots",
-                                          "Conservation",
-                                          "umap_cross_species.png"))
-
 #tSNE
 tSNE_cross_species <- plotReducedDim(sce_combo,
                                      dimred = "tSNE_50", 
@@ -171,11 +160,13 @@ ggsave(tSNE_cross_species,filename = here("plots",
                                           "tSNE_cross_species.png"))
 
 
-#As expected, tSNE and UMAP are split by species. Next run fast fastMNN
+#As expected, tSNE split by species. Next run fast fastMNN
 mnn.hold <- fastMNN(sce_combo, 
                     batch=sce_combo$Sample,
-                    subset.row=hdgs, d=50,
-                    correct.all=TRUE, get.variance=TRUE,
+                    subset.row=hdgs, 
+                    d=50,
+                    correct.all=TRUE, 
+                    get.variance=TRUE,
                     BSPARAM=BiocSingular::IrlbaParam())
 
 #Add mnn to sce_combo object
@@ -221,7 +212,8 @@ save(sce_combo,file = here("processed-data","sce_combo.rda"))
 sce_combo$CellType_Species <- paste(sce_combo$CellType,sce_combo$Species,sep = "_")
 
 #Assign colors
-cluster_cols <- Polychrome::createPalette(length(unique(sce_combo$CellType_Species)),c("#FF0000", "#00FF00", "#0000FF"))
+cluster_cols <- Polychrome::createPalette(length(unique(sce_combo$CellType_Species)),
+                                          c("#D81B60", "#1E88E5","#FFC107","#009E73"))
 names(cluster_cols) <- unique(sce_combo$CellType_Species)
 
 #UMAP
@@ -298,7 +290,10 @@ ggsave(tSNE_Harmony,filename = here("plots",
                                     "Conservation",
                                     "tSNE_cross_species_Harmony.png"))
 
+save(sce_harmony_Species,file = here("processed-data","sce_harmony_species.rda"))
 
+#save the object with harmony. 
+#Harmony looks good. Rename the object and then
 
 
 
