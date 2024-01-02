@@ -96,16 +96,32 @@ ggsave(filename = here("plots","Plots_for_Supp","8354_tSNE.pdf"),plot = Br8354)
 ggsave(filename = here("plots","Plots_for_Supp","9103_tSNE.pdf"),plot = Br9103)
 
 
+#Umap but color the points by the brain
+sample_cols <- c("#1E88E5","#D81B60","#004D40")
+names(sample_cols) <- unique(sce$Sample)
+sample_tSNE <- plotReducedDim(object = sce,dimred = "tSNE_mnn_50",color_by = "Sample") +
+    scale_color_manual(values = sample_cols)
+ggsave(plot = sample_tSNE,filename = here("plots","Plots_for_Supp","Sample_tSNE.pdf"))
+
+
 #Now generate pairwise modularity scores for 
 #####Cluster modularity
 #Build the graph again. 
 #Used k=50 + walktrap clustering for celltype designations. 
+sce$CellType.Final <- factor(x = sce$CellType.Final,
+                             levels = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
+                                        "MS_Inh_A","MS_Inh_E","MS_Inh_H",
+                                        "Sept_Inh_D","Sept_Inh_F",
+                                        "MS_Excit_A","Excit_A","Excit_B",
+                                        "Str_Drd1-MSN","Str_Drd1-Patch","Str_Drd1-Matrix","Str_Drd2-MSN",
+                                        "Astrocyte","Ependymal","Microglia",
+                                        "Mural","Oligo","Polydendrocyte"))
+
 snn_k_20 <- buildSNNGraph(sce, k = 20, use.dimred = "mnn",type="jaccard")
 
 k_20_modularity <- bluster::pairwiseModularity(graph = snn_k_20,
                                                clusters = sce$CellType.Final,
                                                as.ratio = TRUE)
-
 
 library(pheatmap)
 pdf(file = here("plots","k_20_pairwise_modularity_final_celltypes_010224.pdf"))
