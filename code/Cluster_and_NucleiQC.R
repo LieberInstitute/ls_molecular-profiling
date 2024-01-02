@@ -71,7 +71,7 @@ mito_Vln <- plotColData(object = sce,
     theme(legend.position = "none") +
     labs(x = "Cell Type",y = "% Mitochondria")
 
-ggsave(filename = here("plots","Plots_for_Supp","Number_of_Reads_Violin.pdf"),plot = mito_Vln)
+ggsave(filename = here("plots","Plots_for_Supp","Percent_Mito_Violin.pdf"),plot = mito_Vln)
 
 #Violin plot for detected mitochondrial percentage
 doublet_Vln <- plotColData(object = sce,
@@ -80,7 +80,7 @@ doublet_Vln <- plotColData(object = sce,
     theme(legend.position = "none") +
     labs(x = "Cell Type",y = "doubletScore")
 
-ggsave(filename = here("plots","Plots_for_Supp","doublet_score_Violin.pdf"),plot = mito_Vln)
+ggsave(filename = here("plots","Plots_for_Supp","doublet_score_Violin.pdf"),plot = doublet_Vln)
 
 
 #Make umaps where points are colored by donor. 
