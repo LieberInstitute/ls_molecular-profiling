@@ -84,6 +84,64 @@ sce.ls
 # mainExpName: NULL
 # altExpNames(0):
 
+levels(sce.ls$cellType.final)
+# [1] "Astro"              "Chol_Ex.D"          "ChP"               
+# [4] "drop.doublet"       "drop.likelyDoublet" "drop.lowNTx"       
+# [7] "Endo"               "Ependymal"          "IoC_In.E"          
+# [10] "LS_In.C"            "LS_In.D"            "LS_In.M"           
+# [13] "LS_In.N"            "LS_In.O"            "LS_In.P"           
+# [16] "LS_In.Q"            "LS_In.R"            "Micro"             
+# [19] "MS_In.J"            "MS_In.K"            "Mural"             
+# [22] "Neuroblast"         "Neuron.mixed"       "Oligo"             
+# [25] "OPC"                "OPC_COP"            "Sept_In.G"         
+# [28] "Sept_In.I"          "Str_In.A"           "Str_In.F"          
+# [31] "Str_In.H"           "Str_In.L"           "Thal_Ex.B"         
+# [34] "TNoS_Ex.A"          "TT.IG.SH_Ex.C"      "TT.IG.SH_Ex.E"     
+# [37] "TT.IG.SH_Ex.F" 
+#Need ot remove drop.doublet, drop.likelyDoublet, drop.lowNTx, and Neuron.mixed
+
+#Keep only true cell types. 
+sce.ls <- sce.ls[,sce.ls$cellType.final %in% c("Astro","Chol_Ex.D","ChP",
+                                               "Endo","Ependymal","IoC_In.E",
+                                               "LS_In.C","LS_In.D","LS_In.M",
+                                               "LS_In.N","LS_In.O","LS_In.P",
+                                               "LS_In.Q","LS_In.R","Micro",
+                                               "MS_In.J","MS_In.K","Mural",
+                                               "Neuroblast","Oligo","OPC",
+                                               "OPC_COP","Sept_In.G","Sept_In.I",
+                                               "Str_In.A","Str_In.F","Str_In.H","Str_In.L",
+                                               "Thal_Ex.B","TNoS_Ex.A","TT.IG.SH_Ex.C",
+                                               "TT.IG.SH_Ex.E","TT.IG.SH_Ex.F")]
+
+#Refactor the celltypes 
+sce.ls$cellType.final <- factor(sce.ls$cellType.final,
+                                levels = c("Astro","Chol_Ex.D","ChP",
+                                           "Endo","Ependymal","IoC_In.E",
+                                           "LS_In.C","LS_In.D","LS_In.M",
+                                           "LS_In.N","LS_In.O","LS_In.P",
+                                           "LS_In.Q","LS_In.R","Micro",
+                                           "MS_In.J","MS_In.K","Mural",
+                                           "Neuroblast","Oligo","OPC",
+                                           "OPC_COP","Sept_In.G","Sept_In.I",
+                                           "Str_In.A","Str_In.F","Str_In.H","Str_In.L",
+                                           "Thal_Ex.B","TNoS_Ex.A","TT.IG.SH_Ex.C",
+                                           "TT.IG.SH_Ex.E","TT.IG.SH_Ex.F"))
+
+sce.ls
+# class: SingleCellExperiment 
+# dim: 32285 21884 
+# metadata(1): Samples
+# assays(3): counts binomial_pearson_residuals logcounts
+# rownames(32285): ENSMUSG00000051951 ENSMUSG00000089699 ...
+# ENSMUSG00000095019 ENSMUSG00000095041
+# rowData names(7): source type ... gene_type binomial_deviance
+# colnames(21884): 1_AAACCCAAGGTACATA-1 1_AAACCCACATCCGAGC-1 ...
+# 4_TTTGTTGCATACAGCT-1 4_TTTGTTGGTCAAACGG-1
+# colData names(17): Sample Barcode ... cellType.final cellType.broad
+# reducedDimNames(4): GLMPCA_approx UMAP TSNE GLMPCA_50
+# mainExpName: NULL
+# altExpNames(0):
+
 #Run mouse DEGs 
 load(file = "/dcs04/lieber/marmaypag/pilotLS_LIBD1070/snRNAseq_mouse/processed_data/SCE/markers-stats_LS-n4_findMarkers_33cellTypes.rda",
      verbose = TRUE)
