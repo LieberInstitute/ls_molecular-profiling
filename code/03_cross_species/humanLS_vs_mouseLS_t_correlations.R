@@ -211,7 +211,7 @@ table(rowSums(assay(sce_human_ls, "counts"))==0)
 
 table(rowSums(assay(sce_mouse_ls, "counts"))==0)
 # FALSE  TRUE 
-# 27797  4488 
+# 27751  4534 
 
 #Remove genes with all 0s from the mouse object. 
 sce_mouse_ls <- sce_mouse_ls[!rowSums(assay(sce_mouse_ls, "counts"))==0, ]
@@ -219,7 +219,7 @@ sce_mouse_ls <- sce_mouse_ls[!rowSums(assay(sce_mouse_ls, "counts"))==0, ]
 #sanity check
 table(rowSums(assay(sce_mouse_ls, "counts"))==0)
 # FALSE 
-# 27797
+# 27751 
 
 ##Add entrez gene ids and jax ids to the human object
 #Entrez ids 
@@ -246,7 +246,7 @@ hom <-  read.delim("http://www.informatics.jax.org/downloads/reports/HOM_AllOrga
 
 #Save dataframe with date. In case we need to use later and it gets updated. 
 write.table(x = hom,
-            file = here("processed-data","HOM_AllOrganism_JAX_121223.csv"),
+            file = here("processed-data","HOM_AllOrganism_JAX_010324.csv"),
             sep = ",",col.names = TRUE,row.names = FALSE,quote = FALSE)
 
 #Subset for human 
@@ -269,7 +269,7 @@ mm.entrezIds <- mapIds(org.Mm.eg.db,
 
 table(is.na(mm.entrezIds))
 # FALSE  TRUE 
-# 21576  6221
+# 21544  6207 
 
 #Which genes do not have entrez ids
 withoutEntrez_mouse <- names(mm.entrezIds)[is.na(mm.entrezIds)]
@@ -283,7 +283,7 @@ hom_mm <- hom[hom$Common.Organism.Name == "mouse, laboratory", ]
 
 table(rowData(sce_mouse_ls)$mm.entrezIds %in% hom_mm$EntrezGene.ID)
 # FALSE  TRUE 
-# 8990 18807 
+# 8972 18779 
 
 #Add the IDs to the sce_human_ls object. 
 rowData(sce_mouse_ls)$JAX.geneID <- hom_mm$DB.Class.Key[match(rowData(sce_mouse_ls)$mm.entrezIds,hom_mm$EntrezGene.ID)]
@@ -291,8 +291,7 @@ rowData(sce_mouse_ls)$JAX.geneID <- hom_mm$DB.Class.Key[match(rowData(sce_mouse_
 ##Identify shared genes
 length(intersect(rowData(sce_human_ls)$JAX.geneID,
                  rowData(sce_mouse_ls)$JAX.geneID)) 
-# [1] 16573
-
+#[1] 16563
 
 shared_homologs <- intersect(rowData(sce_human_ls)$JAX.geneID,
                              rowData(sce_mouse_ls)$JAX.geneID)
@@ -301,21 +300,21 @@ shared_homologs <- shared_homologs[-1] #first is na
 # Human not in mouse
 length(setdiff(rowData(sce_human_ls)$JAX.geneID,
                rowData(sce_mouse_ls)$JAX.geneID)) 
-# [1] 459
+# [1] 469
 
 # Mouse not in human
 length(setdiff(rowData(sce_mouse_ls)$JAX.geneID,
                rowData(sce_human_ls)$JAX.geneID)) 
-# [1] 2213
+#[1] 2195
 
 # Subset for shared homologs
 sce_human_sub <- sce_human_ls[rowData(sce_human_ls)$JAX.geneID %in% shared_homologs, ]
 dim(sce_human_sub)
-#[1] 16997  9225
+# [1] 16987  9225
 
 sce_mouse_sub <- sce_mouse_ls[rowData(sce_mouse_ls)$JAX.geneID %in% shared_homologs, ]
 dim(sce_mouse_sub)
-#[1] 16588 22860
+# [1] 16578 21884
 
 #Are any of the JAX IDs duplicated
 length(rowData(sce_human_sub)$gene_name[duplicated(rowData(sce_human_sub)$JAX.geneID)])
@@ -344,11 +343,11 @@ sce_mouse_sub <- sce_mouse_sub[c(non_dups_mouse, unique(mouse_genes_to_keep)), ]
 
 table(rowData(sce_mouse_sub)$JAX.geneID %in% shared_homologs)
 # TRUE 
-# 16572
+# 16562 
 
 table(duplicated(rowData(sce_mouse_sub)$JAX.geneID))
 # FALSE 
-# 16572 
+# 16562 
 
 ###human first. 
 human_dups <- rowData(sce_human_sub)[which(duplicated(rowData(sce_human_sub)$JAX.geneID)),"JAX.geneID"]
@@ -369,11 +368,11 @@ sce_human_sub <- sce_human_sub[c(non_dups_human, unique(human_genes_to_keep)), ]
 
 table(rowData(sce_human_sub)$JAX.geneID %in% shared_homologs)
 # TRUE 
-# 16572 
+# 16562 
 
 table(duplicated(rowData(sce_human_sub)$JAX.geneID))
 # FALSE 
-# 16572 
+# 16562 
 
 #Nothing is duplicated so can move forward. 
 
@@ -384,6 +383,7 @@ sce_mouse_sub <- sce_mouse_sub[match(rowData(sce_human_sub)$JAX.geneID,
 #sanity_check
 all(rowData(sce_mouse_sub)$JAX.geneID == rowData(sce_human_sub)$JAX.geneID)
 # [1] TRUE
+
 
 ##Calculate the t statistic
 #Mouse first. 
@@ -403,13 +403,8 @@ mouse_t_stats <- sapply(mouse_enriched, function(x){x$t.stat})
 rownames(mouse_t_stats) <- fixTo
 
 table(rownames(sce_mouse_sub) %in% rownames(mouse_t_stats))
-# FALSE  TRUE 
-# 10     16562 
-#There are 10 genes within the sce_mouse_sub object that are not within the mouse_t_statistics. 
-#Pull those genes. 
-m_missing <- rownames(sce_mouse_sub)[!(rownames(sce_mouse_sub) %in% rownames(mouse_t_stats))]
-#Are they found in the DEG list? 
-lapply(mouse_enriched,function(x){ table(m_missing %in% rownames(x)) }) #All FALSE
+# TRUE 
+# 16562 
 
 # Subset for those with homologous genes in human
 mouse_t_stats_hom <- mouse_t_stats[rownames(mouse_t_stats) %in% rownames(sce_mouse_sub), ]
@@ -445,7 +440,7 @@ rownames(human_t_stats) <- fixTo
 
 table(rownames(sce_human_sub) %in% rownames(human_t_stats))
 # TRUE 
-# 16572 
+# 16562
 
 human_t_stats_hom <- human_t_stats[rownames(sce_human_sub),]
 
@@ -643,10 +638,10 @@ proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2023-12-12 12:56:15 EST"
-#    user   system  elapsed 
-# 995.153   25.107 1948.881
-# ─ Session info ─────────────────────────────────────────────────────────────────
+# [1] "2024-01-03 15:40:32 EST"
+#     user   system  elapsed 
+# 1248.619   31.089 2916.945 
+# ─ Session info ──────────────────────────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -656,10 +651,10 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-12-12
+# date     2024-01-03
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ─────────────────────────────────────────────────────────────────────
+# ─ Packages ──────────────────────────────────────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # AnnotationDbi        * 1.62.2    2023-07-02 [2] Bioconductor
@@ -730,4 +725,4 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
-# ────────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────
