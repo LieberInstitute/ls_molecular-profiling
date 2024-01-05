@@ -3,6 +3,7 @@
 
 library(SingleCellExperiment)
 library(sessioninfo)
+library(ggplot2)
 library(scater)
 library(here)
 
@@ -37,11 +38,11 @@ sce_harmony_Species$Human_CellType <- ifelse(sce_harmony_Species$Species == "Hum
 
 #Generate colors
 human_cell_cols <- Polychrome::createPalette(length(unique(sce_harmony_Species$Human_CellType)),
-                                             c("#D81B60", "#1E88E5","#FFC107","#009E73"))
+                                             c("#E69F00", "#009E73","#0072B2","#000000"))
 names(human_cell_cols) <- unique(sce_harmony_Species$Human_CellType)
 
 #Change the mouse color to grey. 
-human_cell_cols["Mouse"] <- "#767574"
+human_cell_cols["Mouse"] <- "#c6c6c6"
 
 #Now Mouse
 sce_harmony_Species$Mouse_CellType <- ifelse(sce_harmony_Species$Species == "Mouse",
@@ -50,11 +51,53 @@ sce_harmony_Species$Mouse_CellType <- ifelse(sce_harmony_Species$Species == "Mou
 
 #Generate colors
 mouse_cell_cols <- Polychrome::createPalette(length(unique(sce_harmony_Species$Mouse_CellType)),
-                                             c("#D81B60", "#1E88E5","#FFC107","#009E73"))
+                                             c("#E69F00", "#009E73","#0072B2","#000000"))
 names(mouse_cell_cols) <- unique(sce_harmony_Species$Mouse_CellType)
 
 #Change the mouse color to grey. 
-human_cell_cols["Human"] <- "#767574"
+mouse_cell_cols["Human"] <- "#c6c6c6"
+
+#Generate the plots. 
+###Human 
+#Legend
+human_tSNE <- plotReducedDim(object = sce_harmony_Species,
+                             dimred = "tSNE_HARMONY",
+                             colour_by = "Human_CellType",
+                             point_alpha = 0.4) +
+    scale_color_manual(values = human_cell_cols)
+ggsave(plot = human_tSNE,
+       filename = here("plots","Conservation","harmony_tSNE_Human_CellType_Colored_withLegend.pdf"))
+#No Legend
+human_tSNE_noLegend <- plotReducedDim(object = sce_harmony_Species,
+                                      dimred = "tSNE_HARMONY",
+                                      colour_by = "Human_CellType",
+                                      point_alpha = 0.4) +
+    scale_color_manual(values = human_cell_cols) +
+    theme(legend.position = "none")
+ggsave(plot = human_tSNE_noLegend,
+       filename = here("plots","Conservation","harmony_tSNE_Human_CellType_Colored_withoutLegend.pdf"),
+       height = 10,width = 10)
+
+###Mouse 
+#Legend
+Mouse_tSNE <- plotReducedDim(object = sce_harmony_Species,
+                             dimred = "tSNE_HARMONY",
+                             colour_by = "Mouse_CellType",
+                             point_alpha = 0.4) +
+    scale_color_manual(values = mouse_cell_cols)
+ggsave(plot = Mouse_tSNE,
+       filename = here("plots","Conservation","harmony_tSNE_Mouse_CellType_Colored_withLegend.pdf"))
+#No Legend
+mouse_tSNE_noLegend <- plotReducedDim(object = sce_harmony_Species,
+                                      dimred = "tSNE_HARMONY",
+                                      colour_by = "Mouse_CellType",
+                                      point_alpha = 0.4) +
+    scale_color_manual(values = mouse_cell_cols) +
+    theme(legend.position = "none")
+ggsave(plot = mouse_tSNE_noLegend,
+       filename = here("plots","Conservation","harmony_tSNE_Mouse_CellType_Colored_withoutLegend.pdf"),
+       height = 10,width = 10)
+
 
 
 
