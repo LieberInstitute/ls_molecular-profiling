@@ -5,6 +5,7 @@ library(SingleCellExperiment)
 library(sessioninfo)
 library(ggplot2)
 library(scater)
+library(scran)
 library(here)
 
 #Load the integrated object. 
@@ -99,9 +100,42 @@ ggsave(plot = mouse_tSNE_noLegend,
        height = 10,width = 10)
 
 
+#30,000 cells so will use higher k values. 
+#jaccard + louvain is similar to seurat workflow. 
+#Resolution=1 is the default
+snn_k_50 <- buildSNNGraph(sce_harmony_Species, k = 50, use.dimred = "HARMONY",type="jaccard")
+snn_k_75 <- buildSNNGraph(sce_harmony_Species, k = 75, use.dimred = "HARMONY",type="jaccard")
+snn_k_100 <- buildSNNGraph(sce_harmony_Species, k = 100, use.dimred = "HARMONY",type="jaccard")
 
+#Louvain clustering
+#k=50
+set.seed(1234)
+clust_50 <- igraph::cluster_louvain(snn_k_50,resolution=1)$membership
+table(clust_50)
+#clust_50
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 2582 2798 1186  675  388 3452 1010 1434 1934  398 3161  686  321 1509  234  329 
+# 17   18   19   20   21   22   23   24   25   26   27 
+# 467  150 4302  110  712 1665  494   72  345   57  638 
 
+#k=75
+set.seed(1234)
+clust_75 <- igraph::cluster_louvain(snn_k_75,resolution=1)$membership
+table(clust_75)
+# clust_75
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 2673 3017 1181  673  385 3572 1005 1439 1785  382 3298  619 1397  338  528 4634 
+# 17   18   19   20   21   22 
+# 703 1604  443  346  450  637 
 
-
+#k=100
+set.seed(1234)
+clust_100 <- igraph::cluster_louvain(snn_k_100,resolution=1)$membership
+table(clust_100)
+# clust_100
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 2680 3025 1181  665  383 3573 1000 1453 1819  380 3568  338 1341  336  529  142 
+# 17   18   19   20   21   22   23 
+# 4513  644  699 1594  447  345  454 
 
 
