@@ -112,7 +112,7 @@ snn_k_100 <- buildSNNGraph(sce_harmony_Species, k = 100, use.dimred = "HARMONY",
 set.seed(1234)
 clust_50 <- igraph::cluster_louvain(snn_k_50,resolution=1)$membership
 table(clust_50)
-#clust_50
+# clust_50
 # 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
 # 2582 2798 1186  675  388 3452 1010 1434 1934  398 3161  686  321 1509  234  329 
 # 17   18   19   20   21   22   23   24   25   26   27 
@@ -124,9 +124,9 @@ clust_75 <- igraph::cluster_louvain(snn_k_75,resolution=1)$membership
 table(clust_75)
 # clust_75
 # 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 2673 3017 1181  673  385 3572 1005 1439 1785  382 3298  619 1397  338  528 4634 
-# 17   18   19   20   21   22 
-# 703 1604  443  346  450  637 
+# 2673 3034 1181  673  385 3572 1005 1439 1773  380 3590  324 1390  338  528  147 
+# 17   18   19   20   21   22   23 
+# 4487  703 1604  445  346  450  642 
 
 #k=100
 set.seed(1234)
@@ -137,5 +137,77 @@ table(clust_100)
 # 2680 3025 1181  665  383 3573 1000 1453 1819  380 3568  338 1341  336  529  142 
 # 17   18   19   20   21   22   23 
 # 4513  644  699 1594  447  345  454 
+
+#Add cluster information to object
+sce_harmony_Species$k_50_louvain_1 <- factor(clust_50)
+sce_harmony_Species$k_75_louvain_1 <- factor(clust_75)
+sce_harmony_Species$k_100_louvain_1 <- factor(clust_100)
+
+
+#Plot the clusters on the tSNE with 15 dimensions. 
+for(i in c("k_50_louvain_1",
+           "k_75_louvain_1",
+           "k_100_louvain_1")){
+    print(i)
+    x <- plotReducedDim(object = sce_harmony_Species,
+                        dimred = "tSNE_HARMONY",
+                        colour_by = i,text_by = i) +
+        ggtitle(i) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(plot = x,filename = here("plots","Conservation","Clustering",paste0(i,".pdf")))
+}
+
+#k=75 looks best so far. 
+#Now plot expression of marker genes to identify clusters. 
+#First need to add in gene name from ensembl gene id. To do this load in the original humnan sce and 
+#merge the rowData
+load(here("processed-data","sce_with_CellType.rda"),verbose = TRUE)
+# Loading objects:
+#     sce
+gene_names <- rowData(sce)[,c("gene_id","gene_name","gene_type")]
+
+#Add a gene id column to sce_harmony_Species 
+rowData(sce_harmony_Species)$gene_id <- row.names(rowData(sce_harmony_Species))
+nrow(rowData(sce_harmony_Species))
+#[1] 16562
+rowData(sce_harmony_Species) <- merge(rowData(sce_harmony_Species),
+                                      gene_names,
+                                      by = "gene_id")
+nrow(rowData(sce_harmony_Species))
+#[1] 16562
+
+#Pull ensembl IDs for these genes.
+genes <- c("SYT1","SNAP25", #Pan-neuronal
+           "GAD1","GAD2","SLC32A1", #GABAergic
+           "SLC17A6","SLC17A7","SLC17A8", #Glutamatergic
+           "TRPC4","DGKG","HOMER2","PTPN3","TRHDE","CPNE7","NRP1", #Lateral Septum markers from mouse
+           "ELAVL2","TRPC5", #Medial Septum markers from mouse
+           "RARB","BCL11B","PPP1R1B", #Broad striatal + MSN markers 
+           "OPRM1","DRD1", #Striosome markers
+           "MBP","MOBP", #Oligodendrocyte
+           "CD74", "CSF1R", "C3", #Microglia
+           "GFAP", "TNC", "AQP4", "SLC1A2", #Astrocytes
+           "CLDN5", "FLT1", "VTN", #Endothelial
+           "COL1A2", "TBX18", "RBPMS", #Mural
+           "SKAP1", "ITK", "CD247", #Tcell
+           "CD163", "SIGLEC1", "F13A1", #Macrophage
+           "FOXJ1","PIFO","CFAP44", #Ependymal
+           "PDGFRA", "VCAN", "CSPG4") #Polydendrocytes
+
+for(i in genes){
+    print(i)
+    x <- rowData(sce_harmony_Species)[which(rowData(sce_harmony_Species)$gene_name == i),"gene_id"]
+    gene_plot <- plotReducedDim(object = sce_harmony_Species,
+                                dimred = "tSNE_HARMONY",
+                                color_by = x) +
+        scale_color_gradientn(colours = c("lightgrey","orange","red")) +
+        ggtitle(paste0(i,"\n",
+                       rowData(sce_harmony_Species)[which(rowData(sce_harmony_Species)$gene_name == i),"gene_id"])) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(plot = gene_plot,filename = here("plots","Conservation",
+                                            "Clustering","k_75_louvain_1_expression",
+                                            paste0(i,"cross_species_k_75.pdf")))
+}
+
 
 
