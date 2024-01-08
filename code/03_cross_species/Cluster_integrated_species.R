@@ -2,6 +2,7 @@
 #cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling
 
 library(SingleCellExperiment)
+library(DeconvoBuddies)
 library(sessioninfo)
 library(ggplot2)
 library(scater)
@@ -29,6 +30,7 @@ sce_harmony_Species
 # tSNE_HARMONY
 # mainExpName: NULL
 # altExpNames(0):
+
 
 #Would be good to have plots where one species is greyed out and the other species clusters are colored. 
 #First make two coldata columns that will contain the information needed to make the plots. 
@@ -112,7 +114,7 @@ snn_k_100 <- buildSNNGraph(sce_harmony_Species, k = 100, use.dimred = "HARMONY",
 set.seed(1234)
 clust_50 <- igraph::cluster_louvain(snn_k_50,resolution=1)$membership
 table(clust_50)
-# clust_50
+clust_50
 # 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
 # 2582 2798 1186  675  388 3452 1010 1434 1934  398 3161  686  321 1509  234  329 
 # 17   18   19   20   21   22   23   24   25   26   27 
@@ -142,7 +144,6 @@ table(clust_100)
 sce_harmony_Species$k_50_louvain_1 <- factor(clust_50)
 sce_harmony_Species$k_75_louvain_1 <- factor(clust_75)
 sce_harmony_Species$k_100_louvain_1 <- factor(clust_100)
-
 
 #Plot the clusters on the tSNE with 15 dimensions. 
 for(i in c("k_50_louvain_1",
@@ -180,9 +181,10 @@ nrow(rowData(sce_harmony_Species))
 genes <- c("SYT1","SNAP25", #Pan-neuronal
            "GAD1","GAD2","SLC32A1", #GABAergic
            "SLC17A6","SLC17A7","SLC17A8", #Glutamatergic
-           "TRPC4","DGKG","HOMER2","PTPN3","TRHDE","CPNE7","NRP1", #Lateral Septum markers from mouse
+           "TRPC4","DGKG","HOMER2","PTPN3","TRHDE","CPNE7","NRP1","FREM2", #Lateral Septum markers from mouse
            "ELAVL2","TRPC5", #Medial Septum markers from mouse
            "RARB","BCL11B","PPP1R1B", #Broad striatal + MSN markers 
+           "FXYD6", #Broad septal
            "OPRM1","DRD1", #Striosome markers
            "MBP","MOBP", #Oligodendrocyte
            "CD74", "CSF1R", "C3", #Microglia
@@ -206,8 +208,94 @@ for(i in genes){
         theme(plot.title = element_text(hjust = 0.5))
     ggsave(plot = gene_plot,filename = here("plots","Conservation",
                                             "Clustering","k_75_louvain_1_expression",
-                                            paste0(i,"cross_species_k_75.pdf")))
+                                            paste0(i,"_cross_species_k_75.pdf")))
 }
+
+
+plotReducedDim(object = sce_harmony_Species,
+               dimred = "tSNE_HARMONY",
+               color_by = "ENSG00000149295") +
+    scale_color_gradientn(colours = c("lightgrey","orange","red"))
+
+#Run a quick DEG analysis to help with cluster identification. 
+markers_1vALL_enrich <- findMarkers_1vAll(sce_harmony_Species, 
+                                          assay_name = "logcounts", 
+                                          cellType_col = "k_75_louvain_1", 
+                                          mod = "~Sample")
+# 1 - '2024-01-08 14:43:56.808779
+# 2 - '2024-01-08 14:46:04.164763
+# 3 - '2024-01-08 14:48:16.745078
+# 4 - '2024-01-08 14:50:30.802523
+# 5 - '2024-01-08 14:52:45.587948
+# 6 - '2024-01-08 14:55:03.956395
+# 7 - '2024-01-08 14:57:09.731182
+# 8 - '2024-01-08 14:59:25.046667
+# 9 - '2024-01-08 15:01:39.360235
+# 10 - '2024-01-08 15:03:55.02235
+# 11 - '2024-01-08 15:06:06.442347
+# 12 - '2024-01-08 15:08:06.443018
+# 13 - '2024-01-08 15:10:04.40993
+# 14 - '2024-01-08 15:11:47.439724
+# 15 - '2024-01-08 15:13:36.992938
+# 16 - '2024-01-08 15:15:30.60645
+# 17 - '2024-01-08 15:17:21.666588
+# 18 - '2024-01-08 15:19:13.508835
+# 19 - '2024-01-08 15:21:06.690871
+# 20 - '2024-01-08 15:22:57.691572
+# 21 - '2024-01-08 15:24:50.009232
+# 22 - '2024-01-08 15:26:40.621126
+# 23 - '2024-01-08 15:28:33.457227
+# Building Table - 2024-01-08 15:30:06.178589
+# ** Done! **
+
+#Merge the two dataframes. 
+markers_gene_name <- merge(x    = as.data.frame(markers_1vALL_enrich),
+                           y    = as.data.frame(rowData(sce_harmony_Species)[,c("gene_id","gene_name")]),
+                           by.x = "gene",
+                           by.y = "gene_id")
+
+#Subset for top 50 markers for each cluster
+markers_gene_name <- subset(markers_gene_name,subset=(rank_marker %in% 1:50))
+
+
+#Order by cellType.target
+markers_gene_name <- markers_gene_name[order(markers_gene_name$rank_marker,decreasing = FALSE),]
+
+#save markers_df and object
+save(markers_gene_name,file = here("processed-data","integrated_markers_df.rda"))
+save(sce_harmony_Species,file = here("processed-data","sce_integrated.rda"))
+
+#Would also help to figure out what makes up each cluster. 
+
+
+
+#Start the annotation. 
+# 1 - LS_Inh_A
+# 2 - Drd1_MSN_A
+# 3 - Excit_A
+# 4 - Polydendrocyte
+# 5 - Microglia
+# 6 - Oligodendrocyte
+# 7 - Ependymal
+# 8 - Drd1_MSN_Patch
+# 9 - Drd2_MSN
+# 10 - MS_Inh_A
+# 11 - Septal_Inh_A
+# 12 - MS_Inh_B
+# 13 - Str_Inh_A 
+# 14 - Excit_B
+# 15 - Mural
+# 16 - Astrocyte_1
+# 17 - Astrocyte_2
+# 18 - 
+# 19 - Astrocyte_3
+# 20 - 
+# 21
+# 22
+# 23
+
+
+
 
 
 
