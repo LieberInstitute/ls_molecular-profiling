@@ -266,7 +266,10 @@ save(markers_gene_name,file = here("processed-data","integrated_markers_df.rda")
 save(sce_harmony_Species,file = here("processed-data","sce_integrated.rda"))
 
 #Would also help to figure out what makes up each cluster. 
-
+for(i in unique(sce_harmony_Species$k_75_louvain_1)){
+    print(unique(subset(colData(sce_harmony_Species),subset=(k_75_louvain_1 == i))$CellType_Species))
+}
+#Need to figure out a better way to do this. 
 
 
 #Start the annotation. 
