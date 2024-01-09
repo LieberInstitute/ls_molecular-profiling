@@ -4,10 +4,12 @@
 library(SingleCellExperiment)
 library(DeconvoBuddies)
 library(sessioninfo)
+library(ggridges)
 library(ggplot2)
 library(scater)
 library(scran)
 library(here)
+library(lisi)
 
 #Load the integrated object. 
 load(here("processed-data","sce_harmony_species.rda"),verbose = TRUE)
@@ -349,5 +351,35 @@ annotated_tSNE <- plotReducedDim(object = sce_harmony_Species,
 ggsave(filename = here("plots","Conservation","tSNE_Harmony_annotatedCellTypes.pdf"),
        plot = annotated_tSNE)
 
+#Calculate LISI to assess integration. 
+#Pull tSNE embeddings from HARMONY reduced dim
+harmony_tSNE_embeds <- as.data.frame(reducedDim(sce_harmony_Species,"tSNE_HARMONY"))
 
+#DF of metadata
+harmony_metadata <- as.data.frame(colData(sce_harmony_Species)[,c("Species","CellType_Species","CellType_k_75_louvain")])
+
+#Run lisi
+res <- compute_lisi(harmony_tSNE_embeds,harmony_metadata,"Species")
+colnames(res)[1] <- "Species_LISI"
+
+#Add celltype to res
+res$CellID <- rownames(res)
+harmony_metadata$CellID <- rownames(harmony_metadata)
+res_all <- merge(x = res,
+                 y = harmony_metadata,
+                 by = "CellID")
+
+#ridge plot of LISI by cluster. Peaks closer to 2 are more well integrated. 
+harmony_lisi_ridge <- ggplot(res_all,aes(x = Species_LISI,y = CellType_k_75_louvain,fill = CellType_k_75_louvain)) +
+    geom_density_ridges() +
+    scale_fill_manual(values = cluster_cols) +
+    theme(legend.position = "none")
+
+ggsave(plot = harmony_lisi_ridge,filename = here("plots","Conservation","harmony_lisi_ridge.pdf"))
+
+#Many of the distributions are centered on 1. Most likely due to the fact that there are double 
+#the number of mouse to human cells so cells within neighborhood are mostly going to be mouse. 
+
+
+    
 
