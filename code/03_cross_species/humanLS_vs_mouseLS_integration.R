@@ -14,21 +14,9 @@ library(scry)
 
 #Load the human and mouse matched SCE objects.
 load(here("processed-data","human_mouse_matched_by_JAX.rda"),verbose = TRUE)
-
-sce_mouse_sub
-# class: SingleCellExperiment 
-# dim: 16562 21884 
-# metadata(1): Samples
-# assays(3): counts binomial_pearson_residuals logcounts
-# rownames(16562): ENSMUSG00000096351 ENSMUSG00000095567 ...
-# ENSMUSG00000037772 ENSMUSG00000003526
-# rowData names(9): source type ... mm.entrezIds JAX.geneID
-# colnames(21884): 1_AAACCCAAGGTACATA-1 1_AAACCCACATCCGAGC-1 ...
-# 4_TTTGTTGCATACAGCT-1 4_TTTGTTGGTCAAACGG-1
-# colData names(17): Sample Barcode ... cellType.final cellType.broad
-# reducedDimNames(4): GLMPCA_approx UMAP TSNE GLMPCA_50
-# mainExpName: NULL
-# altExpNames(0):
+# Loading objects:
+#     sce_mouse_sub
+#     sce_human_sub
 
 #Make sure the mixed and doublet populations are gone. 
 levels(sce_mouse_sub$cellType.final)
@@ -58,9 +46,24 @@ sce_human_sub
 # mainExpName: NULL
 # altExpNames(0):
 
+sce_mouse_sub
+# class: SingleCellExperiment 
+# dim: 16562 21884 
+# metadata(1): Samples
+# assays(3): counts binomial_pearson_residuals logcounts
+# rownames(16562): ENSMUSG00000096351 ENSMUSG00000095567 ...
+# ENSMUSG00000037772 ENSMUSG00000003526
+# rowData names(9): source type ... mm.entrezIds JAX.geneID
+# colnames(21884): 1_AAACCCAAGGTACATA-1 1_AAACCCACATCCGAGC-1 ...
+# 4_TTTGTTGCATACAGCT-1 4_TTTGTTGGTCAAACGG-1
+# colData names(17): Sample Barcode ... cellType.final cellType.broad
+# reducedDimNames(4): GLMPCA_approx UMAP TSNE GLMPCA_50
+# mainExpName: NULL
+# altExpNames(0):
+
 #Everything should be in order, but check to make sure? 
 all(rowData(sce_human_sub)$JAX.geneID == rowData(sce_mouse_sub)$JAX.geneID) 
-#[1] TRUE
+# [1] TRUE
 
 #Add coldata column that corresponds to the species. 
 sce_human_sub$Species <- "Human"
@@ -180,18 +183,18 @@ mnn.hold <- fastMNN(sce_combo,
                     BSPARAM=BiocSingular::IrlbaParam())
 
 #Add mnn to sce_combo object
-reducedDim(sce_combo, "PCA_corrected") <- reducedDim(mnn.hold, "corrected")
+reducedDim(sce_combo, "PCA_MNN") <- reducedDim(mnn.hold, "corrected")
 
 #Rerun the UMAP and tSNE
 set.seed(1234)
 sce_combo <- runUMAP(sce_combo,
-                     dimred = "PCA_corrected",
+                     dimred = "PCA_MNN",
                      n_dimred = 50,
                      name = "UMAP_corrected_50")
 #tSNE
 set.seed(1234)
 sce_combo <- runTSNE(sce_combo,
-                     dimred = "PCA_corrected",
+                     dimred = "PCA_MNN",
                      n_dimred = 50,
                      name = "tSNE_corrected_50")
 
@@ -256,21 +259,7 @@ ggsave(tSNE_cross_species_ct,filename = here("plots",
 #Add a duplicate reducedDim that is only called PCA. This is required for RunHarmony 
 reducedDim(sce_combo,"PCA") <- reducedDim(sce_combo,"PCA_corrected")
 sce_harmony_Species <- RunHarmony(sce_combo, group.by.vars = "Species", verbose = TRUE)
-# Transposing data matrix
-# Hard k-means centroids initialization
-# Harmony 1/10
-# 0%   10   20   30   40   50   60   70   80   90   100%
-# [----|----|----|----|----|----|----|----|----|----|
-# **************************************************|
-# Harmony 2/10
-# 0%   10   20   30   40   50   60   70   80   90   100%
-# [----|----|----|----|----|----|----|----|----|----|
-# **************************************************|
-# Harmony 3/10
-# 0%   10   20   30   40   50   60   70   80   90   100%
-# [----|----|----|----|----|----|----|----|----|----|
-# **************************************************|
-# Harmony converged after 3 iterations
+
 
 #Run tSNE adn UMAP with harmony
 #UMAP
