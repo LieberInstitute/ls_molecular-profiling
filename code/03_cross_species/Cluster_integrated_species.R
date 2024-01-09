@@ -267,10 +267,20 @@ save(sce_harmony_Species,file = here("processed-data","sce_integrated.rda"))
 
 #Would also help to figure out what makes up each cluster. 
 for(i in unique(sce_harmony_Species$k_75_louvain_1)){
-    print(unique(subset(colData(sce_harmony_Species),subset=(k_75_louvain_1 == i))$CellType_Species))
+    data <- as.data.frame(table((subset(colData(sce_harmony_Species),subset=(k_75_louvain_1 == i))$CellType_Species)))
+    data$prop <- data$Freq/sum(data$Freq)*100
+    prop_plot <- ggplot(data, aes(x=reorder(Var1,prop), y=prop, fill=Var1)) +
+        geom_bar(stat="identity") +
+        labs(x = "Cell Type",
+             y = "Proportion") +
+        theme_bw() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1),
+              legend.position = "none")
+    ggsave(plot = prop_plot,
+           filename = here("plots","Conservation","Cluster_Proportion_barplots","Harmony",
+                           paste0(i,"_prop_barplot.pdf")))
+    
 }
-#Need to figure out a better way to do this. 
-
 
 #Start the annotation. 
 # 1 - LS_Inh_A
@@ -284,21 +294,60 @@ for(i in unique(sce_harmony_Species$k_75_louvain_1)){
 # 9 - Drd2_MSN
 # 10 - MS_Inh_A
 # 11 - Septal_Inh_A
-# 12 - MS_Inh_B
+# 12 - Septal_Inh_B
 # 13 - Str_Inh_A 
 # 14 - Excit_B
 # 15 - Mural
 # 16 - Astrocyte_1
 # 17 - Astrocyte_2
-# 18 - 
+# 18 - Neuroblast
 # 19 - Astrocyte_3
-# 20 - 
-# 21
-# 22
-# 23
+# 20 - Septal_Inh_C
+# 21 - IoC
+# 22 - TNoS
+# 23 - Thal
+
+#Create annotation dataframes
+annotation_df <- data.frame(cluster= 1:23,
+                            celltype = c("LS_Inh_A","Drd1_MSN_A","Excit_A","Polydendrocyte",
+                                         "Microglia","Oligodendrocyte","Ependymal","Drd1_MSN_Patch",
+                                         "Drd2_MSN","MS_Inh_A","Septal_Inh_A","Septal_Inh_B",
+                                         "Str_Inh_A","Excit_B","Mural","Astrocyte_1",
+                                         "Astrocyte_2","Neuroblast","Astrocyte_3","Septal_Inh_C",
+                                         "IoC","TNoS","Thal"))
+
+#add celltype info
+sce_harmony_Species$CellType_k_75_louvain <- annotation_df$celltype[match(sce_harmony_Species$k_75_louvain_1,
+                                                                          annotation_df$cluster)]
 
 
+#Make celltype a factor
+sce_harmony_Species$CellType_k_75_louvain <- factor(sce_harmony_Species$CellType_k_75_louvain,
+                                                    levels = c("LS_Inh_A","MS_Inh_A","Septal_Inh_A","Septal_Inh_B",
+                                                               "Septal_Inh_C","Drd1_MSN_A","Drd1_MSN_Patch","Drd2_MSN",
+                                                               "Str_Inh_A","Excit_A","Excit_B","IoC","TNoS","Thal",
+                                                               "Astrocyte_1","Astrocyte_2","Astrocyte_3","Ependymal",
+                                                               "Oligodendrocyte","Polydendrocyte","Microglia",
+                                                               "Mural","Neuroblast"))
 
+#Annotate the tSNE
+cluster_cols <- Polychrome::createPalette(length(unique(sce_harmony_Species$CellType_k_75_louvain)),
+                                          c("#D81B60", "#1E88E5","#FFC107","#009E73"))
+names(cluster_cols) <- unique(sce_harmony_Species$CellType_k_75_louvain)
+
+#Save the cluster cols
+save(cluster_cols,file = here("plots","Conservation","harmony_integration_cluster_cols.rda"))
+
+#make plot
+annotated_tSNE <- plotReducedDim(object = sce_harmony_Species,
+                                 dimred = "tSNE_HARMONY",
+                                 colour_by = "CellType_k_75_louvain",
+                                 text_by = "CellType_k_75_louvain") +
+    scale_color_manual(values = cluster_cols) +
+    ggtitle("HARMONY Integration") +
+    theme(legend.position = "none",plot.title = element_text(hjust = 0.5)) 
+ggsave(filename = here("plots","Conservation","tSNE_Harmony_annotatedCellTypes.pdf"),
+       plot = annotated_tSNE)
 
 
 
