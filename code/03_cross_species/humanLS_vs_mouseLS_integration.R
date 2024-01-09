@@ -257,9 +257,19 @@ ggsave(tSNE_cross_species_ct,filename = here("plots",
 
 #These look okay. Will also try Harmony. 
 #Add a duplicate reducedDim that is only called PCA. This is required for RunHarmony 
-reducedDim(sce_combo,"PCA") <- reducedDim(sce_combo,"PCA_corrected")
+reducedDim(sce_combo,"PCA") <- reducedDim(sce_combo,"GLMPCA_approx")
 sce_harmony_Species <- RunHarmony(sce_combo, group.by.vars = "Species", verbose = TRUE)
-
+# Transposing data matrix
+# Hard k-means centroids initialization
+# Harmony 1/10
+# 0%   10   20   30   40   50   60   70   80   90   100%
+# [----|----|----|----|----|----|----|----|----|----|
+# **************************************************|
+# Harmony 2/10
+# 0%   10   20   30   40   50   60   70   80   90   100%
+# [----|----|----|----|----|----|----|----|----|----|
+# **************************************************|
+# Harmony converged after 2 iterations
 
 #Run tSNE adn UMAP with harmony
 #UMAP
@@ -299,10 +309,10 @@ proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2024-01-05 11:01:43 EST"
-#     user   system  elapsed 
-# 1763.269   47.078 4251.536
-# ─ Session info ──────────────────────────────────────────────────────────────────
+# [1] "2024-01-09 11:55:36 EST"
+# user   system  elapsed 
+# 2234.974   91.092 3555.720 
+# ─ Session info ─────────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
 # os       Rocky Linux 9.2 (Blue Onyx)
@@ -312,10 +322,10 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2024-01-05
+# date     2024-01-09
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ──────────────────────────────────────────────────────────────────────
+# ─ Packages ─────────────────────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # batchelor            * 1.16.0    2023-04-25 [2] Bioconductor
@@ -405,4 +415,4 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
-# ─────────────────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────────────────
