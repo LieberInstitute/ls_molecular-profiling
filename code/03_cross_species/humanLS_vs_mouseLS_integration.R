@@ -174,6 +174,11 @@ ggsave(tSNE_cross_species,filename = here("plots",
 
 
 #As expected, tSNE split by species. Next run fast fastMNN
+#From https://bioconductor.org/packages/devel/bioc/vignettes/batchelor/inst/doc/correction.html#42_The_new,_fast_method:
+#"The fastMNN() function performs a principal components analysis (PCA) on the HVGs to obtain a low-dimensional representation 
+#of the input data"
+#Different from HARMONY in that MNN is calculating the PC space, while HARMONY requires PCs to be computed 
+#before running the integration. 
 mnn.hold <- fastMNN(sce_combo, 
                     batch=sce_combo$Sample,
                     subset.row=hdgs, 
