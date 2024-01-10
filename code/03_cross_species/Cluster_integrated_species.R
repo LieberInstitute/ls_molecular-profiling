@@ -186,7 +186,7 @@ sce_harmony_Species$k_50_louvain_1 <- factor(clust_50)
 sce_harmony_Species$k_75_louvain_1 <- factor(clust_75)
 sce_harmony_Species$k_100_louvain_1 <- factor(clust_100)
 
-#Plot the clusters on the tSNE with 15 dimensions. 
+#Plot the clusters on the tSNE
 for(i in c("k_10_louvain_1",
            "k_25_louvain_1",
            "k_50_louvain_1",
@@ -352,6 +352,125 @@ ggsave(plot = mouse_tSNE_labeled,
        filename = here("plots","Conservation","mnn_tSNE_mouse_CellType_Colored_labeled.pdf"),
        height = 13,width = 13)
 
+#30,000 cells so will use higher k values. 
+#jaccard + louvain is similar to seurat workflow. 
+#Resolution=1 is the default
+snn_k_10_mnn <- buildSNNGraph(sce_harmony_Species, k = 10, use.dimred = "PCA_MNN",type="jaccard")
+snn_k_25_mnn <- buildSNNGraph(sce_harmony_Species, k = 25, use.dimred = "PCA_MNN",type="jaccard")
+snn_k_50_mnn <- buildSNNGraph(sce_harmony_Species, k = 50, use.dimred = "PCA_MNN",type="jaccard")
+snn_k_75_mnn<- buildSNNGraph(sce_harmony_Species, k = 75, use.dimred = "PCA_MNN",type="jaccard")
+snn_k_100_mnn <- buildSNNGraph(sce_harmony_Species, k = 100, use.dimred = "PCA_MNN",type="jaccard")
 
 
+#Louvain clustering
+#k=10
+set.seed(1234)
+clust_10_mnn <- igraph::cluster_louvain(snn_k_10_mnn,resolution=1)$membership
+table(clust_10_mnn)
+# clust_10_mnn
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 2262 2493 1463  564  390  589 1794 1032 1225 1715  560  213  632 2009 1703 1631 
+# 17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32 
+# 187  481  183 1992 3997  155  180   76  429  397  382  508  724   57   59  623 
+# 33   34 
+# 109  295
+
+#k=25
+set.seed(1234)
+clust_25_mnn <- igraph::cluster_louvain(snn_k_25_mnn,resolution=1)$membership
+table(clust_25_mnn)
+# clust_25_mnn
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 248 2769 1427  614  389 2276 1760  980 1250 1865  397  217 2872  177   78 1642 
+# 17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32 
+# 1676  237  465  177 1834 4208  227  171  310   75  592  487   57  696  634  302 
+
+#k=50
+set.seed(1234)
+clust_50_mnn <- igraph::cluster_louvain(snn_k_50_mnn,resolution=1)$membership
+table(clust_50_mnn)
+# clust_50_mnn
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 254 2848 1509  675  387 2274 1804 1010 1397  395 3120 1895  309 1618 1648  231 
+# 17   18   19   20   21   22   23   24   25   26   27   28 
+# 467  171 1842 4214   73  492  276  474   57  723  650  296 
+
+#k=75
+set.seed(1234)
+clust_75_mnn <- igraph::cluster_louvain(snn_k_75_mnn,resolution=1)$membership
+table(clust_75_mnn)
+# clust_75_mnn
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 2614 2769 1524  673  386 1811 1004 1392  385 3043  594 1828 1595 1767  236  526 
+# 17   18   19   20   21   22   23   24   25 
+# 173 1866 4198  170  429  473  713  645  295 
+
+#k=100
+set.seed(1234)
+clust_100_mnn <- igraph::cluster_louvain(snn_k_100_mnn,resolution=1)$membership
+table(clust_100_mnn)
+clust_100_mnn
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 2625 4770 1523  765  386 1816  998 1407  380 3341  328 1575 1760  218  526  168 
+# 17   18   19   20   21   22   23 
+# 1876 4210  471  299  704  642  321 
+
+#Add cluster information to object
+sce_harmony_Species$k_10_louvain_1_mnn <- factor(clust_10_mnn)
+sce_harmony_Species$k_25_louvain_1_mnn <- factor(clust_25_mnn)
+sce_harmony_Species$k_50_louvain_1_mnn <- factor(clust_50_mnn)
+sce_harmony_Species$k_75_louvain_1_mnn <- factor(clust_75_mnn)
+sce_harmony_Species$k_100_louvain_1_mnn <- factor(clust_100_mnn)
+
+#Plot the clusters on the tSNE
+for(i in c("k_10_louvain_1_mnn",
+           "k_25_louvain_1_mnn",
+           "k_50_louvain_1_mnn",
+           "k_75_louvain_1_mnn",
+           "k_100_louvain_1_mnn")){
+    print(i)
+    x <- plotReducedDim(object = sce_harmony_Species,
+                        dimred = "tSNE_corrected_50",
+                        colour_by = i,text_by = i) +
+        ggtitle(i) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(plot = x,filename = here("plots","Conservation","Clustering","mnn",paste0(i,".pdf")))
+}
+
+#Plot genes from above on top of the mnn corrected tsne
+for(i in genes){
+    print(i)
+    x <- rowData(sce_harmony_Species)[which(rowData(sce_harmony_Species)$gene_name == i),"gene_id"]
+    gene_plot <- plotReducedDim(object = sce_harmony_Species,
+                                dimred = "tSNE_corrected_50",
+                                color_by = x) +
+        scale_color_gradientn(colours = c("lightgrey","orange","red")) +
+        ggtitle(paste0(i,"\n",
+                       rowData(sce_harmony_Species)[which(rowData(sce_harmony_Species)$gene_name == i),"gene_id"])) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(plot = gene_plot,filename = here("plots","Conservation",
+                                            "Clustering","mnn","Expression",
+                                            paste0(i,"_cross_species_mnn_corrected.pdf")))
+}
+
+
+#barplot 
+for(i in c("k_10_louvain_1_mnn","k_25_louvain_1_mnn","k_50_louvain_1_mnn",
+           "k_75_louvain_1_mnn","k_100_louvain_1_mnn")){
+    for(l in unique(levels(colData(sce_harmony_Species)[,i]))){
+        rows <- which(colData(sce_harmony_Species)[,i] == l)
+        data <- as.data.frame(table(colData(sce_harmony_Species)[rows,"CellType_Species"]))
+        data$prop <- data$Freq/sum(data$Freq)*100
+        prop_plot <- ggplot(data, aes(x=reorder(Var1,prop), y=prop, fill=Var1)) +
+            geom_bar(stat="identity") +
+            labs(x = "Cell Type",
+                 y = "Proportion") +
+            theme_bw() +
+            theme(axis.text.x = element_text(angle = 45, hjust = 1),
+                  legend.position = "none")
+        ggsave(plot = prop_plot,
+               filename = here("plots","Conservation","Cluster_Proportion_barplots","mnn",i,
+                               paste0(l,"_prop_barplot_mnn.pdf")))
+        
+}}
 
