@@ -481,8 +481,6 @@ save(sce_cs,file = here("processed-data","sce_cs.rda"))
 #Will move forward with the mnn object. 
 #k=75 looks best. 
 #To aid with cluster annotation, I will 1vALL run DEG testing to pull top 50 genes. 
-
-
 markers_1vALL_enrich <- findMarkers_1vAll(sce_cs,
                                           assay_name = "logcounts",
                                           cellType_col = "k_75_louvain_1_mnn",
@@ -561,5 +559,46 @@ save(markers_gene_name,file = here("processed-data","integrated_unannotated_1vAL
 # 23 - Neuroblast_Mouse
 # 24 - Thal_Mouse
 # 25 - IoC_Mouse
+
+#Create annotation dataframes
+annotation_df <- data.frame(cluster= 1:25,
+                            celltype = c("LS_Inh","Drd1_MSN","Excit_A","Polydendrocyte","Microglia",
+                                         "Oligo_Human","Ependymal","Drd1_MSN_Patch","MS_Inh","Sept_Inh_A",
+                                         "Sept_Inh_B","Drd2_MSN","Sept_Str_Inh","Oligo_Mouse","MS_Excit_Human",
+                                         "Mural","Astrocyte_Human","Astrocyte_Mouse_A","Astrocyte_Mouse_B","Drd1_MSN_Matrix_Human",
+                                         "Sept_Mouse","TNoS_Mouse","Neuroblast_Mouse","Thal_Mouse","IoC_Mouse"))
+#add celltype info
+sce_cs$CellType_k_75_louvain_mnn <- annotation_df$celltype[match(sce_cs$k_75_louvain_1_mnn,
+                                                                 annotation_df$cluster)]
+
+#Make celltype a factor
+sce_cs$CellType_k_75_louvain_mnn <- factor(sce_cs$CellType_k_75_louvain_mnn,
+                                           levels = c("LS_Inh","MS_Inh","Sept_Inh_A","Sept_Inh_B","Sept_Str_Inh","Sept_Mouse",
+                                                      "Drd1_MSN","Drd1_MSN_Patch","Drd1_MSN_Matrix_Human","Drd2_MSN","MS_Excit_Human",
+                                                      "Excit_A","Astrocyte_Human","Astrocyte_Mouse_A","Astrocyte_Mouse_B","Ependymal",
+                                                      "Oligo_Human","Oligo_Mouse","Polydendrocyte","Microglia","Mural",
+                                                      "TNoS_Mouse","Neuroblast_Mouse","Thal_Mouse","IoC_Mouse"))
+#Annotate the tSNE
+cluster_cols <- Polychrome::createPalette(length(unique(sce_cs$CellType_k_75_louvain_mnn)),
+                                          c("#D81B60", "#1E88E5","#FFC107","#009E73"))
+names(cluster_cols) <- unique(sce_cs$CellType_k_75_louvain_mnn)
+#Save the cluster cols
+save(cluster_cols,file = here("plots","Conservation","mnn_integration_cluster_cols.rda"))
+
+#make plot
+annotated_tSNE <- plotReducedDim(object = sce_cs,
+                                 dimred = "tSNE_corrected_50",
+                                 colour_by = "CellType_k_75_louvain_mnn",
+                                 text_by = "CellType_k_75_louvain_mnn") +
+    scale_color_manual(values = cluster_cols) +
+    ggtitle("MNN Integration") +
+    theme(legend.position = "none",plot.title = element_text(hjust = 0.5))
+ggsave(filename = here("plots","Conservation","tSNE_mnn_annotatedCellTypes.pdf"),
+       plot = annotated_tSNE)
+
+
+#To do: 
+#Identify method to interrogate success of clustering. 
+#Conserved marker gene analysis. 
 
 
