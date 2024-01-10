@@ -474,3 +474,6 @@ for(i in c("k_10_louvain_1_mnn","k_25_louvain_1_mnn","k_50_louvain_1_mnn",
         
 }}
 
+#rename the object
+sce_cs <- sce_harmony_Species
+save(sce_cs,file = here("processed-data","sce_cs.rda"))
