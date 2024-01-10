@@ -33,7 +33,6 @@ sce_harmony_Species
 # mainExpName: NULL
 # altExpNames(0):
 
-
 #Would be good to have plots where one species is greyed out and the other species clusters are colored. 
 #First make two coldata columns that will contain the information needed to make the plots. 
 ####Human first
@@ -62,6 +61,9 @@ names(mouse_cell_cols) <- unique(sce_harmony_Species$Mouse_CellType)
 #Change the mouse color to grey. 
 mouse_cell_cols["Human"] <- "#c6c6c6"
 
+###################################
+############# HARMONY #############
+###################################
 #Generate the plots. 
 ###Human 
 #Legend
@@ -125,11 +127,6 @@ mouse_tSNE_labeled <- plotReducedDim(object = sce_harmony_Species,
 ggsave(plot = mouse_tSNE_labeled,
        filename = here("plots","Conservation","harmony_tSNE_mouse_CellType_Colored_labeled.pdf"),
        height = 13,width = 13)
-
-
-###################################
-############# HARMONY #############
-#First cluster and evaluate harmony integration. 
 
 #30,000 cells so will use higher k values. 
 #jaccard + louvain is similar to seurat workflow. 
@@ -281,127 +278,79 @@ for(i in c("k_10_louvain_1","k_25_louvain_1","k_50_louvain_1",
  
 }}
 
-
-#Create annotation dataframes
-annotation_df <- data.frame(cluster= 1:23,
-                            celltype = c("LS_Inh_A","Drd1_MSN_A","Excit_A","Polydendrocyte",
-                                         "Microglia","Oligodendrocyte","Ependymal","Drd1_MSN_Patch",
-                                         "Drd2_MSN","MS_Inh_A","Septal_Inh_A","Septal_Inh_B",
-                                         "Str_Inh_A","Excit_B","Mural","Astrocyte_1",
-                                         "Astrocyte_2","Neuroblast","Astrocyte_3","Septal_Inh_C",
-                                         "IoC","TNoS","Thal"))
-
-#add celltype info
-sce_harmony_Species$CellType_k_75_louvain <- annotation_df$celltype[match(sce_harmony_Species$k_75_louvain_1,
-                                                                          annotation_df$cluster)]
-
-
-#Make celltype a factor
-sce_harmony_Species$CellType_k_75_louvain <- factor(sce_harmony_Species$CellType_k_75_louvain,
-                                                    levels = c("LS_Inh_A","MS_Inh_A","Septal_Inh_A","Septal_Inh_B",
-                                                               "Septal_Inh_C","Drd1_MSN_A","Drd1_MSN_Patch","Drd2_MSN",
-                                                               "Str_Inh_A","Excit_A","Excit_B","IoC","TNoS","Thal",
-                                                               "Astrocyte_1","Astrocyte_2","Astrocyte_3","Ependymal",
-                                                               "Oligodendrocyte","Polydendrocyte","Microglia",
-                                                               "Mural","Neuroblast"))
-
-#Annotate the tSNE
-cluster_cols <- Polychrome::createPalette(length(unique(sce_harmony_Species$CellType_k_75_louvain)),
-                                          c("#D81B60", "#1E88E5","#FFC107","#009E73"))
-names(cluster_cols) <- unique(sce_harmony_Species$CellType_k_75_louvain)
-
-#Save the cluster cols
-save(cluster_cols,file = here("plots","Conservation","harmony_integration_cluster_cols.rda"))
-
-#make plot
-annotated_tSNE <- plotReducedDim(object = sce_harmony_Species,
-                                 dimred = "tSNE_HARMONY",
-                                 colour_by = "CellType_k_75_louvain",
-                                 text_by = "CellType_k_75_louvain") +
-    scale_color_manual(values = cluster_cols) +
-    ggtitle("HARMONY Integration") +
-    theme(legend.position = "none",plot.title = element_text(hjust = 0.5)) 
-ggsave(filename = here("plots","Conservation","tSNE_Harmony_annotatedCellTypes.pdf"),
-       plot = annotated_tSNE)
-
-#Calculate LISI to assess integration. 
-#Pull tSNE embeddings from HARMONY reduced dim
-harmony_tSNE_embeds <- as.data.frame(reducedDim(sce_harmony_Species,"tSNE_HARMONY"))
-
-#DF of metadata
-harmony_metadata <- as.data.frame(colData(sce_harmony_Species)[,c("Species","CellType_Species","CellType_k_75_louvain")])
-
-#Run lisi
-res <- compute_lisi(harmony_tSNE_embeds,harmony_metadata,"Species")
-colnames(res)[1] <- "Species_LISI"
-
-#Add celltype to res
-res$CellID <- rownames(res)
-harmony_metadata$CellID <- rownames(harmony_metadata)
-res_all <- merge(x = res,
-                 y = harmony_metadata,
-                 by = "CellID")
-
-#ridge plot of LISI by cluster. Peaks closer to 2 are more well integrated. 
-harmony_lisi_ridge <- ggplot(res_all,aes(x = Species_LISI,y = CellType_k_75_louvain,fill = CellType_k_75_louvain)) +
-    geom_density_ridges() +
-    scale_fill_manual(values = cluster_cols) +
-    theme(legend.position = "none")
-
-ggsave(plot = harmony_lisi_ridge,filename = here("plots","Conservation","harmony_lisi_ridge.pdf"))
-
-#Many of the distributions are centered on 1. Most likely due to the fact that there are double 
-#the number of mouse to human cells so cells within neighborhood are mostly going to be mouse. 
-
-#Calculate the proportion of each species that are within each cluster. 
-#human
-human_only <- subset(colData(sce_harmony_Species),subset=(Species == "Human"))
-human_props <- as.data.frame((table(human_only$CellType_k_75_louvain)/nrow(human_only))*100)
-colnames(human_props) <- c("CellType","Human")
-#mouse
-mouse_only <- subset(colData(sce_harmony_Species),subset=(Species == "Mouse"))
-mouse_props <- as.data.frame((table(mouse_only$CellType_k_75_louvain)/nrow(mouse_only))*100)
-colnames(mouse_props)  <- c("CellType","Mouse")
-
-#Combine human and mouse props
-merged_props <- merge(x = human_props,
-                      y = mouse_props,
-                      by = "CellType")
-#Check that everything was calculated correctly. 
-sum(merged_props$Human)
-
-sum(merged_props$Mouse)
-
-
-#Melt merged_props
-merged_props_melt <- reshape2::melt(merged_props)
-
-#barplot with proportions
-prop_barplot <- ggplot(data = merged_props_melt,aes(x = reorder(CellType,value),y = value,fill = variable)) +
-    geom_bar(stat = "identity",position="dodge") +
-    theme_bw() +
-    labs(x    = "Cell Type",
-         y    = "Percentage of Species Total Cells in Cluster",
-         fill = "Species",
-         title = "HARMONY Integration") +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1),
-          plot.title = element_text(hjust = 0.5)) 
-ggsave(filename = here("plots","Conservation","proportion_barplot.pdf"),plot = prop_barplot)
-
-#Finalize DEG analysis with cluster names. 
-Harmony_cellType_1vALL <- findMarkers_1vAll(sce_harmony_Species, 
-                                            assay_name = "logcounts", 
-                                            cellType_col = "CellType_k_75_louvain", 
-                                            mod = "~Sample")
-
-
-save(Harmony_cellType_1vALL,file = here("processed-data","Harmony_cellType_1vALL.rda"))
+#unsure about the annotation. Mouse and Human striatal MSNs are not integrating well with HARMONY
+#will check MNN integration. 
 
 ###################################
 ############### MNN ###############
 ###################################
 #Cluster the mnn integration. 
-#PCA_Corrected is the 
+#PCA_MNN is the mnn corrected space. 
+#tSNE_corrected_50 and umao_corrected_50
+#First make same plots as before with Harmony. 
+#Generate the plots. 
+###Human 
+#Legend
+human_tSNE <- plotReducedDim(object = sce_harmony_Species,
+                             dimred = "tSNE_corrected_50",
+                             colour_by = "Human_CellType",
+                             point_alpha = 0.4) +
+    scale_color_manual(values = human_cell_cols)
+ggsave(plot = human_tSNE,
+       filename = here("plots","Conservation","mnn_tSNE_Human_CellType_Colored_withLegend.pdf"))
+#No Legend
+human_tSNE_noLegend <- plotReducedDim(object = sce_harmony_Species,
+                                      dimred = "tSNE_corrected_50",
+                                      colour_by = "Human_CellType",
+                                      point_alpha = 0.4) +
+    scale_color_manual(values = human_cell_cols) +
+    theme(legend.position = "none")
+ggsave(plot = human_tSNE_noLegend,
+       filename = here("plots","Conservation","mnn_tSNE_Human_CellType_Colored_withoutLegend.pdf"),
+       height = 10,width = 10)
+
+#No Legend, labelled 
+human_tSNE_labeled <- plotReducedDim(object = sce_harmony_Species,
+                                     dimred = "tSNE_corrected_50",
+                                     colour_by = "Human_CellType",
+                                     text_by = "Human_CellType",
+                                     point_alpha = 0.4) +
+    scale_color_manual(values = human_cell_cols) +
+    theme(legend.position = "none")
+ggsave(plot = human_tSNE_labeled,
+       filename = here("plots","Conservation","mnn_tSNE_Human_CellType_Colored_labeled.pdf"),
+       height = 13,width = 13)
+
+###Mouse 
+#Legend
+Mouse_tSNE <- plotReducedDim(object = sce_harmony_Species,
+                             dimred = "tSNE_corrected_50",
+                             colour_by = "Mouse_CellType",
+                             point_alpha = 0.4) +
+    scale_color_manual(values = mouse_cell_cols)
+ggsave(plot = Mouse_tSNE,
+       filename = here("plots","Conservation","mnn_tSNE_Mouse_CellType_Colored_withLegend.pdf"))
+#No Legend
+mouse_tSNE_noLegend <- plotReducedDim(object = sce_harmony_Species,
+                                      dimred = "tSNE_corrected_50",
+                                      colour_by = "Mouse_CellType",
+                                      point_alpha = 0.4) +
+    scale_color_manual(values = mouse_cell_cols) +
+    theme(legend.position = "none")
+ggsave(plot = mouse_tSNE_noLegend,
+       filename = here("plots","Conservation","mnn_tSNE_Mouse_CellType_Colored_withoutLegend.pdf"),
+       height = 10,width = 10)
+#No Legend, labelled 
+mouse_tSNE_labeled <- plotReducedDim(object = sce_harmony_Species,
+                                     dimred = "tSNE_corrected_50",
+                                     colour_by = "Mouse_CellType",
+                                     text_by = "Mouse_CellType",
+                                     point_alpha = 0.4) +
+    scale_color_manual(values = mouse_cell_cols) +
+    theme(legend.position = "none")
+ggsave(plot = mouse_tSNE_labeled,
+       filename = here("plots","Conservation","mnn_tSNE_mouse_CellType_Colored_labeled.pdf"),
+       height = 13,width = 13)
 
 
 
