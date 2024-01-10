@@ -477,3 +477,89 @@ for(i in c("k_10_louvain_1_mnn","k_25_louvain_1_mnn","k_50_louvain_1_mnn",
 #rename the object
 sce_cs <- sce_harmony_Species
 save(sce_cs,file = here("processed-data","sce_cs.rda"))
+
+#Will move forward with the mnn object. 
+#k=75 looks best. 
+#To aid with cluster annotation, I will 1vALL run DEG testing to pull top 50 genes. 
+
+
+markers_1vALL_enrich <- findMarkers_1vAll(sce_cs,
+                                          assay_name = "logcounts",
+                                          cellType_col = "k_75_louvain_1_mnn",
+                                          mod = "~Sample")
+# 1 - '2024-01-10 16:00:15.54975
+# 2 - '2024-01-10 16:01:19.797639
+# 3 - '2024-01-10 16:02:23.971816
+# 4 - '2024-01-10 16:03:28.01513
+# 5 - '2024-01-10 16:04:32.727875
+# 6 - '2024-01-10 16:05:36.879443
+# 7 - '2024-01-10 16:06:40.161971
+# 8 - '2024-01-10 16:07:44.528281
+# 9 - '2024-01-10 16:08:48.210028
+# 10 - '2024-01-10 16:09:52.699159
+# 11 - '2024-01-10 16:10:56.554436
+# 12 - '2024-01-10 16:12:00.625374
+# 13 - '2024-01-10 16:13:04.777749
+# 14 - '2024-01-10 16:14:08.734222
+# 15 - '2024-01-10 16:15:12.800999
+# 16 - '2024-01-10 16:16:17.302194
+# 17 - '2024-01-10 16:17:21.370131
+# 18 - '2024-01-10 16:18:25.728023
+# 19 - '2024-01-10 16:19:25.61338
+# 20 - '2024-01-10 16:20:16.207099
+# 21 - '2024-01-10 16:21:06.762948
+# 22 - '2024-01-10 16:21:56.038117
+# 23 - '2024-01-10 16:22:39.692608
+# 24 - '2024-01-10 16:23:23.459407
+# 25 - '2024-01-10 16:24:07.644038
+# Building Table - 2024-01-10 16:24:51.917303
+# ** Done! **
+
+nrow(markers_1vALL_enrich)
+#[1] 414050
+
+#Add gene name information. 
+markers_gene_name <- merge(x    = markers_1vALL_enrich,
+                           y    = rowData(sce_cs)[,c("gene_id","gene_name")],
+                           by.x = "gene",
+                           by.y = "gene_id")
+nrow(markers_gene_name)
+#[1] 414050
+
+#Subset for top 50 markers for each cluster
+markers_gene_name <- subset(markers_gene_name,subset=(rank_marker %in% 1:50))
+
+#Order by cellType.target
+markers_gene_name <- markers_gene_name[order(markers_gene_name$cellType.target,decreasing = FALSE),]
+
+#save the dataframe
+save(markers_gene_name,file = here("processed-data","integrated_unannotated_1vALL_DEGs.rda"))
+
+#Begin annotation
+# 1 - LS_Inh
+# 2 - Drd1_MSN
+# 3 - Excit_A 
+# 4 - Polydendrocyte
+# 5 - Microglia
+# 6 - Oligo_Human
+# 7 - Ependymal
+# 8 - Drd1_MSN_Patch
+# 9 - MS_Inh
+# 10 - Sept_Inh_A
+# 11 - Sept_Inh_B
+# 12 - Drd2_MSN
+# 13 - Sept_Str_Inh
+# 14 - Oligo_Mouse
+# 15 - MS_Excit_Human
+# 16 - Mural
+# 17 - Astrocyte_Human
+# 18 - Astrocyte_Mouse_A
+# 19 - Astrocyte_Mouse_B
+# 20 - Drd1_MSN_Matrix_Human
+# 21 - Sept_Mouse
+# 22 - TNoS_Mouse
+# 23 - Neuroblast_Mouse
+# 24 - Thal_Mouse
+# 25 - IoC_Mouse
+
+
