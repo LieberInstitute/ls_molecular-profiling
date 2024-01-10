@@ -4,6 +4,7 @@
 library(SingleCellExperiment)
 library(DeconvoBuddies)
 library(sessioninfo)
+library(reshape2)
 library(ggridges)
 library(ggplot2)
 library(scater)
@@ -15,7 +16,6 @@ library(lisi)
 load(here("processed-data","sce_harmony_species.rda"),verbose = TRUE)
 # Loading objects:
 #     sce_harmony_Species
-
 
 sce_harmony_Species
 # class: SingleCellExperiment 
@@ -83,6 +83,18 @@ ggsave(plot = human_tSNE_noLegend,
        filename = here("plots","Conservation","harmony_tSNE_Human_CellType_Colored_withoutLegend.pdf"),
        height = 10,width = 10)
 
+#No Legend, labelled 
+human_tSNE_labeled <- plotReducedDim(object = sce_harmony_Species,
+                                     dimred = "tSNE_HARMONY",
+                                     colour_by = "Human_CellType",
+                                     text_by = "Human_CellType",
+                                     point_alpha = 0.4) +
+    scale_color_manual(values = human_cell_cols) +
+    theme(legend.position = "none")
+ggsave(plot = human_tSNE_labeled,
+       filename = here("plots","Conservation","harmony_tSNE_Human_CellType_Colored_labeled.pdf"),
+       height = 13,width = 13)
+
 ###Mouse 
 #Legend
 Mouse_tSNE <- plotReducedDim(object = sce_harmony_Species,
@@ -102,53 +114,85 @@ mouse_tSNE_noLegend <- plotReducedDim(object = sce_harmony_Species,
 ggsave(plot = mouse_tSNE_noLegend,
        filename = here("plots","Conservation","harmony_tSNE_Mouse_CellType_Colored_withoutLegend.pdf"),
        height = 10,width = 10)
+#No Legend, labelled 
+mouse_tSNE_labeled <- plotReducedDim(object = sce_harmony_Species,
+                                     dimred = "tSNE_HARMONY",
+                                     colour_by = "Mouse_CellType",
+                                     text_by = "Mouse_CellType",
+                                     point_alpha = 0.4) +
+    scale_color_manual(values = mouse_cell_cols) +
+    theme(legend.position = "none")
+ggsave(plot = mouse_tSNE_labeled,
+       filename = here("plots","Conservation","harmony_tSNE_mouse_CellType_Colored_labeled.pdf"),
+       height = 13,width = 13)
 
+
+###################################
+############# HARMONY #############
+#First cluster and evaluate harmony integration. 
 
 #30,000 cells so will use higher k values. 
 #jaccard + louvain is similar to seurat workflow. 
 #Resolution=1 is the default
+snn_k_10 <- buildSNNGraph(sce_harmony_Species, k = 10, use.dimred = "HARMONY",type="jaccard")
+snn_k_25 <- buildSNNGraph(sce_harmony_Species, k = 25, use.dimred = "HARMONY",type="jaccard")
 snn_k_50 <- buildSNNGraph(sce_harmony_Species, k = 50, use.dimred = "HARMONY",type="jaccard")
 snn_k_75 <- buildSNNGraph(sce_harmony_Species, k = 75, use.dimred = "HARMONY",type="jaccard")
 snn_k_100 <- buildSNNGraph(sce_harmony_Species, k = 100, use.dimred = "HARMONY",type="jaccard")
 
+
 #Louvain clustering
+#k=10
+set.seed(1234)
+clust_10 <- igraph::cluster_louvain(snn_k_10,resolution=1)$membership
+table(clust_10)
+# clust_10
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+# 3790 1083 1353  548  927 1521 1037  591 5316 1485  930 3717 3214 5025  276  296 
+
+#k=25
+set.seed(1234)
+clust_25 <- igraph::cluster_louvain(snn_k_25,resolution=1)$membership
+table(clust_25)
+# clust_25
+# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15 
+# 3891 1050 1340  534 1890  162 1075  571 7015 1433   38 6809 4871  150  280 
+
 #k=50
 set.seed(1234)
 clust_50 <- igraph::cluster_louvain(snn_k_50,resolution=1)$membership
 table(clust_50)
-clust_50
-# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 2582 2798 1186  675  388 3452 1010 1434 1934  398 3161  686  321 1509  234  329 
-# 17   18   19   20   21   22   23   24   25   26   27 
-# 467  150 4302  110  712 1665  494   72  345   57  638 
+# clust_50
+# 1    2    3    4    5    6    7    8    9   10   11   12 
+# 3882 1588 1322  523 2129 7235 1062 1400 6448 4916  342  262 
 
 #k=75
 set.seed(1234)
 clust_75 <- igraph::cluster_louvain(snn_k_75,resolution=1)$membership
 table(clust_75)
 # clust_75
-# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 2673 3034 1181  673  385 3572 1005 1439 1773  380 3590  324 1390  338  528  147 
-# 17   18   19   20   21   22   23 
-# 4487  703 1604  445  346  450  642 
+# 1    2    3    4    5    6    7    8    9   10   11 
+# 3864 1552 1310  508  604 4164 1047 5148 2898 4967 5047 
 
 #k=100
 set.seed(1234)
 clust_100 <- igraph::cluster_louvain(snn_k_100,resolution=1)$membership
 table(clust_100)
 # clust_100
-# 1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
-# 2680 3025 1181  665  383 3573 1000 1453 1819  380 3568  338 1341  336  529  142 
-# 17   18   19   20   21   22   23 
-# 4513  644  699 1594  447  345  454 
+# 1    2    3    4    5    6    7    8    9   10   11 
+# 3889 1516 1309  492  558 3283 1041 6012 5038 3005 4966 
 
 #Add cluster information to object
+sce_harmony_Species$k_10_louvain_1 <- factor(clust_10)
+sce_harmony_Species$k_25_louvain_1 <- factor(clust_25)
 sce_harmony_Species$k_50_louvain_1 <- factor(clust_50)
 sce_harmony_Species$k_75_louvain_1 <- factor(clust_75)
 sce_harmony_Species$k_100_louvain_1 <- factor(clust_100)
 
 #Plot the clusters on the tSNE with 15 dimensions. 
-for(i in c("k_50_louvain_1",
+for(i in c("k_10_louvain_1",
+           "k_25_louvain_1",
+           "k_50_louvain_1",
            "k_75_louvain_1",
            "k_100_louvain_1")){
     print(i)
@@ -160,7 +204,6 @@ for(i in c("k_50_louvain_1",
     ggsave(plot = x,filename = here("plots","Conservation","Clustering",paste0(i,".pdf")))
 }
 
-#k=75 looks best so far. 
 #Now plot expression of marker genes to identify clusters. 
 #First need to add in gene name from ensembl gene id. To do this load in the original humnan sce and 
 #merge the rowData
@@ -188,6 +231,7 @@ genes <- c("SYT1","SNAP25", #Pan-neuronal
            "RARB","BCL11B","PPP1R1B", #Broad striatal + MSN markers 
            "FXYD6", #Broad septal
            "OPRM1","DRD1", #Striosome markers
+           "DRD2","ADORA2A","PENK", #D2 MARKERS
            "MBP","MOBP", #Oligodendrocyte
            "CD74", "CSF1R", "C3", #Microglia
            "GFAP", "TNC", "AQP4", "SLC1A2", #Astrocytes
@@ -209,105 +253,34 @@ for(i in genes){
                        rowData(sce_harmony_Species)[which(rowData(sce_harmony_Species)$gene_name == i),"gene_id"])) +
         theme(plot.title = element_text(hjust = 0.5))
     ggsave(plot = gene_plot,filename = here("plots","Conservation",
-                                            "Clustering","k_75_louvain_1_expression",
-                                            paste0(i,"_cross_species_k_75.pdf")))
+                                            "Clustering","Expression",
+                                            paste0(i,"_cross_species.pdf")))
 }
 
 
-plotReducedDim(object = sce_harmony_Species,
-               dimred = "tSNE_HARMONY",
-               color_by = "ENSG00000149295") +
-    scale_color_gradientn(colours = c("lightgrey","orange","red"))
-
-#Run a quick DEG analysis to help with cluster identification. 
-markers_1vALL_enrich <- findMarkers_1vAll(sce_harmony_Species, 
-                                          assay_name = "logcounts", 
-                                          cellType_col = "k_75_louvain_1", 
-                                          mod = "~Sample")
-# 1 - '2024-01-08 14:43:56.808779
-# 2 - '2024-01-08 14:46:04.164763
-# 3 - '2024-01-08 14:48:16.745078
-# 4 - '2024-01-08 14:50:30.802523
-# 5 - '2024-01-08 14:52:45.587948
-# 6 - '2024-01-08 14:55:03.956395
-# 7 - '2024-01-08 14:57:09.731182
-# 8 - '2024-01-08 14:59:25.046667
-# 9 - '2024-01-08 15:01:39.360235
-# 10 - '2024-01-08 15:03:55.02235
-# 11 - '2024-01-08 15:06:06.442347
-# 12 - '2024-01-08 15:08:06.443018
-# 13 - '2024-01-08 15:10:04.40993
-# 14 - '2024-01-08 15:11:47.439724
-# 15 - '2024-01-08 15:13:36.992938
-# 16 - '2024-01-08 15:15:30.60645
-# 17 - '2024-01-08 15:17:21.666588
-# 18 - '2024-01-08 15:19:13.508835
-# 19 - '2024-01-08 15:21:06.690871
-# 20 - '2024-01-08 15:22:57.691572
-# 21 - '2024-01-08 15:24:50.009232
-# 22 - '2024-01-08 15:26:40.621126
-# 23 - '2024-01-08 15:28:33.457227
-# Building Table - 2024-01-08 15:30:06.178589
-# ** Done! **
-
-#Merge the two dataframes. 
-markers_gene_name <- merge(x    = as.data.frame(markers_1vALL_enrich),
-                           y    = as.data.frame(rowData(sce_harmony_Species)[,c("gene_id","gene_name")]),
-                           by.x = "gene",
-                           by.y = "gene_id")
-
-#Subset for top 50 markers for each cluster
-markers_gene_name <- subset(markers_gene_name,subset=(rank_marker %in% 1:50))
-
-
-#Order by cellType.target
-markers_gene_name <- markers_gene_name[order(markers_gene_name$rank_marker,decreasing = FALSE),]
-
-#save markers_df and object
-save(markers_gene_name,file = here("processed-data","integrated_markers_df.rda"))
+#save object
 save(sce_harmony_Species,file = here("processed-data","sce_integrated.rda"))
 
-#Would also help to figure out what makes up each cluster. 
-for(i in unique(sce_harmony_Species$k_75_louvain_1)){
-    data <- as.data.frame(table((subset(colData(sce_harmony_Species),subset=(k_75_louvain_1 == i))$CellType_Species)))
-    data$prop <- data$Freq/sum(data$Freq)*100
-    prop_plot <- ggplot(data, aes(x=reorder(Var1,prop), y=prop, fill=Var1)) +
-        geom_bar(stat="identity") +
-        labs(x = "Cell Type",
-             y = "Proportion") +
-        theme_bw() +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1),
-              legend.position = "none")
-    ggsave(plot = prop_plot,
-           filename = here("plots","Conservation","Cluster_Proportion_barplots","Harmony",
-                           paste0(i,"_prop_barplot.pdf")))
-    
-}
+#Would also help to figure out what makes up each cluster for each iteration of clustering. 
+for(i in c("k_10_louvain_1","k_25_louvain_1","k_50_louvain_1",
+           "k_75_louvain_1","k_100_louvain_1")){
+    for(l in unique(levels(colData(sce_harmony_Species)[,i]))){
+        rows <- which(colData(sce_harmony_Species)[,i] == l)
+        data <- as.data.frame(table(colData(sce_harmony_Species)[rows,"CellType_Species"]))
+        data$prop <- data$Freq/sum(data$Freq)*100
+        prop_plot <- ggplot(data, aes(x=reorder(Var1,prop), y=prop, fill=Var1)) +
+            geom_bar(stat="identity") +
+            labs(x = "Cell Type",
+                 y = "Proportion") +
+            theme_bw() +
+            theme(axis.text.x = element_text(angle = 45, hjust = 1),
+                  legend.position = "none")
+        ggsave(plot = prop_plot,
+               filename = here("plots","Conservation","Cluster_Proportion_barplots","Harmony",i,
+                               paste0(l,"_prop_barplot.pdf")))
+ 
+}}
 
-#Start the annotation. 
-# 1 - LS_Inh_A
-# 2 - Drd1_MSN_A
-# 3 - Excit_A
-# 4 - Polydendrocyte
-# 5 - Microglia
-# 6 - Oligodendrocyte
-# 7 - Ependymal
-# 8 - Drd1_MSN_Patch
-# 9 - Drd2_MSN
-# 10 - MS_Inh_A
-# 11 - Septal_Inh_A
-# 12 - Septal_Inh_B
-# 13 - Str_Inh_A 
-# 14 - Excit_B
-# 15 - Mural
-# 16 - Astrocyte_1
-# 17 - Astrocyte_2
-# 18 - Neuroblast
-# 19 - Astrocyte_3
-# 20 - Septal_Inh_C
-# 21 - IoC
-# 22 - TNoS
-# 23 - Thal
 
 #Create annotation dataframes
 annotation_df <- data.frame(cluster= 1:23,
@@ -380,6 +353,56 @@ ggsave(plot = harmony_lisi_ridge,filename = here("plots","Conservation","harmony
 #Many of the distributions are centered on 1. Most likely due to the fact that there are double 
 #the number of mouse to human cells so cells within neighborhood are mostly going to be mouse. 
 
+#Calculate the proportion of each species that are within each cluster. 
+#human
+human_only <- subset(colData(sce_harmony_Species),subset=(Species == "Human"))
+human_props <- as.data.frame((table(human_only$CellType_k_75_louvain)/nrow(human_only))*100)
+colnames(human_props) <- c("CellType","Human")
+#mouse
+mouse_only <- subset(colData(sce_harmony_Species),subset=(Species == "Mouse"))
+mouse_props <- as.data.frame((table(mouse_only$CellType_k_75_louvain)/nrow(mouse_only))*100)
+colnames(mouse_props)  <- c("CellType","Mouse")
 
-    
+#Combine human and mouse props
+merged_props <- merge(x = human_props,
+                      y = mouse_props,
+                      by = "CellType")
+#Check that everything was calculated correctly. 
+sum(merged_props$Human)
+
+sum(merged_props$Mouse)
+
+
+#Melt merged_props
+merged_props_melt <- reshape2::melt(merged_props)
+
+#barplot with proportions
+prop_barplot <- ggplot(data = merged_props_melt,aes(x = reorder(CellType,value),y = value,fill = variable)) +
+    geom_bar(stat = "identity",position="dodge") +
+    theme_bw() +
+    labs(x    = "Cell Type",
+         y    = "Percentage of Species Total Cells in Cluster",
+         fill = "Species",
+         title = "HARMONY Integration") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          plot.title = element_text(hjust = 0.5)) 
+ggsave(filename = here("plots","Conservation","proportion_barplot.pdf"),plot = prop_barplot)
+
+#Finalize DEG analysis with cluster names. 
+Harmony_cellType_1vALL <- findMarkers_1vAll(sce_harmony_Species, 
+                                            assay_name = "logcounts", 
+                                            cellType_col = "CellType_k_75_louvain", 
+                                            mod = "~Sample")
+
+
+save(Harmony_cellType_1vALL,file = here("processed-data","Harmony_cellType_1vALL.rda"))
+
+###################################
+############### MNN ###############
+###################################
+#Cluster the mnn integration. 
+#PCA_Corrected is the 
+
+
+
 
