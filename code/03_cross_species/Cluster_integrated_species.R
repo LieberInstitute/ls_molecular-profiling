@@ -599,6 +599,75 @@ ggsave(filename = here("plots","Conservation","tSNE_mnn_annotatedCellTypes.pdf")
 
 save(sce_cs,file = here("processed-data","sce_cs.rda"))
 
+
+#Rerun the DEG testing and make volcano plots for 1vALL 
+markers_1vALL_celltype <- findMarkers_1vAll(sce_cs,
+                                            assay_name = "logcounts",
+                                            cellType_col = "CellType_k_75_louvain_mnn",
+                                            mod = "~Sample")
+# LS_Inh - '2024-01-12 09:25:55.17829
+# Drd1_MSN - '2024-01-12 09:26:28.09965
+# Excit_A - '2024-01-12 09:27:00.747444
+# Polydendrocyte - '2024-01-12 09:27:33.396037
+# Microglia - '2024-01-12 09:28:05.991143
+# Oligo_Human - '2024-01-12 09:28:38.761168
+# Ependymal - '2024-01-12 09:29:11.313025
+# Drd1_MSN_Patch - '2024-01-12 09:29:44.747452
+# MS_Inh - '2024-01-12 09:30:17.281171
+# Sept_Inh_A - '2024-01-12 09:30:49.517952
+# Sept_Inh_B - '2024-01-12 09:31:21.69658
+# Drd2_MSN - '2024-01-12 09:31:53.78429
+# Sept_Str_Inh - '2024-01-12 09:32:26.085828
+# Oligo_Mouse - '2024-01-12 09:32:58.688631
+# MS_Excit_Human - '2024-01-12 09:33:31.271405
+# Mural - '2024-01-12 09:34:03.821777
+# Astrocyte_Human - '2024-01-12 09:34:36.47492
+# Astrocyte_Mouse_A - '2024-01-12 09:35:09.230878
+# Astrocyte_Mouse_B - '2024-01-12 09:35:41.936508
+# Drd1_MSN_Matrix_Human - '2024-01-12 09:36:14.616648
+# Sept_Mouse - '2024-01-12 09:36:47.041882
+# TNoS_Mouse - '2024-01-12 09:37:19.415454
+# Neuroblast_Mouse - '2024-01-12 09:37:51.613283
+# Thal_Mouse - '2024-01-12 09:38:23.993939
+# IoC_Mouse - '2024-01-12 09:38:56.340809
+# Building Table - 2024-01-12 09:39:28.689087
+# ** Done! **
+
+dim(markers_1vALL_celltype)
+#[1] 414050      8
+
+#Add gene name
+markers_1vALL_celltype <- merge(x    = markers_1vALL_celltype,
+                                y    = rowData(sce_cs)[,c("gene_id","gene_name")],
+                                by.x = "gene",
+                                by.y = "gene_id")
+
+dim(markers_1vALL_celltype)
+#[1] 414050      9
+
+#save the dataframe
+save(markers_1vALL_celltype,file = here("processed-data","integrated_annotated_1vALL_DEGs.rda"))
+
+#volcano plots for each set of DEGs 
+for(i in levels(markers_1vALL_celltype$cellType.target)){
+    print(i)
+    df <- as.data.frame(subset(markers_1vALL_celltype,subset = (cellType.target == i)))
+    volcano_plot <- ggplot(data = df,aes(x = logFC,y = -log.FDR)) +
+        geom_point(colour = cluster_cols[i],alpha = 0.75) +
+        labs(x = paste0("log2(",i,"/all-other-nuclie)"),
+             y = "ln(FDR)",
+             title = i) +
+        theme_bw() + 
+        theme(plot.title = element_text(hjust = 0.5)) +
+        geom_text(data = subset(df,subset=(rank_marker %in% 1:10)),
+                  label = subset(df,subset=(rank_marker %in% 1:10))$gene_name,
+                  vjust = 0, 
+                  nudge_y = 1)
+    ggsave(plot = volcano_plot,
+           filename = here("plots","Conservation","Volcano_plots_1vALL",paste0(i,".pdf")),
+           height = 8,width = 8)
+}
+
 #To do: 
 #Identify method to interrogate success of clustering. 
 #Conserved marker gene analysis. 
