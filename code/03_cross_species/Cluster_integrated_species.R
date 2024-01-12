@@ -597,6 +597,8 @@ ggsave(filename = here("plots","Conservation","tSNE_mnn_annotatedCellTypes.pdf")
        plot = annotated_tSNE)
 
 
+save(sce_cs,file = here("processed-data","sce_cs.rda"))
+
 #To do: 
 #Identify method to interrogate success of clustering. 
 #Conserved marker gene analysis. 
