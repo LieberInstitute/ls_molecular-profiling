@@ -668,8 +668,36 @@ for(i in levels(markers_1vALL_celltype$cellType.target)){
            height = 8,width = 8)
 }
 
-#To do: 
-#Identify method to interrogate success of clustering. 
-#Conserved marker gene analysis. 
-
+#LS_Inh_I might be a transition cell type. 
+#Do a majority of cells originating from the LS_Inh_I human cluster end up in the 
+#Sept_Str_Inh cluster? 
+#Make pie charts that will tell us where each original cell type integrates
+human_celltypes <- unique(sce_cs$Human_CellType)[which(unique(sce_cs$Human_CellType) != "Mouse")]
+for(i in human_celltypes){
+    print(i)
+    #Setup the dataframe
+    cts <- table(colData(sce_cs)[which(colData(sce_cs)$Human_CellType == i),
+                                 "CellType_k_75_louvain_mnn"])
+    cts <- as.data.frame(cts)
+    cts$Proportion <- cts$Freq/sum(cts$Freq)
+    colnames(cts)[1] <- c("CellType")
+    #calculate proportions
+    cts$Proportion <- cts$Freq/sum(cts$Freq)*100
+    cts$CellType_2 <- as.character(cts$CellType)
+    cts[which(cts$Proportion == 0),"CellType_2"] <- "Other"
+    #Set up the colors
+    non_zero_cts <- cts[which(cts$CellType_2 != "Other"),"CellType_2"]
+    cluster_cols_2 <- cluster_cols[non_zero_cts]
+    cluster_cols_2["Other"] <- "#c6c6c6"
+    #make and save pie chart
+    pie <- ggplot(cts, aes(x="", y=Proportion, fill=CellType_2)) +
+        geom_bar(stat="identity", width=1, color="white") +
+        coord_polar("y", start=0) +
+        scale_fill_manual(values = cluster_cols_2) +
+        theme_void() +
+        ggtitle(i) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(filename = here("plots","Conservation","CellType_PieCharts",paste0(i,"_pie.pdf")),
+           height = 8, width = 8)
+}
 
