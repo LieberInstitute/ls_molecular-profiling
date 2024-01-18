@@ -118,7 +118,7 @@ print(paste("Size in MB:",
 
 #[1] "Size in MB: 88"
 #File is of the right size and is ready to go. 
-#Used the 10x genomics whole mouse brain and the correlation mapping algorithm. 
+#Used 10x genomics whole mouse brain and the both mapping algorithms.
 
 
 #Reproducibility information. 
