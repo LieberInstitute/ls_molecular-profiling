@@ -1,9 +1,9 @@
 #Downstream analysis of MapMyCells output
 #cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling
-#processed-data/MapMyCells_Output/'h_ls_anndata_10xWholeMouseBrain(CCN20230722)_CorrelationMapping_UTC_1705602688838'
 
 library(SingleCellExperiment)
 library(sessioninfo)
+library(pheatmap)
 library(ggplot2)
 library(here)
 
@@ -29,7 +29,7 @@ hi_output <- merge(x = colData(sce)[,c("unique_rowname","CellType.Final")],
 #Bargraph to see where each of the LS clusters are mapping to
 LS_cells <- hi_output[grep("LS",hi_output$CellType.Final),]
 
-#Create an empty dataframe
+#Create an empty dataframe and add proportion data to it via for loop
 LS_cells_props <- data.frame(CellType.Final  = NA,
                              Mapped_CellType = NA,
                              Freq = NA,
@@ -43,13 +43,57 @@ for(i in unique(LS_cells$CellType.Final)){
     LS_cells_props <- rbind(LS_cells_props,prop_df[,c("CellType.Final","Mapped_CellType","Freq","Prop")])
 }
 
+#remove the NA row 
 LS_cells_props <- LS_cells_props[!is.na(LS_cells_props$CellType.Final),]
 
-ggplot(data = LS_cells_props,aes(x = CellType.Final,y = Prop, fill = Mapped_CellType)) +
-    geom_bar(stat = "identity")
+#Make cell colors. 
+cluster_cols <- Polychrome::createPalette(length(unique(LS_cells_props$Mapped_CellType)),
+c("#D81B60", "#1E88E5","#FFC107","#009E73"))
+names(cluster_cols) <- unique(LS_cells_props$Mapped_CellType)
 
+#Make the plot. 
+LS_cluster_mapping <- ggplot(data = LS_cells_props,aes(x = CellType.Final,y = Prop, fill = Mapped_CellType)) +
+    geom_bar(stat = "identity") +
+    scale_fill_manual(values = cluster_cols) +
+    theme_bw() +
+    labs(x = "Human LS Cell Type",
+         y = "Proportion of Human Cell Type",
+         fill = "Mapped Mouse\nCell Type")
 
+ggsave(filename = here("plots","Conservation","MapMyCells","Human_LS_neurons_mapped.pdf"),
+       plot = LS_cluster_mapping)
 
+#Plot a heatmap that will determine the proportion of each human cell type represnted by each 
+#mapped mouse celltypes. 
+#Build a matrix where the columns are the human cell types and the rows are the mapped mouse classes
+mapped_mat <- matrix(ncol = length(unique(hi_output$CellType.Final)),
+                     nrow = length(unique(hi_output$class_name)))
 
+dim(mapped_mat)
+#[1] 24 22
+
+#add col and rownames
+colnames(mapped_mat) <- unique(hi_output$CellType.Final)
+rownames(mapped_mat) <- unique(hi_output$class_name)
+
+#Build the matrix
+for(i in colnames(mapped_mat)){
+    x <- as.data.frame(table(subset(hi_output,subset=(CellType.Final == i))$class_name))
+    x$Prop <- x$Freq/sum(x$Freq)*100
+    rownames(x) <- x$Var1
+    for(l in rownames(mapped_mat)){
+        if(l %in% rownames(x)){
+            mapped_mat[l,i] <- x[l,"Prop"]
+        }else{
+            mapped_mat[l,i] <- 0
+        }
+    }
+}
+
+#Plot the heatmap and save 
+pdf(here("plots","Conservation","MapMyCells","Human_to_mouse_classname_heatmap.pdf"))
+pheatmap(mat = mapped_mat,
+         color = colorRampPalette(c("gray86", "#FFC107", "#D81B60"))(200))
+dev.off()
 
 
