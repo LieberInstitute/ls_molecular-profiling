@@ -115,13 +115,45 @@ load(here("processed-data","human_mouse_matched_by_JAX.rda"),verbose = TRUE)
 #Add Jax.GeneID info to the human LS DEGs. 
 #This also removes any genes from the DEG table that are not homologous
 h_LS_DEGs_homol <- merge(h_LS_DEGs,
-                         rowData(sce_human_sub)[,c("gene_id","gene_name","JAX.geneID")],
+                         rowData(sce_human_sub)[,c("gene_id","JAX.geneID")],
                          by = "gene_id") 
 
 #Add Jax.GeneID info to the mouse LS DEGs and also remove any genes that are not homologus
 m_LS_DEGs_homol <- merge(m_LS_DEGs,
-                         rowData(sce_mouse_sub)[,c("gene_id","gene_name","JAX.geneID")],
+                         rowData(sce_mouse_sub)[,c("gene_id","JAX.geneID")],
                          by = "gene_id") 
+
+#To correlate, each dataframe needs to be in the same order. 
+#First, make the JAX.geneID the rownames for each dataframe
+rownames(h_LS_DEGs_homol) <- h_LS_DEGs_homol$JAX.geneID
+rownames(m_LS_DEGs_homol) <- m_LS_DEGs_homol$JAX.geneID
+
+#Alter order of mouse DEGs to be that of human DEGs
+fixTo <- rownames(h_LS_DEGs_homol)
+m_LS_DEGs_homol <- m_LS_DEGs_homol[fixTo,]
+
+#Sanity check to make sure the rownames are in the corret order
+all(rownames(h_LS_DEGs_homol) == rownames(m_LS_DEGs_homol))
+#[1] TRUE
+
+#Get the top 100 identifiers for the LS in each species
+h_top250 <- subset(h_LS_DEGs_homol,subset=(rank_marker %in% 1:250))
+m_top250 <- subset(m_LS_DEGs_homol,subset=(rank_marker %in% 1:250))
+
+#Find the shared identifiers
+shared_identifiers <- intersect(rownames(h_top250),
+                                rownames(m_top250))
+
+#correlate
+cor(h_top250[shared_identifiers,"t.stat"],
+    m_top250[shared_identifiers,"t.stat"])
+#[1] 0.6182991
+
+
+
+
+
+
 
 
 
