@@ -4,6 +4,7 @@
 library(SingleCellExperiment)
 library(DeconvoBuddies)
 library(sessioninfo)
+library(ggplot2)
 library(here)
 
 #Load the SingleCellExperiment object for human Lateral Septum
@@ -136,6 +137,41 @@ m_LS_DEGs_homol <- m_LS_DEGs_homol[fixTo,]
 all(rownames(h_LS_DEGs_homol) == rownames(m_LS_DEGs_homol))
 #[1] TRUE
 
+#Correlate 
+cor(h_LS_DEGs_homol$t.stat,
+    m_LS_DEGs_homol$t.stat)
+#[1] 0.598573
+
+#Correlate the two dataframes to identify genes that are shared markers and those that are divergent markers
+#To do this merge the two dataframes
+colnames(h_LS_DEGs_homol)[c(2,6,7,9,10)] <- paste0(colnames(h_LS_DEGs_homol)[c(2,6,7,9,10)],"_human")
+colnames(m_LS_DEGs_homol)[c(2,6,7,9,10)] <- paste0(colnames(m_LS_DEGs_homol)[c(2,6,7,9,10)],"_mouse")
+
+#Merge the two dataframes
+all_DEGs_homol <- merge(x = h_LS_DEGs_homol[,c(2,6,7,9:11)],
+                        y = m_LS_DEGs_homol[,c(2,6,7,9:11)],
+                        by = "JAX.geneID")
+
+
+#Save the all_DEGs_homol dataframe
+save(all_DEGs_homol,file = here("processed-data","Human_mouse_homologous_DEGs_and_tstats.rda"))
+
+#Make the plot
+ggplot(data=as.data.frame(all_DEGs_homol),aes(x = t.stat_human,y = t.stat_mouse)) + 
+    geom_point(alpha=0.5) +
+    xlim(c(-350,350)) +
+    ylim(c(-600,600)) +
+    geom_hline(yintercept = 0,lty = 2) +
+    geom_vline(xintercept = 0,lty = 2) +
+    labs(x = "Human LS t-statistic", 
+         y = "Mouse LS t-statistic") +
+    theme_bw() +
+    annotate("text",x = 275,y = 600,label = "Human Enriched\nMouse Enriched") +
+    annotate("text",x = 275,y = -600, label = "Human Enriched\nMouse Depleted") +
+    annotate("text",x = -275,y = 600,label = "Human Depleted\nMouse Enriched") +
+    annotate("text",x = -275,y = -600,label = "Human Depleted\nMouse Depleted") 
+
+
 #Get the top 100 identifiers for the LS in each species
 h_top250 <- subset(h_LS_DEGs_homol,subset=(rank_marker %in% 1:250))
 m_top250 <- subset(m_LS_DEGs_homol,subset=(rank_marker %in% 1:250))
@@ -143,13 +179,28 @@ m_top250 <- subset(m_LS_DEGs_homol,subset=(rank_marker %in% 1:250))
 #Find the shared identifiers
 shared_identifiers <- intersect(rownames(h_top250),
                                 rownames(m_top250))
+length(shared_identifiers)
+# [1] 99
 
 #correlate
 cor(h_top250[shared_identifiers,"t.stat"],
     m_top250[shared_identifiers,"t.stat"])
 #[1] 0.6182991
 
+#Combine the two dataframes to generate a plot. 
+#To do this, it's critical to have column names that tell us something about the speices
+colnames(h_top250)[c(2,6,7,9,10)] <- paste0(colnames(h_top250)[c(2,6,7,9,10)],"_human")
+colnames(m_top250)[c(2,6,7,9,10)] <- paste0(colnames(m_top250)[c(2,6,7,9,10)],"_mouse")
 
+#subset both dataframes
+h_top250_sub <- h_top250[,c(2,6,7,9:11)]
+m_top250_sub <- m_top250[,c(2,6,7,9:11)]
+
+
+#merge
+top250_sub <- merge(x  = h_top250_sub,
+                    y  = m_top250_sub,
+                    by = "JAX.geneID")
 
 
 
