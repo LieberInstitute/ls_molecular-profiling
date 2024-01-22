@@ -80,23 +80,32 @@ sce.ls$LS_vs_other <- ifelse(sce.ls$cellType.final %in% c("LS_In.C","LS_In.D","L
                              "Other")
 
 #Run 1vALL DEG for mouse LS 
-m_LS_DEGs <- findMarkers_1vAll(sce.ls,
+m_LS_clusters <- findMarkers_1vAll(sce.ls,
                                    assay_name   = "logcounts",
                                    cellType_col = "LS_vs_other",
                                    mod          = "~Sample")
-# LS - '2024-01-22 14:17:03.925193
-# Other - '2024-01-22 14:18:47.095375
-# Building Table - 2024-01-22 14:20:29.935932
+# LS - '2024-01-22 14:36:22.898585
+# Other - '2024-01-22 14:37:47.913619
+# Building Table - 2024-01-22 14:39:11.516143
 # ** Done! **
 
+#Subset for only LS clusters. 
+m_LS_DEGs <- subset(m_LS_clusters,subset=(cellType.target == "LS"))
+
+#Add gene name information 
 colnames(m_LS_DEGs)[1] <- "gene_id"
 m_LS_DEGs <- dplyr::left_join(x = as.data.frame(m_LS_DEGs),
                               y = as.data.frame(rowData(sce.ls)[,c("gene_id","gene_name")]),
                               by = "gene_id")
 
 
+#Load the human and mouse matched SCE objects.
+load(here("processed-data","human_mouse_matched_by_JAX.rda"),verbose = TRUE)
+# Loading objects:
+#     sce_mouse_sub
+#     sce_human_sub
 
-#Calculate DEGs for mouse LS clusters vs all other nuclei 
+
 
 
 
