@@ -157,7 +157,7 @@ all_DEGs_homol <- merge(x = h_LS_DEGs_homol[,c(2,6,7,9:11)],
 save(all_DEGs_homol,file = here("processed-data","Human_mouse_homologous_DEGs_and_tstats.rda"))
 
 #Make the plot
-ggplot(data=as.data.frame(all_DEGs_homol),aes(x = t.stat_human,y = t.stat_mouse)) + 
+all_LS_plot <- ggplot(data=as.data.frame(all_DEGs_homol),aes(x = t.stat_human,y = t.stat_mouse)) + 
     geom_point(alpha=0.5) +
     xlim(c(-350,350)) +
     ylim(c(-600,600)) +
@@ -166,10 +166,23 @@ ggplot(data=as.data.frame(all_DEGs_homol),aes(x = t.stat_human,y = t.stat_mouse)
     labs(x = "Human LS t-statistic", 
          y = "Mouse LS t-statistic") +
     theme_bw() +
+    geom_text(data = as.data.frame(subset(all_DEGs_homol,subset=(t.stat_mouse >= 300 & t.stat_human >= 100))),
+              label = as.data.frame(subset(all_DEGs_homol,subset=(t.stat_mouse >= 300 & t.stat_human >= 100)))$gene_name_human,
+              nudge_y = 15,
+              nudge_x = -15) +
+    geom_text(data = as.data.frame(subset(all_DEGs_homol,subset=(gene_name_human == "FREM2"))),
+              label = as.data.frame(subset(all_DEGs_homol,subset=(gene_name_human == "FREM2")))$gene_name_human,
+              nudge_y = 15,
+              nudge_x = -15) +
+    geom_text(data = as.data.frame(subset(all_DEGs_homol,subset=(t.stat_mouse <= (-150) & t.stat_human <= (-100)))),
+              label = as.data.frame(subset(all_DEGs_homol,subset=(t.stat_mouse <= (-150) & t.stat_human <= (-100))))$gene_name_human,
+              nudge_y = 15,
+              nudge_x = -15) +
     annotate("text",x = 275,y = 600,label = "Human Enriched\nMouse Enriched") +
     annotate("text",x = 275,y = -600, label = "Human Enriched\nMouse Depleted") +
     annotate("text",x = -275,y = 600,label = "Human Depleted\nMouse Enriched") +
     annotate("text",x = -275,y = -600,label = "Human Depleted\nMouse Depleted") 
+ggsave(filename = here("plots","Conservation","all_LS_homologs_tstat_correlation.pdf"),plot = all_LS_plot)
 
 
 #Get the top 100 identifiers for the LS in each species
