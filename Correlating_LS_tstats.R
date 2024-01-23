@@ -5,6 +5,7 @@ library(SingleCellExperiment)
 library(DeconvoBuddies)
 library(sessioninfo)
 library(ggplot2)
+library(scater)
 library(here)
 
 #Load the SingleCellExperiment object for human Lateral Septum
@@ -32,6 +33,21 @@ sce
 sce$LS_vs_other <- ifelse(sce$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I"),
                           "LS",
                           "Other")
+
+
+#Generate a tSNE where LS clusters are colored red and everything else is gray
+#color coding for LS clusters to be red and everything else to be gray
+LS_cols <- c("red","gray44")
+names(LS_cols) <- c("LS","Other")
+
+#Make the tSNE
+LS_tSNE <- plotReducedDim(sce,
+                          dimred      = "tSNE_mnn_50",
+                          colour_by   = "LS_vs_other",
+                          point_alpha = 0.3) +
+    scale_color_manual(values = LS_cols)
+ggsave(filename = here("plots","Conservation","human_tSNE_LSvsother.pdf"),plot = LS_tSNE)
+
 
 #Find markers for the merged LS cluster
 h_LS_clusters <- findMarkers_1vAll(sce,
@@ -82,6 +98,21 @@ sce.ls$LS_vs_other <- ifelse(sce.ls$cellType.final %in% c("LS_In.C","LS_In.D","L
                                                           "LS_In.Q","LS_In.R"),
                              "LS",
                              "Other")
+
+
+#Generate a tSNE where LS clusters are colored red and everything else is gray
+#color coding for LS clusters to be red and everything else to be gray
+LS_cols <- c("red","gray44")
+names(LS_cols) <- c("LS","Other")
+
+#Make the tSNE
+LS_tSNE_mouse <- plotReducedDim(sce.ls,
+                                dimred      = "TSNE",
+                                colour_by   = "LS_vs_other",
+                                point_alpha = 0.3) +
+    scale_color_manual(values = LS_cols)
+ggsave(filename = here("plots","Conservation","mouse_tSNE_LSvsother.pdf"),plot = LS_tSNE_mouse)
+
 
 #Run 1vALL DEG for mouse LS 
 m_LS_clusters <- findMarkers_1vAll(sce.ls,
