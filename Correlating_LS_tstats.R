@@ -216,10 +216,7 @@ all_LS_plot <- ggplot(data=as.data.frame(all_DEGs_homol),aes(x = t.stat_human,y 
 ggsave(filename = here("plots","Conservation","all_LS_homologs_tstat_correlation.pdf"),plot = all_LS_plot)
 
 ####
-#Randomly sample cells from each dataset and calculate t-statistic
-#What percentage of each dataset consists of LS neurons?
-#####YOU NEED TO DO THIS WITH THE HUMAN AND MOUSE OBJECTS THAT ARE SUBSETTED FOR HOMOLOGOUS GENES. 
-
+#Randomly shuffle cell type labels to determine if above signal is real. 
 ############Human
 sce_human_sub$LS_vs_other <- ifelse(sce_human_sub$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I"),
                                     "LS",
@@ -372,6 +369,35 @@ out_m_dataframe <- out_m_dataframe[rownames(out_h_dataframe),]
 #Sanity check
 all(rownames(out_m_dataframe) == rownames(out_h_dataframe))
 #[1] TRUE
+
+
+#Make a dataframe that contains the correlation coefficients and p-values for every set. 
+results_df <- as.data.frame(matrix(nrow = 100,ncol = 2))
+colnames(results_df) <- c("correlation_coefficient","p-value")
+
+#Make plots for every paired column
+for(i in 1:100){
+    print(i)
+    #Cbind for correlation
+    x <- as.data.frame(cbind(out_m_dataframe[,i],
+                             out_h_dataframe[,i]))
+    colnames(x) <- c("mouse","human")
+    
+    #Add statistics to dataframe
+    results_df[i,"correlation_coefficient"] <- cor(x[,"mouse"],x[,"human"])
+    results_df[i,"p-value"] <- cor.test(x[,"mouse"],x[,"human"])$p.val
+    
+    #Make plot
+    cor_plot <- ggplot(data = x,aes(x = human,y = mouse)) +
+        geom_point() +
+        ggtitle(paste0("r=",round(cor(x[,"mouse"],x[,"human"]),digits = 3))) + 
+        theme_bw() +
+        geom_hline(yintercept = 0,lty = 2) +
+        geom_vline(xintercept = 0,lty = 2) +
+        theme(plot.title = element_text(hjust = 0.5))
+    ggsave(plot = cor_plot,filename = here("plots","Conservation","Shuffled_cells_cor_plots",
+                                           paste0(i,"shuffled_plot.pdf")))
+}
 
 
 
