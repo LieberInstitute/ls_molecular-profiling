@@ -215,40 +215,163 @@ all_LS_plot <- ggplot(data=as.data.frame(all_DEGs_homol),aes(x = t.stat_human,y 
     annotate("text",x = -275,y = -600,label = "Human Depleted\nMouse Depleted") 
 ggsave(filename = here("plots","Conservation","all_LS_homologs_tstat_correlation.pdf"),plot = all_LS_plot)
 
+####
+#Randomly sample cells from each dataset and calculate t-statistic
+#What percentage of each dataset consists of LS neurons?
+#####YOU NEED TO DO THIS WITH THE HUMAN AND MOUSE OBJECTS THAT ARE SUBSETTED FOR HOMOLOGOUS GENES. 
 
-#Get the top 100 identifiers for the LS in each species
-h_top250 <- subset(h_LS_DEGs_homol,subset=(rank_marker %in% 1:250))
-m_top250 <- subset(m_LS_DEGs_homol,subset=(rank_marker %in% 1:250))
+############Human
+sce_human_sub$LS_vs_other <- ifelse(sce_human_sub$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I"),
+                                    "LS",
+                                    "Other")
 
-#Find the shared identifiers
-shared_identifiers <- intersect(rownames(h_top250),
-                                rownames(m_top250))
-length(shared_identifiers)
-# [1] 99
+table(sce_human_sub$LS_vs_other)["LS"]/ncol(sce_human_sub) * 100
+# LS 
+# 18.28726 
+#Human is 18.3% 
 
-#correlate
-cor(h_top250[shared_identifiers,"t.stat"],
-    m_top250[shared_identifiers,"t.stat"])
-#[1] 0.6182991
+#Randomly sample 18.3% of the human LS dataset, 500x
+size_h <- round(.183*ncol(sce_human_sub))
 
-#Combine the two dataframes to generate a plot. 
-#To do this, it's critical to have column names that tell us something about the speices
-colnames(h_top250)[c(2,6,7,9,10)] <- paste0(colnames(h_top250)[c(2,6,7,9,10)],"_human")
-colnames(m_top250)[c(2,6,7,9,10)] <- paste0(colnames(m_top250)[c(2,6,7,9,10)],"_mouse")
+#Make a dataframe to output the t-statistics into
+out_h_dataframe <- as.data.frame(matrix(nrow = nrow(sce_human_sub),ncol = 100))
+rownames(out_h_dataframe) <- rownames(sce_human_sub)
+colnames(out_h_dataframe) <- 1:100
 
-#subset both dataframes
-h_top250_sub <- h_top250[,c(2,6,7,9:11)]
-m_top250_sub <- m_top250[,c(2,6,7,9:11)]
+#Randomly sample the cells 100x
+set.seed(001110001)
+random_cells <- replicate(100,sample(x = 1:9225,size = size_h,replace = FALSE))
+random_cellnames <- as.data.frame(matrix(nrow = nrow(random_cells),ncol = 100))
+colnames(random_cellnames) <- 1:100
+for(i in 1:100){
+    random_cellnames[,i] <- colData(sce_human_sub)$unique_rowname[random_cells[,i]]
+}
+
+#Calculate the t-statistics
+for(i in 1:100){
+    #Set cell names
+    sce_human_sub$random_designation <- ifelse(colData(sce_human_sub)$unique_rowname %in% random_cellnames[,i],
+                                               "random",
+                                               "other")
+    #DEG testing to get std.logFC 
+    pd <- as.data.frame(SummarizedExperiment::colData(sce_human_sub))
+    mod <- with(pd, stats::model.matrix(as.formula("~Sample")))
+    mod <- mod[, -1, drop = F]
+    DEGs <- scran::findMarkers(sce_human_sub,
+                               groups = sce_human_sub$random_designation,
+                               assay.type = "logcounts", 
+                               design = mod, 
+                               test.type = "t",
+                               log.p = TRUE,
+                               std.lfc = TRUE,
+                               direction = "up", 
+                               pval.type = "all", 
+                               full.stats = T)
+    
+    #Pull stats for random cells
+    DEGs <- DEGs[["random"]]
+    
+    #Calculate t-statistic
+    DEGs$std.logFC <- DEGs$summary.stats 
+    DEGs$t.stat <-  DEGs$std.logFC * sqrt(ncol(sce_human_sub))
+    
+    #Input the t-statistic into the dataframe
+    out_h_dataframe[,i] <- DEGs[rownames(out_h_dataframe),"t.stat"]
+    print(i)
+}
+
+############Mouse
+sce_mouse_sub$LS_vs_other <- ifelse(sce_mouse_sub$cellType.final %in% c("LS_In.C","LS_In.D","LS_In.M",
+                                                                        "LS_In.N","LS_In.O","LS_In.P",
+                                                                        "LS_In.Q","LS_In.R"),
+                                    "LS",
+                                    "Other")
+
+table(sce_mouse_sub$LS_vs_other)["LS"]/ncol(sce_mouse_sub) * 100
+# LS 
+# 8.412539
+#Mouse is 8.41%
 
 
-#merge
-top250_sub <- merge(x  = h_top250_sub,
-                    y  = m_top250_sub,
-                    by = "JAX.geneID")
+#Randomly sample 18.3% of the human LS dataset, 500x
+size_m <- round(.0841*ncol(sce_mouse_sub))
 
+#Make a dataframe to output the t-statistics into
+out_m_dataframe <- as.data.frame(matrix(nrow = nrow(sce_mouse_sub),ncol = 100))
+rownames(out_m_dataframe) <- rownames(sce_mouse_sub)
+colnames(out_m_dataframe) <- 1:100
 
+#Randomly sample the cells 100x
+set.seed(110001110)
+random_cells <- replicate(100,sample(x = 1:9225,size = size_m,replace = FALSE))
+random_cellnames <- as.data.frame(matrix(nrow = nrow(random_cells),ncol = 100))
+colnames(random_cellnames) <- 1:100
+colData(sce_mouse_sub)$unique_rowname <- rownames(colData(sce_mouse_sub))
+for(i in 1:100){
+    random_cellnames[,i] <- colData(sce_mouse_sub)$unique_rowname[random_cells[,i]]
+}
 
+#Calculate the t-statistics
+for(i in 1:100){
+    #Set cell names
+    sce_mouse_sub$random_designation <- ifelse(colData(sce_mouse_sub)$unique_rowname %in% random_cellnames[,i],
+                                               "random",
+                                               "other")
+    
+    #DEG testing to get std.logFC 
+    pd <- as.data.frame(SummarizedExperiment::colData(sce_mouse_sub))
+    mod <- with(pd, stats::model.matrix(as.formula("~Sample")))
+    mod <- mod[, -1, drop = F]
+    DEGs <- scran::findMarkers(sce_mouse_sub,
+                               groups = sce_mouse_sub$random_designation,
+                               assay.type = "logcounts", 
+                               design = mod, 
+                               test.type = "t",
+                               log.p = TRUE,
+                               std.lfc = TRUE,
+                               direction = "up", 
+                               pval.type = "all", 
+                               full.stats = T)
+    
+    #Pull stats for random cells
+    DEGs <- DEGs[["random"]]
+    
+    #Calculate t-statistic
+    DEGs$std.logFC <- DEGs$summary.stats 
+    DEGs$t.stat <-  DEGs$std.logFC * sqrt(ncol(sce_mouse_sub))
+    
+    #Input the t-statistic into the dataframe
+    out_m_dataframe[,i] <- DEGs[rownames(out_m_dataframe),"t.stat"]
+    print(i)
+}
 
+#Save the dataframe. 
+save(out_h_dataframe,file = here("processed-data","randomized_t_stats_human.rda"))
+save(out_m_dataframe,file = here("processed-data","randomized_t_stats_mouse.rda"))
+
+#Add JAX.gene ID info
+####Human
+out_h_dataframe$gene_id <- rownames(out_h_dataframe)
+out_h_dataframe <- merge(x  = out_h_dataframe,
+                         y  = rowData(sce_human_sub)[,c("gene_id","JAX.geneID")],
+                         by = "gene_id")
+rownames(out_h_dataframe) <- out_h_dataframe$JAX.geneID
+out_h_dataframe <- out_h_dataframe[,2:101]
+
+####Mouse
+out_m_dataframe$gene_id <- rownames(out_m_dataframe)
+out_m_dataframe <- merge(x  = out_m_dataframe,
+                         y  = rowData(sce_mouse_sub)[,c("gene_id","JAX.geneID")],
+                         by = "gene_id")
+rownames(out_m_dataframe) <- out_m_dataframe$JAX.geneID
+out_m_dataframe <- out_m_dataframe[,2:101]
+
+#make sure the mouse dataframe is in the same order as the human dataframe
+out_m_dataframe <- out_m_dataframe[rownames(out_h_dataframe),]
+
+#Sanity check
+all(rownames(out_m_dataframe) == rownames(out_h_dataframe))
+#[1] TRUE
 
 
 
