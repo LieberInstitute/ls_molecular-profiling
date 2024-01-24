@@ -1,6 +1,6 @@
 !/bin/bash
 #SBATCH --job-name="Human stat shuffling"
-#SBATCH --mem=5GB
+#SBATCH --mem=10GB
 #SBATCH --output=human_shuffle.out
 #SBATCH --error=human_shuffle.err
 
