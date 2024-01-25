@@ -11,7 +11,7 @@ module load conda_R/4.3
 cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/
 
 echo "`date`: Running R Job"
-R CMD BATCH shuffle_human_t_stats.r
+R CMD BATCH shuffle_human_t_stats.R
 
 echo "`date`: R job complete"
 
