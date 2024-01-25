@@ -12,7 +12,7 @@ size_h <- round(.183*ncol(sce_human_sub))
 
 
 #Make a dataframe to output the t-statistics into
-out_h_dataframe <- as.data.frame(matrix(nrow = nrow(sce_human_sub),ncol = 100))
+out_h_dataframe <- as.data.frame(matrix(nrow = nrow(sce_human_sub),ncol = 500))
 rownames(out_h_dataframe) <- rownames(sce_human_sub)
 colnames(out_h_dataframe) <- 1:500
 
