@@ -34,7 +34,6 @@ sce$LS_vs_other <- ifelse(sce$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_In
                           "LS",
                           "Other")
 
-
 #Generate a tSNE where LS clusters are colored red and everything else is gray
 #color coding for LS clusters to be red and everything else to be gray
 LS_cols <- c("red","gray44")
@@ -48,16 +47,16 @@ LS_tSNE <- plotReducedDim(sce,
     scale_color_manual(values = LS_cols)
 ggsave(filename = here("plots","Conservation","human_tSNE_LSvsother.pdf"),plot = LS_tSNE)
 
-
 #Find markers for the merged LS cluster
 h_LS_clusters <- findMarkers_1vAll(sce,
                                    assay_name   = "logcounts",
                                    cellType_col = "LS_vs_other",
                                    mod          = "~Sample")
-# LS - '2024-01-22 13:44:51.101302
-# Other - '2024-01-22 13:45:07.978748
-# Building Table - 2024-01-22 13:45:24.865171
+# LS - '2024-01-25 14:45:57.152908
+# Other - '2024-01-25 14:46:09.434334
+# Building Table - 2024-01-25 14:46:21.040722
 # ** Done! **
+
 
 #Keep only the LS
 h_LS_DEGs <- subset(h_LS_clusters,subset=(cellType.target == "LS"))
@@ -119,10 +118,11 @@ m_LS_clusters <- findMarkers_1vAll(sce.ls,
                                    assay_name   = "logcounts",
                                    cellType_col = "LS_vs_other",
                                    mod          = "~Sample")
-# LS - '2024-01-22 14:36:22.898585
-# Other - '2024-01-22 14:37:47.913619
-# Building Table - 2024-01-22 14:39:11.516143
+# LS - '2024-01-25 14:50:40.16095
+# Other - '2024-01-25 14:51:09.498538
+# Building Table - 2024-01-25 14:51:38.845341
 # ** Done! **
+
 
 #Subset for only LS clusters. 
 m_LS_DEGs <- subset(m_LS_clusters,subset=(cellType.target == "LS"))
@@ -215,189 +215,121 @@ all_LS_plot <- ggplot(data=as.data.frame(all_DEGs_homol),aes(x = t.stat_human,y 
     annotate("text",x = -275,y = -600,label = "Human Depleted\nMouse Depleted") 
 ggsave(filename = here("plots","Conservation","all_LS_homologs_tstat_correlation.pdf"),plot = all_LS_plot)
 
-####
-#Randomly shuffle cell type labels to determine if above signal is real. 
-############Human
-sce_human_sub$LS_vs_other <- ifelse(sce_human_sub$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I"),
-                                    "LS",
-                                    "Other")
-
-table(sce_human_sub$LS_vs_other)["LS"]/ncol(sce_human_sub) * 100
-# LS 
-# 18.28726 
-#Human is 18.3% 
-
-#Randomly sample 18.3% of the human LS dataset, 500x
-size_h <- round(.183*ncol(sce_human_sub))
-
-#Make a dataframe to output the t-statistics into
-out_h_dataframe <- as.data.frame(matrix(nrow = nrow(sce_human_sub),ncol = 100))
-rownames(out_h_dataframe) <- rownames(sce_human_sub)
-colnames(out_h_dataframe) <- 1:100
-
-#Randomly sample the cells 100x
-set.seed(001110001)
-random_cells <- replicate(100,sample(x = 1:9225,size = size_h,replace = FALSE))
-random_cellnames <- as.data.frame(matrix(nrow = nrow(random_cells),ncol = 100))
-colnames(random_cellnames) <- 1:100
-for(i in 1:100){
-    random_cellnames[,i] <- colData(sce_human_sub)$unique_rowname[random_cells[,i]]
-}
-
-#Calculate the t-statistics
-for(i in 1:100){
-    #Set cell names
-    sce_human_sub$random_designation <- ifelse(colData(sce_human_sub)$unique_rowname %in% random_cellnames[,i],
-                                               "random",
-                                               "other")
-    #DEG testing to get std.logFC 
-    pd <- as.data.frame(SummarizedExperiment::colData(sce_human_sub))
-    mod <- with(pd, stats::model.matrix(as.formula("~Sample")))
-    mod <- mod[, -1, drop = F]
-    DEGs <- scran::findMarkers(sce_human_sub,
-                               groups = sce_human_sub$random_designation,
-                               assay.type = "logcounts", 
-                               design = mod, 
-                               test.type = "t",
-                               log.p = TRUE,
-                               std.lfc = TRUE,
-                               direction = "up", 
-                               pval.type = "all", 
-                               full.stats = T)
-    
-    #Pull stats for random cells
-    DEGs <- DEGs[["random"]]
-    
-    #Calculate t-statistic
-    DEGs$std.logFC <- DEGs$summary.stats 
-    DEGs$t.stat <-  DEGs$std.logFC * sqrt(ncol(sce_human_sub))
-    
-    #Input the t-statistic into the dataframe
-    out_h_dataframe[,i] <- DEGs[rownames(out_h_dataframe),"t.stat"]
-    print(i)
-}
-
-############Mouse
-sce_mouse_sub$LS_vs_other <- ifelse(sce_mouse_sub$cellType.final %in% c("LS_In.C","LS_In.D","LS_In.M",
-                                                                        "LS_In.N","LS_In.O","LS_In.P",
-                                                                        "LS_In.Q","LS_In.R"),
-                                    "LS",
-                                    "Other")
-
-table(sce_mouse_sub$LS_vs_other)["LS"]/ncol(sce_mouse_sub) * 100
-# LS 
-# 8.412539
-#Mouse is 8.41%
-
-
-#Randomly sample 18.3% of the human LS dataset, 500x
-size_m <- round(.0841*ncol(sce_mouse_sub))
-
-#Make a dataframe to output the t-statistics into
-out_m_dataframe <- as.data.frame(matrix(nrow = nrow(sce_mouse_sub),ncol = 100))
-rownames(out_m_dataframe) <- rownames(sce_mouse_sub)
-colnames(out_m_dataframe) <- 1:100
-
-#Randomly sample the cells 100x
-set.seed(110001110)
-random_cells <- replicate(100,sample(x = 1:9225,size = size_m,replace = FALSE))
-random_cellnames <- as.data.frame(matrix(nrow = nrow(random_cells),ncol = 100))
-colnames(random_cellnames) <- 1:100
-colData(sce_mouse_sub)$unique_rowname <- rownames(colData(sce_mouse_sub))
-for(i in 1:100){
-    random_cellnames[,i] <- colData(sce_mouse_sub)$unique_rowname[random_cells[,i]]
-}
-
-#Calculate the t-statistics
-for(i in 1:100){
-    #Set cell names
-    sce_mouse_sub$random_designation <- ifelse(colData(sce_mouse_sub)$unique_rowname %in% random_cellnames[,i],
-                                               "random",
-                                               "other")
-    
-    #DEG testing to get std.logFC 
-    pd <- as.data.frame(SummarizedExperiment::colData(sce_mouse_sub))
-    mod <- with(pd, stats::model.matrix(as.formula("~Sample")))
-    mod <- mod[, -1, drop = F]
-    DEGs <- scran::findMarkers(sce_mouse_sub,
-                               groups = sce_mouse_sub$random_designation,
-                               assay.type = "logcounts", 
-                               design = mod, 
-                               test.type = "t",
-                               log.p = TRUE,
-                               std.lfc = TRUE,
-                               direction = "up", 
-                               pval.type = "all", 
-                               full.stats = T)
-    
-    #Pull stats for random cells
-    DEGs <- DEGs[["random"]]
-    
-    #Calculate t-statistic
-    DEGs$std.logFC <- DEGs$summary.stats 
-    DEGs$t.stat <-  DEGs$std.logFC * sqrt(ncol(sce_mouse_sub))
-    
-    #Input the t-statistic into the dataframe
-    out_m_dataframe[,i] <- DEGs[rownames(out_m_dataframe),"t.stat"]
-    print(i)
-}
-
-#Save the dataframe. 
-save(out_h_dataframe,file = here("processed-data","randomized_t_stats_human.rda"))
-save(out_m_dataframe,file = here("processed-data","randomized_t_stats_mouse.rda"))
-
-#Add JAX.gene ID info
-####Human
-out_h_dataframe$gene_id <- rownames(out_h_dataframe)
-out_h_dataframe <- merge(x  = out_h_dataframe,
-                         y  = rowData(sce_human_sub)[,c("gene_id","JAX.geneID")],
-                         by = "gene_id")
-rownames(out_h_dataframe) <- out_h_dataframe$JAX.geneID
-out_h_dataframe <- out_h_dataframe[,2:101]
-
-####Mouse
-out_m_dataframe$gene_id <- rownames(out_m_dataframe)
-out_m_dataframe <- merge(x  = out_m_dataframe,
-                         y  = rowData(sce_mouse_sub)[,c("gene_id","JAX.geneID")],
-                         by = "gene_id")
-rownames(out_m_dataframe) <- out_m_dataframe$JAX.geneID
-out_m_dataframe <- out_m_dataframe[,2:101]
-
-#make sure the mouse dataframe is in the same order as the human dataframe
-out_m_dataframe <- out_m_dataframe[rownames(out_h_dataframe),]
-
-#Sanity check
-all(rownames(out_m_dataframe) == rownames(out_h_dataframe))
-#[1] TRUE
-
-
-#Make a dataframe that contains the correlation coefficients and p-values for every set. 
-results_df <- as.data.frame(matrix(nrow = 100,ncol = 2))
-colnames(results_df) <- c("correlation_coefficient","p-value")
-
-#Make plots for every paired column
-for(i in 1:100){
-    print(i)
-    #Cbind for correlation
-    x <- as.data.frame(cbind(out_m_dataframe[,i],
-                             out_h_dataframe[,i]))
-    colnames(x) <- c("mouse","human")
-    
-    #Add statistics to dataframe
-    results_df[i,"correlation_coefficient"] <- cor(x[,"mouse"],x[,"human"])
-    results_df[i,"p-value"] <- cor.test(x[,"mouse"],x[,"human"])$p.val
-    
-    #Make plot
-    cor_plot <- ggplot(data = x,aes(x = human,y = mouse)) +
-        geom_point() +
-        ggtitle(paste0("r=",round(cor(x[,"mouse"],x[,"human"]),digits = 3))) + 
-        theme_bw() +
-        geom_hline(yintercept = 0,lty = 2) +
-        geom_vline(xintercept = 0,lty = 2) +
-        theme(plot.title = element_text(hjust = 0.5))
-    ggsave(plot = cor_plot,filename = here("plots","Conservation","Shuffled_cells_cor_plots",
-                                           paste0(i,"shuffled_plot.pdf")))
-}
-
-
-
+print("Reproducibility information:")
+Sys.time()
+proc.time()
+options(width = 120)
+session_info()
+# [1] "Reproducibility information:"
+# [1] "2024-01-25 14:54:53 EST"
+#    user  system elapsed 
+# 233.528   8.031 829.548
+# ─ Session info ────────────────────────────────────────────────────────────────────────────────────────
+# setting  value
+# version  R version 4.3.1 Patched (2023-07-19 r84711)
+# os       Rocky Linux 9.2 (Blue Onyx)
+# system   x86_64, linux-gnu
+# ui       X11
+# language (EN)
+# collate  en_US.UTF-8
+# ctype    en_US.UTF-8
+# tz       US/Eastern
+# date     2024-01-25
+# pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
+# 
+# ─ Packages ────────────────────────────────────────────────────────────────────────────────────────────
+# package              * version   date (UTC) lib source
+# abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
+# beachmat               2.16.0    2023-04-25 [2] Bioconductor
+# beeswarm               0.4.0     2021-06-01 [2] CRAN (R 4.3.1)
+# Biobase              * 2.60.0    2023-04-25 [2] Bioconductor
+# BiocGenerics         * 0.46.0    2023-04-25 [2] Bioconductor
+# BiocNeighbors          1.18.0    2023-04-25 [2] Bioconductor
+# BiocParallel           1.34.2    2023-05-22 [2] Bioconductor
+# BiocSingular           1.16.0    2023-04-25 [2] Bioconductor
+# bitops                 1.0-7     2021-04-24 [2] CRAN (R 4.3.1)
+# bluster                1.10.0    2023-04-25 [2] Bioconductor
+# cli                    3.6.1     2023-03-23 [2] CRAN (R 4.3.1)
+# cluster                2.1.4     2022-08-22 [3] CRAN (R 4.3.1)
+# codetools              0.2-19    2023-02-01 [3] CRAN (R 4.3.1)
+# colorout             * 1.3-0.1   2023-12-01 [1] Github (jalvesaq/colorout@deda341)
+# colorspace             2.1-0     2023-01-23 [2] CRAN (R 4.3.1)
+# cowplot                1.1.1     2020-12-30 [2] CRAN (R 4.3.1)
+# crayon                 1.5.2     2022-09-29 [2] CRAN (R 4.3.1)
+# DeconvoBuddies       * 0.99.0    2023-12-04 [1] Github (LieberInstitute/DeconvoBuddies@9ce4a42)
+# DelayedArray           0.26.7    2023-07-28 [2] Bioconductor
+# DelayedMatrixStats     1.22.6    2023-08-28 [2] Bioconductor
+# dplyr                  1.1.3     2023-09-03 [2] CRAN (R 4.3.1)
+# dqrng                  0.3.1     2023-08-30 [2] CRAN (R 4.3.1)
+# edgeR                  3.42.4    2023-05-31 [2] Bioconductor
+# fansi                  1.0.4     2023-01-22 [2] CRAN (R 4.3.1)
+# farver                 2.1.1     2022-07-06 [2] CRAN (R 4.3.1)
+# generics               0.1.3     2022-07-05 [2] CRAN (R 4.3.1)
+# GenomeInfoDb         * 1.36.3    2023-09-07 [2] Bioconductor
+# GenomeInfoDbData       1.2.10    2023-07-20 [2] Bioconductor
+# GenomicRanges        * 1.52.0    2023-04-25 [2] Bioconductor
+# ggbeeswarm             0.7.2     2023-04-29 [2] CRAN (R 4.3.1)
+# ggplot2              * 3.4.3     2023-08-14 [2] CRAN (R 4.3.1)
+# ggrepel                0.9.3     2023-02-03 [2] CRAN (R 4.3.1)
+# glue                   1.6.2     2022-02-24 [2] CRAN (R 4.3.1)
+# gridExtra              2.3       2017-09-09 [2] CRAN (R 4.3.1)
+# gtable                 0.3.4     2023-08-21 [2] CRAN (R 4.3.1)
+# here                 * 1.0.1     2020-12-13 [2] CRAN (R 4.3.1)
+# igraph                 1.5.1     2023-08-10 [2] CRAN (R 4.3.1)
+# IRanges              * 2.34.1    2023-06-22 [2] Bioconductor
+# irlba                  2.3.5.1   2022-10-03 [2] CRAN (R 4.3.1)
+# labeling               0.4.3     2023-08-29 [2] CRAN (R 4.3.1)
+# lattice                0.21-8    2023-04-05 [3] CRAN (R 4.3.1)
+# lifecycle              1.0.3     2022-10-07 [2] CRAN (R 4.3.1)
+# limma                  3.56.2    2023-06-04 [2] Bioconductor
+# locfit                 1.5-9.8   2023-06-11 [2] CRAN (R 4.3.1)
+# magrittr               2.0.3     2022-03-30 [2] CRAN (R 4.3.1)
+# Matrix                 1.6-1.1   2023-09-18 [3] CRAN (R 4.3.1)
+# MatrixGenerics       * 1.12.3    2023-07-30 [2] Bioconductor
+# matrixStats          * 1.0.0     2023-06-02 [2] CRAN (R 4.3.1)
+# metapod                1.8.0     2023-04-25 [2] Bioconductor
+# munsell                0.5.0     2018-06-12 [2] CRAN (R 4.3.1)
+# pillar                 1.9.0     2023-03-22 [2] CRAN (R 4.3.1)
+# pkgconfig              2.0.3     2019-09-22 [2] CRAN (R 4.3.1)
+# purrr                  1.0.2     2023-08-10 [2] CRAN (R 4.3.1)
+# R6                     2.5.1     2021-08-19 [2] CRAN (R 4.3.1)
+# rafalib                1.0.0     2015-08-09 [1] CRAN (R 4.3.1)
+# ragg                   1.2.5     2023-01-12 [2] CRAN (R 4.3.1)
+# RColorBrewer           1.1-3     2022-04-03 [2] CRAN (R 4.3.1)
+# Rcpp                   1.0.11    2023-07-06 [2] CRAN (R 4.3.1)
+# RCurl                  1.98-1.12 2023-03-27 [2] CRAN (R 4.3.1)
+# rlang                  1.1.1     2023-04-28 [2] CRAN (R 4.3.1)
+# rprojroot              2.0.3     2022-04-02 [2] CRAN (R 4.3.1)
+# rsvd                   1.0.5     2021-04-16 [2] CRAN (R 4.3.1)
+# S4Arrays               1.0.6     2023-08-30 [2] Bioconductor
+# S4Vectors            * 0.38.1    2023-05-02 [2] Bioconductor
+# ScaledMatrix           1.8.1     2023-05-03 [2] Bioconductor
+# scales                 1.2.1     2022-08-20 [2] CRAN (R 4.3.1)
+# scater               * 1.28.0    2023-04-25 [2] Bioconductor
+# scran                  1.28.2    2023-07-23 [2] Bioconductor
+# scuttle              * 1.10.2    2023-08-03 [2] Bioconductor
+# sessioninfo          * 1.2.2     2021-12-06 [2] CRAN (R 4.3.1)
+# SingleCellExperiment * 1.22.0    2023-04-25 [2] Bioconductor
+# sparseMatrixStats      1.12.2    2023-07-02 [2] Bioconductor
+# statmod                1.5.0     2023-01-06 [2] CRAN (R 4.3.1)
+# stringi                1.7.12    2023-01-11 [2] CRAN (R 4.3.1)
+# stringr                1.5.0     2022-12-02 [2] CRAN (R 4.3.1)
+# SummarizedExperiment * 1.30.2    2023-06-06 [2] Bioconductor
+# systemfonts            1.0.4     2022-02-11 [2] CRAN (R 4.3.1)
+# textshaping            0.3.6     2021-10-13 [2] CRAN (R 4.3.1)
+# tibble                 3.2.1     2023-03-20 [2] CRAN (R 4.3.1)
+# tidyselect             1.2.0     2022-10-10 [2] CRAN (R 4.3.1)
+# utf8                   1.2.3     2023-01-31 [2] CRAN (R 4.3.1)
+# vctrs                  0.6.3     2023-06-14 [2] CRAN (R 4.3.1)
+# vipor                  0.4.5     2017-03-22 [2] CRAN (R 4.3.1)
+# viridis                0.6.4     2023-07-22 [2] CRAN (R 4.3.1)
+# viridisLite            0.4.2     2023-05-02 [2] CRAN (R 4.3.1)
+# withr                  2.5.0     2022-03-03 [2] CRAN (R 4.3.1)
+# XVector                0.40.0    2023-04-25 [2] Bioconductor
+# zlibbioc               1.46.0    2023-04-25 [2] Bioconductor
+# 
+# [1] /users/rphillip/R/4.3
+# [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
+# [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
+# 
+# ───────────────────────────────────────────────────────────────────────────────────────────────────────
