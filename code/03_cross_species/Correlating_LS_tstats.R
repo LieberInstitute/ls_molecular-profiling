@@ -187,6 +187,18 @@ all_DEGs_homol <- merge(x = h_LS_DEGs_homol[,c(2,6,7,9:11)],
 #Save the all_DEGs_homol dataframe
 save(all_DEGs_homol,file = here("processed-data","Human_mouse_homologous_DEGs_and_tstats.rda"))
 
+cor.test(all_DEGs_homol[,"t.stat_human"],
+         all_DEGs_homol[,"t.stat_mouse"])
+# Pearson's product-moment correlation
+# data:  all_DEGs_homol[, "t.stat_human"] and all_DEGs_homol[, "t.stat_mouse"]
+# t = 96.156, df = 16560, p-value < 2.2e-16
+# alternative hypothesis: true correlation is not equal to 0
+# 95 percent confidence interval:
+#  0.5887099 0.6082579
+# sample estimates:
+#      cor 
+# 0.598573 
+
 #Make the plot
 all_LS_plot <- ggplot(data=as.data.frame(all_DEGs_homol),aes(x = t.stat_human,y = t.stat_mouse)) + 
     geom_point(alpha=0.5) +
