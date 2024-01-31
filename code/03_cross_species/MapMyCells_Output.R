@@ -123,9 +123,9 @@ for(i in colnames(mapped_subclass)){
 
 #Plot the heatmap and save 
 pdf(here("plots","Conservation","MapMyCells","LS_Only_Subclass_name.pdf"))
-pheatmap(mat = mapped_subclass,
+pheatmap(mat = t(mapped_subclass),
          color = colorRampPalette(c("gray86", "#FFC107", "#D81B60"))(200),
-         cluster_cols = FALSE)
+         cluster_rows = FALSE)
 dev.off()
 
 
