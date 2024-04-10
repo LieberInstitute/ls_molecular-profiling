@@ -62,7 +62,7 @@ plot.data <- plot.data - rowMeans(plot.data)
 plot.data <- plot.data / apply(plot.data, 1, sd)
 
 .assay_colors <- c("blue", "white", "red")
-.assay_colors <- circlize::colorRamp2(breaks = c(-3, 0, 8), colors = .assay_colors)
+.assay_colors <- circlize::colorRamp2(breaks = c(-5, 0, 10), colors = .assay_colors)
 
 # Keep all samples to compute the full range of continuous annotations
 .column_data <- colData(se)[, "CellType.Final", drop=FALSE]
