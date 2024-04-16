@@ -5,3 +5,12 @@
 .Rproj
 .rda
 token.R
+processed-data/*.rda
+processed-data/*.rds
+MAGMA/
+tables/
+processed-data/02_build_sce/droplet_scores/
+magma.log
+processed-data/MapMyCells_Output/
+plots/Conservation/Shuffled_cells_cor_plots/
+processed-data/h_ls_anndata.h5ad
