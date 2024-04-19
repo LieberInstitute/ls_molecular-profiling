@@ -31,7 +31,7 @@ Below is the citation in [`BibTeX`](http://www.bibtex.org/) format.
 We highly value open data sharing and believe that doing so accelerates
 science.
 
-> TODO
+[`SRA Submission`](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1093410)
 
 ## Internal
 JHPCE location: /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/
