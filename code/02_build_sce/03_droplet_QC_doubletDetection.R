@@ -1,5 +1,6 @@
 #Goal: compile droplet scores, calculate QC metrics, and detect doublets. 
 #cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/
+#module load conda_R/4.3
 #code modified from https://github.com/LieberInstitute/DLPFC_snRNAseq/blob/main/code/03_build_sce/03_droplet_qc.R
 
 library(SingleCellExperiment)
@@ -30,7 +31,7 @@ e.out <- lapply(droplet_paths, function(x) get(load(x)))
 #To make sure we aren't throwing out any cells check if Limited=TRUE and SIG==FALSE
 #If both are true, then we could be throwing out non-empty droplets. 
 lapply(e.out,function(x){
-    table(x$Limited == TRUE & x$FDR>0.001)
+  table(x$Limited == TRUE & x$FDR>0.001)
 })
 # $`1c_LS_SCP`
 # 
@@ -48,27 +49,30 @@ lapply(e.out,function(x){
 # 6923 
 
 #Another way to look at this
-map(e.out, ~ addmargins(table(Signif = .x$FDR <= 0.001, Limited = .x$Limited)))
+map(e.out, ~ addmargins(table(Signif = .x$FDR <= 0.001, Limited = .x$Limited,useNA = "ifany")))
 # $`1c_LS_SCP`
 # Limited
-# Signif  FALSE  TRUE   Sum
-# FALSE 10707     0 10707
-# TRUE    151  4401  4552
-# Sum   10858  4401 15259
+# Signif    FALSE    TRUE    <NA>     Sum
+# FALSE   10707       0       0   10707
+# TRUE      151    4401       0    4552
+# <NA>        0       0 2078128 2078128
+# Sum     10858    4401 2078128 2093387
 # 
 # $`2c_LS_SCP`
 # Limited
-# Signif  FALSE TRUE  Sum
-# FALSE  3457    0 3457
-# TRUE    268 3432 3700
-# Sum    3725 3432 7157
+# Signif    FALSE    TRUE    <NA>     Sum
+# FALSE    3457       0       0    3457
+# TRUE      268    3432       0    3700
+# <NA>        0       0 1385078 1385078
+# Sum      3725    3432 1385078 1392235
 # 
 # $`3c_LS_SCP`
 # Limited
-# Signif  FALSE TRUE  Sum
-# FALSE  3708    0 3708
-# TRUE    320 2895 3215
-# Sum    4028 2895 6923
+# Signif    FALSE    TRUE    <NA>     Sum
+# FALSE    3708       0       0    3708
+# TRUE      320    2895       0    3215
+# <NA>        0       0 1416669 1416669
+# Sum      4028    2895 1416669 1423592
 #Not losing any droplets due to number of iterations. Can move on to QC plots and metrics. 
 
 #Pull knee lower values
@@ -77,18 +81,18 @@ knee_lowers <- as.numeric(lapply(strsplit(std_out[grep("knee_lower",std_out)],sp
 names(knee_lowers) <- names(e.out)
 knee_lowers
 # 1c_LS_SCP 2c_LS_SCP 3c_LS_SCP 
-# 307       207       207
+# 307       207       207 
 
 #Create droplet summary table
 droplet_summary <- stack(map_int(e.out,nrow)) %>% 
-    rename(total_drops=values) %>% 
-    left_join(stack(map_int(e.out, ~ sum(.x$FDR < 0.001, na.rm = TRUE)))) %>%
-    rename(non_empty=values) %>%
-    left_join(stack(knee_lowers)) %>%
-    rename(Sample=ind) %>%
-    select(Sample,total_drops,non_empty,knee_lower=values)
+  rename(total_drops=values) %>% 
+  left_join(stack(map_int(e.out, ~ sum(.x$FDR < 0.001, na.rm = TRUE)))) %>%
+  rename(non_empty=values) %>%
+  left_join(stack(knee_lowers)) %>%
+  rename(Sample=ind) %>%
+  select(Sample,total_drops,non_empty,knee_lower=values)
 droplet_summary
-#       Sample total_drops non_empty knee_lower
+# Sample total_drops non_empty knee_lower
 # 1 1c_LS_SCP     2093387      4552        307
 # 2 2c_LS_SCP     1392235      3700        207
 # 3 3c_LS_SCP     1423592      3215        207
@@ -98,35 +102,58 @@ write.csv(x = droplet_summary,
           file = here("processed-data","02_build_sce","droplet_summary.csv"),
           row.names = FALSE,
           quote = FALSE)
-    
 
 #Make a barplot summarizing the number of empty and non-empty droplets. 
 droplet_barplot <- droplet_summary %>%
-    mutate(empty = total_drops - non_empty) %>%
-    select(-total_drops) %>%
-    select(-knee_lower) %>%
-    pivot_longer(!Sample,names_to = "drop_type",values_to = "number_drops") %>%
-    ggplot(aes(x = Sample,y=number_drops,fill = drop_type)) +
-    geom_col() +
-    scale_y_continuous(trans = "log10") +
-    labs(x = "Sample",
-         y = "Number of Droplets",
-         fill = "Droplet Status")
+  mutate(empty = total_drops - non_empty) %>%
+  select(-total_drops) %>%
+  select(-knee_lower) %>%
+  pivot_longer(!Sample,names_to = "drop_type",values_to = "number_drops") %>%
+  ggplot(aes(x = Sample,y=number_drops,fill = drop_type)) +
+  geom_col() +
+  scale_y_continuous(trans = "log10") +
+  labs(x = "Sample",
+       y = "Number of Droplets",
+       fill = "Droplet Status")
 
 ggsave(plot = droplet_barplot,filename = here("plots","droplet_barplot_per_sample.png"))
 
 #Load in the sce object
 load(here("processed-data","sce_raw.rda"),verbose = TRUE)
 
+sce
+# class: SingleCellExperiment 
+# dim: 36601 4909214 
+# metadata(1): Samples
+# assays(1): counts
+# rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
+# ENSG00000277196
+# rowData names(6): source type ... gene_name gene_type
+# colnames(4909214): 1_AAACCCAAGAAACCAT-1 1_AAACCCAAGAAACCCA-1 ...
+# 3_TTTGTTGTCTTTGCGC-1 3_TTTGTTGTCTTTGGAG-1
+# colData names(33): Sample Barcode ... Mean_Reads_per_Cell
+# Median_Genes_per_Cell
+# reducedDimNames(0):
+#   mainExpName: NULL
+# altExpNames(0):
+
 dim(sce)
-# [1]   36601 4909214
+#[1]   36601 4909214
+
+identical(rownames(colData(sce)),colnames(sce))
+#[1] TRUE
 
 #### Eliminate empty droplets ####
 e.out.all <- do.call("rbind", e.out)[colnames(sce), ]
+
+#Double check that e.out.all is in same order as sce
+identical(rownames(e.out.all),colnames(sce))
+#[1] TRUE
+
 sce <- sce[, which(e.out.all$FDR <= 0.001)]
 
 dim(sce)
-# [1] 36601 11467
+#[1] 36601 11467
 #11467 droplets containing cells a this point. 
 
 #Save object
@@ -145,12 +172,12 @@ ggsave(filename = here("plots","mito_vs_detected_bySample.png"),plot = mito_vs_d
 
 #Now samples separately.
 for(i in unique(sce$Sample)){
-    x <- plotColData(object = sce[,sce$Sample == i],
-                     y = "subsets_Mito_percent",
-                     x = "detected",
-                     colour_by = "Sample")
-    ggsave(filename = here("plots",paste0("mito_vs_detected_",i,"_only.png")),
-           plot = x)
+  x <- plotColData(object = sce[,sce$Sample == i],
+                   y = "subsets_Mito_percent",
+                   x = "detected",
+                   colour_by = "Sample")
+  ggsave(filename = here("plots",paste0("mito_vs_detected_",i,"_only.png")),
+         plot = x)
 }
 
 #########################################
@@ -167,7 +194,7 @@ table(sce$Sample,sce$high_mito_1)
 # 3c_LS_SCP  2263  952
 sce$high_mito_2 <- isOutlier(sce$subsets_Mito_percent, nmads = 2, type = "higher", batch = sce$Sample)
 table(sce$Sample,sce$high_mito_2)
-#           FALSE TRUE
+#            FALSE TRUE
 # 1c_LS_SCP  3870  682
 # 2c_LS_SCP  3221  479
 # 3c_LS_SCP  2745  470
@@ -178,20 +205,26 @@ table(sce$Sample,sce$high_mito_3)
 # 2c_LS_SCP  3469  231
 # 3c_LS_SCP  2997  218
 
+
 for(i in c("high_mito_1","high_mito_2","high_mito_3")){
-    x <- plotColData(sce,x = "Sample",y= "subsets_Mito_percent",colour_by = i) +
-        ggtitle(paste0("Mito Percent\n",i)) +
-        theme(plot.title = element_text(hjust = 0.5)) +
-        geom_hline(yintercept = 5,lty = 2) #Line at 5% which is a cutoff that is widely used. 
-    ggsave(x,file=here("plots",paste0(i,"_violin.png")))
+  x <- plotColData(sce,x = "Sample",y= "subsets_Mito_percent",colour_by = i) +
+    ggtitle(paste0("Mito Percent\n",i)) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    geom_hline(yintercept = 5,lty = 2) #Line at 5% which is a cutoff that is widely used. 
+  ggsave(x,file=here("plots",paste0(i,"_violin.png")))
 }
 
 ####Numeric cutoff
+summary(sce$subsets_Mito_percent)
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 0.0000  0.1296  0.3739  1.1545  1.4933 29.9964 
+
 table(sce$Sample,sce$subsets_Mito_percent > 5.0)
 #           FALSE TRUE
 # 1c_LS_SCP  4548    4
 # 2c_LS_SCP  3411  289
 # 3c_LS_SCP  3105  110
+
 sce$high_mito_numeric <- ifelse(sce$subsets_Mito_percent > 5.0,
                                 TRUE,
                                 FALSE)
@@ -200,11 +233,13 @@ table(sce$high_mito_numeric)
 # 11064   403 
 
 #Check to see if the cells being dropped have large mito percentages.
-mito_violin <- plotColData(sce, x = "Sample", y = "subsets_Mito_percent", colour_by = "high_mito_numeric") +
-    ggtitle("Mito Precent") +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    geom_hline(yintercept = 5,lty = 2) +
-    annotate(geom="text",label = "5% Mito",x = 0.75,y=6)
+mito_violin <- plotColData(sce, x = "Sample", 
+                           y = "subsets_Mito_percent", 
+                           colour_by = "high_mito_numeric") +
+  ggtitle("Mito Precent") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_hline(yintercept = 5,lty = 2) +
+  annotate(geom="text",label = "5% Mito",x = 0.75,y=6)
 
 ggsave(mito_violin,file=here("plots","mito_percentage_violin_numericCutoff.png"))
 
@@ -215,8 +250,8 @@ ggsave(mito_violin,file=here("plots","mito_percentage_violin_numericCutoff.png")
 # ## low library size
 #Plot library size per sample to look at distributions. 
 lib_size_violin <- plotColData(sce, x = "Sample", y = "sum",colour_by = "Sample") +
-    scale_y_log10() +
-    ggtitle("Total UMIs")
+  scale_y_log10() +
+  ggtitle("Total UMIs")
 
 ggsave(lib_size_violin,file=here("plots","lib_size_violin.png"))
 
@@ -225,7 +260,7 @@ ggsave(lib_size_violin,file=here("plots","lib_size_violin.png"))
 ##1 
 sce$low_lib_1 <- isOutlier(sce$sum, log = TRUE, type = "lower", batch = sce$Sample,nmads = 1)
 table(sce$Sample,sce$low_lib_1)
-#            FALSE TRUE
+#           FALSE TRUE
 # 1c_LS_SCP  3181 1371
 # 2c_LS_SCP  2849  851
 # 3c_LS_SCP  2457  758
@@ -241,17 +276,17 @@ table(sce$Sample,sce$low_lib_2)
 ##3
 sce$low_lib_3 <- isOutlier(sce$sum, log = TRUE, type = "lower", batch = sce$Sample,nmads = 3)
 table(sce$Sample,sce$low_lib_3)
-#           FALSE TRUE
+#            FALSE TRUE
 # 1c_LS_SCP  4336  216
 # 2c_LS_SCP  3700    0
 # 3c_LS_SCP  3152   63
 
 #Plot each 
 for(i in c(1:3)){
-    sum_violon <- plotColData(object = sce,y = "sum",x = "Sample",colour_by = paste0("low_lib_",i)) +
-        scale_y_log10() +
-        ggtitle(paste0("Total UMIs"))
-    ggsave(here("plots",paste0("lib_size_violin_nmad_",i,".png"))) 
+  sum_violon <- plotColData(object = sce,y = "sum",x = "Sample",colour_by = paste0("low_lib_",i)) +
+    scale_y_log10() +
+    ggtitle(paste0("Total UMIs"))
+  ggsave(here("plots",paste0("lib_size_violin_nmad_",i,".png"))) 
 }
 
 
@@ -260,8 +295,8 @@ for(i in c(1:3)){
 #########################################
 #Plot number of detected features per sample to look at distributions. 
 detected_features_violin <- plotColData(sce, x = "Sample", y = "detected",colour_by = "Sample") +
-    scale_y_log10()+
-    ggtitle("Detected Features")
+  scale_y_log10()+
+  ggtitle("Detected Features")
 
 ggsave(detected_features_violin,file=here("plots","Detected_Features_violin.png"))
 
@@ -293,11 +328,11 @@ table(sce$Sample,sce$low_genes_3)
 
 #Plot each 
 for(i in c(1:3)){
-    detected_violin <- plotColData(object = sce,y = "detected",x = "Sample",colour_by = paste0("low_genes_",i)) +
-        scale_y_log10() +
-        geom_hline(yintercept = 500) +
-        ggtitle(paste0("Total Detected features"))
-    ggsave(here("plots",paste0("low_genes_violin_nmad_",i,".png"))) 
+  detected_violin <- plotColData(object = sce,y = "detected",x = "Sample",colour_by = paste0("low_genes_",i)) +
+    scale_y_log10() +
+    geom_hline(yintercept = 500) +
+    ggtitle(paste0("Total Detected features"))
+  ggsave(here("plots",paste0("low_genes_violin_nmad_",i,".png"))) 
 }
 
 #Check what the distribution looks like when not splitting by sample
@@ -312,12 +347,13 @@ df$sum <- log10(df$sum)
 df$detected <- log10(df$detected)
 
 library(robustbase)
+set.seed(1234)
 outlying <- adjOutlyingness(df, only.outlyingness = TRUE)
 multi.outlier <- isOutlier(outlying, type = "higher")
 table(multi.outlier)
 # multi.outlier
 # FALSE  TRUE 
-# 10349  1118 
+# 10369  1098 
 
 #With this method, interpreting why a cell is dropped is difficult. 
 #Plot genes detected, library size, and mito percentage and color by it being defined as an outlier
@@ -329,17 +365,17 @@ sce$robustbase_outlier <- multi.outlier
 #Now plot
 #Genes
 genes_robustbase <- plotColData(object = sce,y = "detected",x = "Sample",colour_by = "robustbase_outlier") +
-    scale_y_log10() +
-    ggtitle("Total Detected Features")
+  scale_y_log10() +
+  ggtitle("Total Detected Features")
 ggsave(filename = here("plots","genes_violin_robustbaseoutliers.png"))
 #library size
 libsize_robustbase <- plotColData(object = sce,y = "sum",x = "Sample",colour_by = "robustbase_outlier") +
-    scale_y_log10() +
-    ggtitle("Total UMIs")
+  scale_y_log10() +
+  ggtitle("Total UMIs")
 ggsave(filename = here("plots","libsize_violin_robustbaseoutliers.png"))
 #mitochondrial genes
 mito_robustbase <- plotColData(object = sce,y = "subsets_Mito_percent",x = "Sample",colour_by = "robustbase_outlier") +
-    ggtitle("Reads mapping to mitochondrial genome")
+  ggtitle("Reads mapping to mitochondrial genome")
 ggsave(filename = here("plots","mito_violin_robustbaseoutliers.png"))
 
 #This approach keys in on the mitochondrial percentage and not much else. Still keepign cells with low library 
@@ -351,8 +387,8 @@ ggsave(filename = here("plots","mito_violin_robustbaseoutliers.png"))
 #The MAd approach for mitochondria unnecessarily punishes sample 1 because the distribution is centered 
 #around 0. To prove: 
 summary(sce[,sce$Sample == "1c_LS_SCP"]$subsets_Mito_percent)
-# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-# 0.00000 0.06194 0.12597 0.21432 0.24457 6.66667
+# Min.    1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 0.00000 0.06194 0.12597 0.21432 0.24457 6.66667 
 #Using the same MAD values for each sample is also problematic for library size and number of genes. 
 #Sample 1 is unimodal and using MAD approach for number of genes throws out cells with >1000 genes, which
 #I believe are most likely high quality cells. However, samples 2 and 3 are bimodal. This is a particular
@@ -364,6 +400,7 @@ summary(sce[,sce$Sample == "1c_LS_SCP"]$subsets_Mito_percent)
 ####Sample 1
 sample_1_drop <- sce[,sce$Sample == "1c_LS_SCP"]$low_lib_3 | sce[,sce$Sample == "1c_LS_SCP"]$high_mito_numeric
 table(sample_1_drop)
+# sample_1_drop
 # FALSE  TRUE 
 # 4332   220 
 #Get cell IDs that need to be dropped
@@ -414,14 +451,6 @@ table(sce$discard_sample_specific)
 # FALSE  TRUE 
 # 9807  1660 
 
-# table(sce$discard_auto)
-# FALSE  TRUE 
-# 9883  1584 
-
-#table(sce$discard_numeric)
-# FALSE  TRUE 
-# 10000  1467 
-
 100 * sum(sce$discard_sample_specific) / ncol(sce)
 #[1] 14.47632
 
@@ -446,52 +475,52 @@ set.seed(1234)
 colData(sce)$doubletScore <- NA
 
 for (i in splitit(sce$Sample)) {
-    sce_temp <- sce[, i]
-    ## To speed up, run on sample-level top-HVGs - just take top 1000
-    normd <- logNormCounts(sce_temp)
-    geneVar <- modelGeneVar(normd)
-    topHVGs <- getTopHVGs(geneVar, n = 1000)
-    
-    dbl_dens <- computeDoubletDensity(normd, subset.row = topHVGs)
-    colData(sce)$doubletScore[i] <- dbl_dens
+  sce_temp <- sce[, i]
+  ## To speed up, run on sample-level top-HVGs - just take top 1000
+  normd <- logNormCounts(sce_temp)
+  geneVar <- modelGeneVar(normd)
+  topHVGs <- getTopHVGs(geneVar, n = 1000)
+  
+  dbl_dens <- computeDoubletDensity(normd, subset.row = topHVGs)
+  colData(sce)$doubletScore[i] <- dbl_dens
 }
 
 summary(sce$doubletScore)
-#   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-# 0.0000  0.1730  0.3996  0.5438  0.6660 17.7661 
+#.  Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# 0.0000  0.1730  0.3996  0.5438  0.6660 17.7661
 
 
 ## Visualize doublet scores ##
 dbl_df <- colData(sce) %>%
-    as.data.frame() %>%
-    select(Sample, doubletScore)
+  as.data.frame() %>%
+  select(Sample, doubletScore)
 
 dbl_box_plot <- dbl_df %>%
-    ggplot(aes(x = Sample, y = doubletScore, fill = Sample)) +
-    geom_boxplot() +
-    labs(x = "Sample") +
-    geom_hline(yintercept = 5, color = "red", linetype = "dashed") +
-    coord_flip() +
-    theme_bw()
+  ggplot(aes(x = Sample, y = doubletScore, fill = Sample)) +
+  geom_boxplot() +
+  labs(x = "Sample") +
+  geom_hline(yintercept = 5, color = "red", linetype = "dashed") +
+  coord_flip() +
+  theme_bw()
 
 ggsave(dbl_box_plot, filename = here("plots", "doublet_scores_boxplot.png"))
 
 dbl_density_plot <- dbl_df %>%
-    ggplot(aes(x = doubletScore,fill = Sample)) +
-    geom_density() +
-    labs(x = "doublet score") +
-    theme_bw()
+  ggplot(aes(x = doubletScore,fill = Sample)) +
+  geom_density() +
+  labs(x = "doublet score") +
+  theme_bw()
 
 ggsave(dbl_density_plot, filename = here("plots", "doublet_scores_desnity.png"))
 
 dbl_df %>%
-    group_by(Sample) %>%
-    summarize(
-        median = median(doubletScore),
-        q95 = quantile(doubletScore, .95),
-        drop = sum(doubletScore >= 5),
-        drop_precent = 100 * drop / n()
-    )
+  group_by(Sample) %>%
+  summarize(
+    median = median(doubletScore),
+    q95 = quantile(doubletScore, .95),
+    drop = sum(doubletScore >= 5),
+    drop_precent = 100 * drop / n()
+  )
 # A tibble: 3 × 5
 # Sample    median   q95  drop drop_precent
 # <chr>      <dbl> <dbl> <int>        <dbl>
@@ -500,28 +529,51 @@ dbl_df %>%
 # 3 3c_LS_SCP  0.521 1.20     41        1.28 
 
 table(sce$discard_sample_specific, sce$doubletScore >= 5)
-#       FALSE TRUE
+#.      FALSE TRUE
 # FALSE  9726   81
 # TRUE   1651    9
 
 #Save object
 save(sce,file = here("processed-data","sce_emptyDrops_removed_withQC.rda"))
 
-#10/23/23
-#load in the empty drops removed with QC object
-load(here("processed-data","sce_emptyDrops_removed_withQC.rda"))
+# #10/23/23
+# #load in the empty drops removed with QC object
+# load(here("processed-data","sce_emptyDrops_removed_withQC.rda"))
 
 #Also load in vector of cell IDs that need to be removed. 
-load(here("processed-data","cluster_11_low_quality_IDs.rda"))
+load(here("processed-data","cluster_11_low_quality_IDs.rda"),verbose = TRUE)
+# Loading objects:
+#   low_quality_nuclei
+
 length(low_quality_nuclei)
 # [1] 582
 #vector of 582 cell names that need to be dropped. 
 #Need to add this information to the discard_sample_specific 
 sce[,low_quality_nuclei]$discard_sample_specific <- TRUE
 
+table(sce$discard_sample_specific)
+# FALSE  TRUE 
+# 9225  2242 
+
 sce <- sce[,!sce$discard_sample_specific]
 dim(sce)
-# [1] 36601  9225
+#[1] 36601  9225
+
+sce
+# class: SingleCellExperiment 
+# dim: 36601 9225 
+# metadata(1): Samples
+# assays(1): counts
+# rownames(36601): ENSG00000243485 ENSG00000237613 ... ENSG00000278817
+# ENSG00000277196
+# rowData names(6): source type ... gene_name gene_type
+# colnames(9225): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
+# 3_TTTGGTTTCTTCGACC-1 3_TTTGTTGTCCCGATCT-1
+# colData names(52): Sample Barcode ... discard_sample_specific
+# doubletScore
+# reducedDimNames(0):
+#   mainExpName: NULL
+# altExpNames(0):
 
 ## save QCed and cleaned object. 
 save(sce,file=here("processed-data","sce_clean.rda"))
@@ -533,23 +585,23 @@ proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2023-10-23 10:00:47 EDT"
-# user  system elapsed 
-# 57.727   1.439 395.258 
-# ─ Session info ────────────────────────────────────────────────────────────────────────────────────────────────
+# [1] "2024-07-26 20:42:53 EDT"
+# user   system  elapsed 
+# 297.128    5.991 5450.725 
+# ─ Session info ──────────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.3.1 Patched (2023-07-19 r84711)
-# os       Rocky Linux 9.2 (Blue Onyx)
+# os       Rocky Linux 9.4 (Blue Onyx)
 # system   x86_64, linux-gnu
 # ui       X11
 # language (EN)
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2023-10-23
+# date     2024-07-26
 # pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
 # 
-# ─ Packages ────────────────────────────────────────────────────────────────────────────────────────────────────
+# ─ Packages ──────────────────────────────────────────────────────────────────────────
 # package              * version   date (UTC) lib source
 # abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
 # beachmat               2.16.0    2023-04-25 [2] Bioconductor
@@ -566,17 +618,20 @@ session_info()
 # cli                    3.6.1     2023-03-23 [2] CRAN (R 4.3.1)
 # cluster                2.1.4     2022-08-22 [3] CRAN (R 4.3.1)
 # codetools              0.2-19    2023-02-01 [3] CRAN (R 4.3.1)
-# colorout             * 1.2-2     2023-09-22 [1] Github (jalvesaq/colorout@79931fd)
+# colorout             * 1.3-0.1   2023-12-01 [1] Github (jalvesaq/colorout@deda341)
 # colorspace             2.1-0     2023-01-23 [2] CRAN (R 4.3.1)
+# cowplot                1.1.1     2020-12-30 [2] CRAN (R 4.3.1)
 # crayon                 1.5.2     2022-09-29 [2] CRAN (R 4.3.1)
 # data.table             1.14.8    2023-02-17 [2] CRAN (R 4.3.1)
 # DelayedArray           0.26.7    2023-07-28 [2] Bioconductor
 # DelayedMatrixStats     1.22.6    2023-08-28 [2] Bioconductor
+# DEoptimR               1.1-2     2023-08-28 [2] CRAN (R 4.3.1)
 # dplyr                * 1.1.3     2023-09-03 [2] CRAN (R 4.3.1)
 # dqrng                  0.3.1     2023-08-30 [2] CRAN (R 4.3.1)
 # DropletUtils         * 1.20.0    2023-04-25 [2] Bioconductor
 # edgeR                  3.42.4    2023-05-31 [2] Bioconductor
 # fansi                  1.0.4     2023-01-22 [2] CRAN (R 4.3.1)
+# farver                 2.1.1     2022-07-06 [2] CRAN (R 4.3.1)
 # generics               0.1.3     2022-07-05 [2] CRAN (R 4.3.1)
 # GenomeInfoDb         * 1.36.3    2023-09-07 [2] Bioconductor
 # GenomeInfoDbData       1.2.10    2023-07-20 [2] Bioconductor
@@ -594,6 +649,7 @@ session_info()
 # IRanges              * 2.34.1    2023-06-22 [2] Bioconductor
 # irlba                  2.3.5.1   2022-10-03 [2] CRAN (R 4.3.1)
 # jsonlite               1.8.7     2023-06-29 [2] CRAN (R 4.3.1)
+# labeling               0.4.3     2023-08-29 [2] CRAN (R 4.3.1)
 # lattice                0.21-8    2023-04-05 [3] CRAN (R 4.3.1)
 # lifecycle              1.0.3     2022-10-07 [2] CRAN (R 4.3.1)
 # limma                  3.56.2    2023-06-04 [2] Bioconductor
@@ -613,6 +669,7 @@ session_info()
 # R.utils                2.12.2    2022-11-11 [2] CRAN (R 4.3.1)
 # R6                     2.5.1     2021-08-19 [2] CRAN (R 4.3.1)
 # rafalib              * 1.0.0     2015-08-09 [1] CRAN (R 4.3.1)
+# ragg                   1.2.5     2023-01-12 [2] CRAN (R 4.3.1)
 # RColorBrewer           1.1-3     2022-04-03 [2] CRAN (R 4.3.1)
 # Rcpp                   1.0.11    2023-07-06 [2] CRAN (R 4.3.1)
 # RCurl                  1.98-1.12 2023-03-27 [2] CRAN (R 4.3.1)
@@ -622,6 +679,7 @@ session_info()
 # Rhdf5lib               1.22.1    2023-09-10 [2] Bioconductor
 # rjson                  0.2.21    2022-01-09 [2] CRAN (R 4.3.1)
 # rlang                  1.1.1     2023-04-28 [2] CRAN (R 4.3.1)
+# robustbase           * 0.99-0    2023-06-16 [2] CRAN (R 4.3.1)
 # rprojroot              2.0.3     2022-04-02 [2] CRAN (R 4.3.1)
 # Rsamtools              2.16.0    2023-04-25 [2] Bioconductor
 # rsvd                   1.0.5     2021-04-16 [2] CRAN (R 4.3.1)
@@ -639,6 +697,8 @@ session_info()
 # sparseMatrixStats      1.12.2    2023-07-02 [2] Bioconductor
 # statmod                1.5.0     2023-01-06 [2] CRAN (R 4.3.1)
 # SummarizedExperiment * 1.30.2    2023-06-06 [2] Bioconductor
+# systemfonts            1.0.4     2022-02-11 [2] CRAN (R 4.3.1)
+# textshaping            0.3.6     2021-10-13 [2] CRAN (R 4.3.1)
 # tibble                 3.2.1     2023-03-20 [2] CRAN (R 4.3.1)
 # tidyr                * 1.3.0     2023-01-24 [2] CRAN (R 4.3.1)
 # tidyselect             1.2.0     2022-10-10 [2] CRAN (R 4.3.1)
@@ -658,4 +718,10 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
 # 
-# ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────────────
+# 
+# 
+# 
+# 
+# 
+
