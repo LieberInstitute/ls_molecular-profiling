@@ -239,7 +239,7 @@ for(i in genes){
     scale_color_gradientn(colours = c("lightgrey","red")) +
     ggtitle(i) +
     theme(plot.title = element_text(hjust = 0.5))
-  ggsave(filename = here("plots","Expression_plots",paste0(i,"_expression_tSNE_50_dims.png")),
+  ggsave(filename = here("plots","Expression_plots","FeaturePlots_tSNE_50dims",paste0(i,"_expression_tSNE_50_dims.png")),
          plot = x,
          height = 8,width = 8)
 }
