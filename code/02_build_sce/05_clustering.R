@@ -1,3 +1,4 @@
+
 #cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/
 #module load conda_R/4.3
 
@@ -12,7 +13,7 @@ library(scran)
 library(here)
 
 #Load the object 
-load(here("processed-data","sce_postMNN.rda"),verbose = TRUE)
+load(here("processed-data","02_build_sce","sce_postMNN_081724.rda"),verbose = TRUE)
 
 sce
 
@@ -127,7 +128,7 @@ table(sce$k_20_louvain_pt75,sce$Sample)
 sce$k_20_louvain_1 <- factor(clust_20_1)
 table(sce$k_20_louvain_1,sce$Sample)
 
-#Plot tSNE with k=15, res=0.75
+#Plot tSNE with k=20, res=0.75
 x <- plotReducedDim(object = sce,
                     dimred = "tSNE_mnn_50",
                     colour_by = "k_20_louvain_pt75",
@@ -138,7 +139,7 @@ x <- plotReducedDim(object = sce,
 ggsave(plot = x,filename = here("plots","Dim_Red","k_20_louvain_pt75_tSNE_mnn_50.pdf"),height = 8, width = 8)
 ggsave(plot = x,filename = here("plots","Dim_Red","k_20_louvain_pt75_tSNE_mnn_50.png"),height = 8, width = 8)
 
-#Plot tSNE with k=15, res=1
+#Plot tSNE with k=20, res=1
 x <- plotReducedDim(object = sce,
                     dimred = "tSNE_mnn_50",
                     colour_by = "k_20_louvain_1",
@@ -155,47 +156,47 @@ ggsave(plot = x,filename = here("plots","Dim_Red","k_20_louvain_1_tSNE_mnn_50.pn
 
 #Now that we have clusters, calculate sum factors and compute logcounts
 logcounts(sce) <- NULL
-sce <- computeSumFactors(sce,cluster = sce$k_15_louvain_1,min.mean = 0.1)
+sce <- computeSumFactors(sce,cluster = sce$k_20_louvain_1,min.mean = 0.1)
 sce <- logNormCounts(sce)
 
 #save the object
-save(sce,file = here("processed-data","sce_clustered.rda"))
+save(sce,file = here("processed-data","02_build_sce","sce_clustered_081724.rda"))
 
 #check doublet score per cluster. 
 #will move forward with k=20 louvain
 doublet_violin <- plotColData(object = sce,
-                              x = "k_15_louvain_1",
+                              x = "k_20_louvain_1",
                               y = "doubletScore",
-                              colour_by = "k_15_louvain_1") +
+                              colour_by = "k_20_louvain_1") +
   labs(x = "Cluster",
        y = "Doublet Score",
        title = "Doublet Score by Cluster") +
   theme(plot.title = element_text(hjust=0.5),legend.position = "none") +
   geom_hline(yintercept = 5)
-ggsave(doublet_violin,filename = here("plots","doublet_score_by_cluster_k_15_louvain_1_violin.pdf"))
+ggsave(doublet_violin,filename = here("plots","doublet_score_by_cluster_k_20_louvain_1_violin.pdf"))
 #No cluster dominated by high doublet score
 
 #number of genes per cluster
 genes_violin <- plotColData(object = sce,
-                            x = "k_15_louvain_1",
+                            x = "k_20_louvain_1",
                             y = "detected",
-                            colour_by = "k_15_louvain_1") +
+                            colour_by = "k_20_louvain_1") +
   labs(x = "Cluster",
        y = "Number of genes/cell",
        title = "Number of Genes/Cell by Cluster") +
   theme(plot.title = element_text(hjust=0.5),legend.position = "none")
-ggsave(genes_violin,filename = here("plots","Genes_by_cluster_k_15_louvain_1_violin.pdf"))
+ggsave(genes_violin,filename = here("plots","Genes_by_cluster_k_20_louvain_1_violin.pdf"))
 
 #library size per cluster
 lib_violin <- plotColData(object = sce,
-                          x = "k_15_louvain_1",
+                          x = "k_20_louvain_1",
                           y = "sum",
-                          colour_by = "k_15_louvain_1") +
+                          colour_by = "k_20_louvain_1") +
   scale_y_log10() +
   labs(x = "Cluster",
        title = "Total UMIs") +
   theme(plot.title = element_text(hjust=0.5),legend.position = "none")
-ggsave(lib_violin,filename = here("plots","lib_size_by_cluster_k_15_louvain_1_violin.pdf"))
+ggsave(lib_violin,filename = here("plots","lib_size_by_cluster_k_20_louvain_1_violin.pdf"))
 
 #Define some genes that are good markers. 
 genes <- c("SYT1","SNAP25", #pan neuron
@@ -223,10 +224,10 @@ genes <- c("SYT1","SNAP25", #pan neuron
 #Primary goal of making this plot is to make sure that there are no low quality clusters.  
 Expression_dotplot <- plotDots(object = sce,
                                features = rev(genes),
-                               group = "k_15_louvain_1",swap_rownames = "gene_name") +
+                               group = "k_20_louvain_1",swap_rownames = "gene_name") +
   scale_color_gradientn(colours = c("lightgrey","orange","red"))
 ggsave(plot = Expression_dotplot,filename = here("plots","Expression_plots",
-                                                 "post_k_15_louvain_1_clustering_general_dotplot.pdf"),
+                                                 "post_k_20_louvain_1_clustering_general_dotplot.pdf"),
        height = 8)
 
 #Plot expression on tSNE
@@ -237,12 +238,12 @@ for(i in genes){
                       swap_rownames = "gene_name") +
     scale_color_gradientn(colours = c("lightgrey","orange","red"))
   ggsave(plot = x,
-         filename = here("plots","Expression_plots","post_k_15_louvain_clustering","tSNE",paste0(i,"_tSNE_mnn_50.png")))
+         filename = here("plots","Expression_plots","post_k_20_louvain_clustering","tSNE",paste0(i,"_tSNE_mnn_50.png")))
   }
 
 #Violin plots
 for(i in genes){
-  x <- plotExpression(sce,features = i,x = "k_15_louvain_1",colour_by = "k_15_louvain_1",swap_rowname = "gene_name") +
+  x <- plotExpression(sce,features = i,x = "k_20_louvain_1",colour_by = "k_20_louvain_1",swap_rowname = "gene_name") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
     stat_summary(fun = median, 
                fun.min = median, 
@@ -250,7 +251,7 @@ for(i in genes){
                geom = "crossbar", 
                width = 0.3) 
   ggsave(plot = x,
-         filename = here("plots","Expression_plots","post_k_15_louvain_clustering","Violin",paste0(i,"_k_15_louvain_1_violin.png")),
+         filename = here("plots","Expression_plots","post_k_20_louvain_clustering","Violin",paste0(i,"_k_15_louvain_1_violin.png")),
          height = 8, width = 12)
          }
 
