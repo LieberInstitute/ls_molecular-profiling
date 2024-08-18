@@ -19,7 +19,7 @@ echo "********* Job Starts *********"
 date
 
 #load R
-module load conda_R/4.3
+module load conda_R/4.4
 
 #list modules for reproducibility purposes
 module list
