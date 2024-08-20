@@ -1,6 +1,4 @@
-
 #cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/
-#module load conda_R/4.3
 
 #Load libraries
 library(SingleCellExperiment)

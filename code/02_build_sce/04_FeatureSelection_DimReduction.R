@@ -1,6 +1,5 @@
 #Goal: compile droplet scores, calculate QC metrics, and detect doublets. 
 #cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/
-#module load conda_R/4.3
 #code modified from https://github.com/LieberInstitute/septum_lateral/blob/main/snRNAseq_mouse/code/02_analyses/03_reducedDimensions_clustering.R
 
 library(SingleCellExperiment)
