@@ -158,7 +158,7 @@ sce <- computeSumFactors(sce,cluster = sce$k_20_louvain_1,min.mean = 0.1)
 sce <- logNormCounts(sce)
 
 #save the object
-save(sce,file = here("processed-data","02_build_sce","sce_clustered_081724.rda"))
+save(sce,file = here("processed-data","02_build_sce","sce_clustered_082024.rda"))
 
 #check doublet score per cluster. 
 #will move forward with k=20 louvain
@@ -249,7 +249,7 @@ for(i in genes){
                geom = "crossbar", 
                width = 0.3) 
   ggsave(plot = x,
-         filename = here("plots","Expression_plots","post_k_20_louvain_clustering","Violin",paste0(i,"_k_15_louvain_1_violin.png")),
+         filename = here("plots","Expression_plots","post_k_20_louvain_clustering","Violin",paste0(i,"_k_20_louvain_1_violin.png")),
          height = 8, width = 12)
          }
 
