@@ -40,7 +40,7 @@ sce$CellType.Final <- factor(sce$CellType.Final,
 #Annotate the tSNE
 cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType.Final)),
                                           c("#D81B60", "#1E88E5","#FFC107","#009E73"))
-names(cluster_cols) <- unique(sce$CellType_k_20_louvain)
+names(cluster_cols) <- unique(sce$CellType.Final)
 save(cluster_cols,file = here("processed-data","cluster_cols_CellType_Final_082524.rda"))
 
 annotated_tSNE <- plotReducedDim(object = sce,
