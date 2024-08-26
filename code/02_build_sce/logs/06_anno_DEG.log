@@ -1,5 +1,5 @@
 ********* Job Starts *********
-Sun Aug 25 08:47:06 PM EDT 2024
+Mon Aug 26 11:21:57 AM EDT 2024
 Loading conda_R/4.4
 
 Currently Loaded Modules:
@@ -110,32 +110,32 @@ null device
 FALSE  TRUE 
 33556  3045 
 Running 1vALL Testing for up-regulated genes
-2024-08-25 20:47:51.126479 - Find markers for: LS_Inh_A
-2024-08-25 20:47:59.792764 - Find markers for: Str_DRD1_MSN_A
-2024-08-25 20:48:08.477142 - Find markers for: Excitatory_A
-2024-08-25 20:48:17.116142 - Find markers for: OPC
-2024-08-25 20:48:25.874744 - Find markers for: Microglia
-2024-08-25 20:48:34.641161 - Find markers for: LS_Inh_B
-2024-08-25 20:48:43.466066 - Find markers for: Oligo
-2024-08-25 20:48:52.230173 - Find markers for: Ependymal
-2024-08-25 20:49:00.956033 - Find markers for: Str_DRD1_Patch
-2024-08-25 20:49:09.670998 - Find markers for: LS_Inh_C
-2024-08-25 20:49:18.410404 - Find markers for: MS_Inh_A
-2024-08-25 20:49:27.105529 - Find markers for: MS_Inh_B
-2024-08-25 20:49:36.94619 - Find markers for: Sept_Inh_A
-2024-08-25 20:49:45.739513 - Find markers for: Sept_Inh_B
-2024-08-25 20:49:54.529119 - Find markers for: Str_DRD2_MSN
-2024-08-25 20:50:03.14386 - Find markers for: MS_Inh_C
-2024-08-25 20:50:11.775435 - Find markers for: MS_Excit_A
-2024-08-25 20:50:20.441976 - Find markers for: Excitatory_B
-2024-08-25 20:50:28.972156 - Find markers for: LS_Inh_D
-2024-08-25 20:50:37.546422 - Find markers for: Mural
-2024-08-25 20:50:46.217656 - Find markers for: Astrocyte
-2024-08-25 20:50:54.913813 - Find markers for: Sept_Inh_C
-2024-08-25 20:51:03.699231 - Find markers for: LS_Inh_E
-2024-08-25 20:51:12.476526 - Find markers for: MS_Inh_D
-2024-08-25 20:51:21.087261 - Find markers for: Str_DRD1_MSN_B
-2024-08-25 20:51:29.390946 - Building Table
+2024-08-26 11:24:17.822687 - Find markers for: LS_Inh_A
+2024-08-26 11:24:26.330105 - Find markers for: Str_DRD1_MSN_A
+2024-08-26 11:24:34.840518 - Find markers for: Excitatory_A
+2024-08-26 11:24:43.358135 - Find markers for: OPC
+2024-08-26 11:24:51.823289 - Find markers for: Microglia
+2024-08-26 11:25:00.294466 - Find markers for: LS_Inh_B
+2024-08-26 11:25:08.806103 - Find markers for: Oligo
+2024-08-26 11:25:17.229673 - Find markers for: Ependymal
+2024-08-26 11:25:25.665119 - Find markers for: Str_DRD1_Patch
+2024-08-26 11:25:34.120947 - Find markers for: LS_Inh_C
+2024-08-26 11:25:42.692816 - Find markers for: MS_Inh_A
+2024-08-26 11:25:51.131912 - Find markers for: MS_Inh_B
+2024-08-26 11:26:00.610266 - Find markers for: Sept_Inh_A
+2024-08-26 11:26:09.142856 - Find markers for: Sept_Inh_B
+2024-08-26 11:26:17.603333 - Find markers for: Str_DRD2_MSN
+2024-08-26 11:26:26.053274 - Find markers for: MS_Inh_C
+2024-08-26 11:26:34.55102 - Find markers for: MS_Excit_A
+2024-08-26 11:26:43.049764 - Find markers for: Excitatory_B
+2024-08-26 11:26:51.447354 - Find markers for: LS_Inh_D
+2024-08-26 11:26:59.949555 - Find markers for: Mural
+2024-08-26 11:27:08.437958 - Find markers for: Astrocyte
+2024-08-26 11:27:16.91811 - Find markers for: Sept_Inh_C
+2024-08-26 11:27:25.434515 - Find markers for: LS_Inh_E
+2024-08-26 11:27:33.930739 - Find markers for: MS_Inh_D
+2024-08-26 11:27:42.392636 - Find markers for: Str_DRD1_MSN_B
+2024-08-26 11:27:50.874879 - Building Table
 ** Done! **
 
       LS_Inh_A LS_Inh_B LS_Inh_C LS_Inh_D LS_Inh_E MS_Inh_A MS_Inh_B MS_Inh_C
@@ -151,9 +151,9 @@ TRUE              57           48         79          250          288   512
 FALSE 33227     33295     31958     32730 32775
 TRUE    329       261      1598       826   781
 [1] "Reproducibility information:"
-[1] "2024-08-25 20:52:26 EDT"
+[1] "2024-08-26 11:28:37 EDT"
    user  system elapsed 
-305.026   6.369 319.668 
+383.941   5.939 399.474 
 ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.4.0 Patched (2024-05-22 r86590)
@@ -164,7 +164,7 @@ TRUE    329       261      1598       826   781
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2024-08-25
+ date     2024-08-26
  pandoc   3.1.13 @ /jhpce/shared/community/core/conda_R/4.4/bin/pandoc
 
 ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -334,4 +334,4 @@ TRUE    329       261      1598       826   781
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ********* Job Ends *********
-Sun Aug 25 08:52:28 PM EDT 2024
+Mon Aug 26 11:28:39 AM EDT 2024
