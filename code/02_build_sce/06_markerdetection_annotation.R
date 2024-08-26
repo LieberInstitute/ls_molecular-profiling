@@ -52,6 +52,10 @@ annotated_tSNE <- plotReducedDim(object = sce,
 ggsave(filename = here("plots","Dim_Red","tSNE_mnn_50_annotated_CellType_Final.pdf"),
        plot = annotated_tSNE)
 
+
+#Save the object post cell type annotation
+save(sce,file = here("processed-data","02_build_sce","sce_celltype_082624.rda"))
+
 ########Calculate modularity scores.
 set.seed(20)
 #Make the graph. 
@@ -81,10 +85,8 @@ dev.off()
 
 #Do any genes have 0 counts for every cell. 
 table(rowSums(assay(sce, "counts")) == 0)
-# FALSE  TRUE 
-# 33556  3045 
 
-#Remove 3045 genes that are all 0s 
+#Remove genes that are all 0s 
 sce <- sce[!rowSums(assay(sce, "counts")) == 0, ]
 
 ##################################################
