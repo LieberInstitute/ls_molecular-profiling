@@ -1,5 +1,5 @@
 ********* Job Starts *********
-Mon Aug 26 11:21:57 AM EDT 2024
+Mon Aug 26 12:55:00 PM EDT 2024
 Loading conda_R/4.4
 
 Currently Loaded Modules:
@@ -110,32 +110,32 @@ null device
 FALSE  TRUE 
 33556  3045 
 Running 1vALL Testing for up-regulated genes
-2024-08-26 11:24:17.822687 - Find markers for: LS_Inh_A
-2024-08-26 11:24:26.330105 - Find markers for: Str_DRD1_MSN_A
-2024-08-26 11:24:34.840518 - Find markers for: Excitatory_A
-2024-08-26 11:24:43.358135 - Find markers for: OPC
-2024-08-26 11:24:51.823289 - Find markers for: Microglia
-2024-08-26 11:25:00.294466 - Find markers for: LS_Inh_B
-2024-08-26 11:25:08.806103 - Find markers for: Oligo
-2024-08-26 11:25:17.229673 - Find markers for: Ependymal
-2024-08-26 11:25:25.665119 - Find markers for: Str_DRD1_Patch
-2024-08-26 11:25:34.120947 - Find markers for: LS_Inh_C
-2024-08-26 11:25:42.692816 - Find markers for: MS_Inh_A
-2024-08-26 11:25:51.131912 - Find markers for: MS_Inh_B
-2024-08-26 11:26:00.610266 - Find markers for: Sept_Inh_A
-2024-08-26 11:26:09.142856 - Find markers for: Sept_Inh_B
-2024-08-26 11:26:17.603333 - Find markers for: Str_DRD2_MSN
-2024-08-26 11:26:26.053274 - Find markers for: MS_Inh_C
-2024-08-26 11:26:34.55102 - Find markers for: MS_Excit_A
-2024-08-26 11:26:43.049764 - Find markers for: Excitatory_B
-2024-08-26 11:26:51.447354 - Find markers for: LS_Inh_D
-2024-08-26 11:26:59.949555 - Find markers for: Mural
-2024-08-26 11:27:08.437958 - Find markers for: Astrocyte
-2024-08-26 11:27:16.91811 - Find markers for: Sept_Inh_C
-2024-08-26 11:27:25.434515 - Find markers for: LS_Inh_E
-2024-08-26 11:27:33.930739 - Find markers for: MS_Inh_D
-2024-08-26 11:27:42.392636 - Find markers for: Str_DRD1_MSN_B
-2024-08-26 11:27:50.874879 - Building Table
+2024-08-26 12:57:46.533615 - Find markers for: LS_Inh_A
+2024-08-26 12:57:56.023668 - Find markers for: Str_DRD1_MSN_A
+2024-08-26 12:58:05.36328 - Find markers for: Excitatory_A
+2024-08-26 12:58:14.585983 - Find markers for: OPC
+2024-08-26 12:58:23.79393 - Find markers for: Microglia
+2024-08-26 12:58:33.0654 - Find markers for: LS_Inh_B
+2024-08-26 12:58:42.327557 - Find markers for: Oligo
+2024-08-26 12:58:51.518687 - Find markers for: Ependymal
+2024-08-26 12:59:00.669824 - Find markers for: Str_DRD1_Patch
+2024-08-26 12:59:09.812847 - Find markers for: LS_Inh_C
+2024-08-26 12:59:18.995101 - Find markers for: MS_Inh_A
+2024-08-26 12:59:28.167767 - Find markers for: MS_Inh_B
+2024-08-26 12:59:38.496351 - Find markers for: Sept_Inh_A
+2024-08-26 12:59:47.801013 - Find markers for: Sept_Inh_B
+2024-08-26 12:59:57.008098 - Find markers for: Str_DRD2_MSN
+2024-08-26 13:00:06.168202 - Find markers for: MS_Inh_C
+2024-08-26 13:00:15.454952 - Find markers for: MS_Excit_A
+2024-08-26 13:00:24.625927 - Find markers for: Excitatory_B
+2024-08-26 13:00:33.78792 - Find markers for: LS_Inh_D
+2024-08-26 13:00:43.148527 - Find markers for: Mural
+2024-08-26 13:00:52.34376 - Find markers for: Astrocyte
+2024-08-26 13:01:01.650468 - Find markers for: Sept_Inh_C
+2024-08-26 13:01:10.946302 - Find markers for: LS_Inh_E
+2024-08-26 13:01:20.220287 - Find markers for: MS_Inh_D
+2024-08-26 13:01:29.553141 - Find markers for: Str_DRD1_MSN_B
+2024-08-26 13:01:38.738883 - Building Table
 ** Done! **
 
       LS_Inh_A LS_Inh_B LS_Inh_C LS_Inh_D LS_Inh_E MS_Inh_A MS_Inh_B MS_Inh_C
@@ -151,9 +151,9 @@ TRUE              57           48         79          250          288   512
 FALSE 33227     33295     31958     32730 32775
 TRUE    329       261      1598       826   781
 [1] "Reproducibility information:"
-[1] "2024-08-26 11:28:37 EDT"
+[1] "2024-08-26 13:02:36 EDT"
    user  system elapsed 
-383.941   5.939 399.474 
+436.793   7.659 455.605 
 ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.4.0 Patched (2024-05-22 r86590)
@@ -334,4 +334,4 @@ TRUE    329       261      1598       826   781
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ********* Job Ends *********
-Mon Aug 26 11:28:39 AM EDT 2024
+Mon Aug 26 01:02:38 PM EDT 2024
