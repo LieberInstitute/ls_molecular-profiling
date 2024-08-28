@@ -34,14 +34,14 @@ sce$CellType.Final <- factor(sce$CellType.Final,
                                         "MS_Inh_A","MS_Inh_B","MS_Inh_C","MS_Inh_D",
                                         "Sept_Inh_A","Sept_Inh_B","Sept_Inh_C",
                                         "Str_DRD1_MSN_A","Str_DRD1_MSN_B","Str_DRD1_Patch","Str_DRD2_MSN",
-                                        "MS_Excit_A","Excitatory_A","Excitatory_B",
+                                        "MS_Excit_A","Excit_A","Excit_B",
                                         "Oligo","OPC","Astrocyte","Ependymal","Microglia","Mural"))
 
 #Annotate the tSNE
 cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType.Final)),
                                           c("#D81B60", "#1E88E5","#FFC107","#009E73"))
 names(cluster_cols) <- unique(sce$CellType.Final)
-save(cluster_cols,file = here("processed-data","cluster_cols_CellType_Final_082524.rda"))
+save(cluster_cols,file = here("processed-data","cluster_cols_CellType_Final_082724.rda"))
 
 annotated_tSNE <- plotReducedDim(object = sce,
                                  dimred = "tSNE_mnn_50",
@@ -54,7 +54,7 @@ ggsave(filename = here("plots","Dim_Red","tSNE_mnn_50_annotated_CellType_Final.p
 
 
 #Save the object post cell type annotation
-save(sce,file = here("processed-data","02_build_sce","sce_celltype_082624.rda"))
+save(sce,file = here("processed-data","02_build_sce","sce_celltype_082724.rda"))
 
 ########Calculate modularity scores.
 set.seed(20)
