@@ -6,12 +6,12 @@ library(sessioninfo)
 library(scater)
 library(here)
 
-load(here("processed-data","02_build_sce","sce_celltype_082624.rda"),verbose = TRUE)
+load(here("processed-data","02_build_sce","sce_celltype_082724.rda"),verbose = TRUE)
 
 sce
 
 #Load the cluster colors
-load(here("processed-data","cluster_cols_CellType_Final_082524.rda"),verbose = TRUE)
+load(here("processed-data","cluster_cols_CellType_Final_082724.rda"),verbose = TRUE)
 
 ###Feature plots for SYT1,SNAP25, GAD1, GAD2, SLC17A6, SLC17A7, MOBP, GFAP
 #Make each plot with and without the figure legend.  
@@ -95,12 +95,12 @@ marker_labels <- factor(x = marker_labels,
 colors_markers <- list(marker = c(neuronal = "black",
                                   Inhibitory = "#D62728",
                                   Excitatory = "#0a99c0",
-                                  Oligodendrocyte = "#32FF0D",
-                                  OPC = "#0D996A",
-                                  Astrocyte = "#B9C4FB",
-                                  Ependymal = "#800D91",
-                                  Microglia = "#FC00FC",
-                                  Mural = "#32FEA1"))
+                                  Oligodendrocyte = as.character(cluster_cols["Oligo"]),
+                                  OPC = as.character(cluster_cols["OPC"]),
+                                  Astrocyte = as.character(cluster_cols["Astrocyte"]),
+                                  Ependymal = as.character(cluster_cols["Ependymal"]),
+                                  Microglia = as.character(cluster_cols["Microglia"]),
+                                  Mural = as.character(cluster_cols["Mural"])))
 
 col_ha <- ComplexHeatmap::columnAnnotation(marker = marker_labels,
                                            show_annotation_name = FALSE,
@@ -128,8 +128,7 @@ cluster_pops_order <- unname(unlist(cluster_pops))
 # swap values and names of list
 cluster_pops_rev <- rep(names(cluster_pops),
                         times = sapply(cluster_pops, length))
-names(cluster_pops_rev) <- unname(unlist(cluster_pops))
-#cluster_pops_rev <- cluster_pops_rev[as.character(sort(cluster_pops_order))]
+names(cluster_pops_rev) <- cluster_pops_order
 cluster_pops_rev <- factor(cluster_pops_rev, levels = names(cluster_pops))
 
 # second set of cluster labels
@@ -149,13 +148,12 @@ n <- table(sce$CellType.Final)
 # row annotation
 pop_markers <- list(population = c(Inhibitory = "#D62728",
                                    Excitatory = "#0a99c0",
-                                   Oligodendrocyte = "#32FF0D",
-                                   OPC = "#0D996A",
-                                   Astrocyte = "#B9C4FB",
-                                   Ependymal = "#800D91",
-                                   Microglia = "#FC00FC",
-                                   Mural = "#32FEA1"))
-
+                                   Oligodendrocyte = as.character(cluster_cols["Oligo"]),
+                                   OPC = as.character(cluster_cols["OPC"]),
+                                   Astrocyte = as.character(cluster_cols["Astrocyte"]),
+                                   Ependymal = as.character(cluster_cols["Ependymal"]),
+                                   Microglia = as.character(cluster_cols["Microglia"]),
+                                   Mural = as.character(cluster_cols["Mural"])))
 
 row_ha <- rowAnnotation(n = anno_barplot(as.numeric(n), 
                                          gp = gpar(fill = "navy"), 
