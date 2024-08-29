@@ -1,5 +1,5 @@
 ********* Job Starts *********
-Tue Aug 27 04:58:05 PM EDT 2024
+Thu Aug 29 12:26:15 PM EDT 2024
 Loading conda_R/4.4
 
 Currently Loaded Modules:
@@ -121,8 +121,6 @@ colData names(60): Sample Barcode ... k_20_louvain_1 CellType.Final
 reducedDimNames(4): GLMPCA_approx tSNE_50 mnn tSNE_mnn_50
 mainExpName: NULL
 altExpNames(0):
-Loading objects:
-  markers_1vALL_df
 Scale for colour is already present.
 Adding another scale for colour, which will replace the existing scale.
 Scale for colour is already present.
@@ -152,9 +150,9 @@ In asMethod(object) :
 null device 
           1 
 [1] "Reproducibility information:"
-[1] "2024-08-27 16:58:50 EDT"
+[1] "2024-08-29 12:26:48 EDT"
    user  system elapsed 
- 40.849   2.231  44.141 
+ 29.478   1.912  32.625 
 ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.4.0 Patched (2024-05-22 r86590)
@@ -165,7 +163,7 @@ null device
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2024-08-27
+ date     2024-08-29
  pandoc   3.1.13 @ /jhpce/shared/community/core/conda_R/4.4/bin/pandoc
 
 ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -266,4 +264,4 @@ null device
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ********* Job Ends *********
-Tue Aug 27 04:58:50 PM EDT 2024
+Thu Aug 29 12:26:49 PM EDT 2024
