@@ -11,9 +11,6 @@ load(here("processed-data","02_build_sce","sce_celltype_082724.rda"),verbose = T
 
 sce
 
-#load 1vALL DEGs
-load(here("processed-data","markers_1vAll_ttest_k_20_louvain_CellType_Final.rda"),verbose = TRUE)
-
 #Create a column for neurons and non-neurons
 sce$Neuronal_NonNeuronal <- ifelse(sce$CellType.Final %in% c("LS_Inh_A","LS_Inh_B","LS_Inh_C","LS_Inh_D",
                                                              "LS_Inh_E","MS_Inh_A","MS_Inh_B","MS_Inh_C",
