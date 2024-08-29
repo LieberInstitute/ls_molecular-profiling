@@ -1,5 +1,5 @@
 ********* Job Starts *********
-Tue Aug 20 01:48:04 PM EDT 2024
+Thu Aug 29 09:56:05 AM EDT 2024
 Loading conda_R/4.4
 
 Currently Loaded Modules:
@@ -531,9 +531,9 @@ Scale for colour is already present.
 Adding another scale for colour, which will replace the existing scale.
 Saving 7 x 7 in image
 [1] "Reproducibility information:"
-[1] "2024-08-20 13:54:42 EDT"
+[1] "2024-08-29 10:01:34 EDT"
    user  system elapsed 
-376.293   4.027 397.854 
+316.770   3.191 328.185 
 ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.4.0 Patched (2024-05-22 r86590)
@@ -544,7 +544,7 @@ Saving 7 x 7 in image
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2024-08-20
+ date     2024-08-29
  pandoc   3.1.13 @ /jhpce/shared/community/core/conda_R/4.4/bin/pandoc
 
 ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -641,4 +641,4 @@ Saving 7 x 7 in image
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ********* Job Ends *********
-Tue Aug 20 01:54:43 PM EDT 2024
+Thu Aug 29 10:01:34 AM EDT 2024

@@ -1,5 +1,5 @@
 ********* Job Starts *********
-Sat Aug 17 11:19:49 PM EDT 2024
+Thu Aug 29 09:46:34 AM EDT 2024
 Loading conda_R/4.4
 
 Currently Loaded Modules:
@@ -107,23 +107,23 @@ altExpNames(0):
 null device 
           1 
 Running null residuals
-[1] "2024-08-17 23:20:21 EDT"
+[1] "2024-08-29 09:47:01 EDT"
 Warning message:
 In asMethod(object) :
   sparse->dense coercion: allocating vector of size 2.5 GiB
 Running PCA
-[1] "2024-08-17 23:20:35 EDT"
+[1] "2024-08-29 09:47:13 EDT"
 Saving 7 x 7 in image
 Running tSNE-uncorrected
-[1] "2024-08-17 23:21:05 EDT"
+[1] "2024-08-29 09:47:39 EDT"
 Saving 7 x 7 in image
 Saving 7 x 7 in image
 Saving 7 x 7 in image
 Running mnn
-[1] "2024-08-17 23:23:23 EDT"
+[1] "2024-08-29 09:49:35 EDT"
 [1] TRUE
 Running tSNE post-mnn
-[1] "2024-08-17 23:23:25 EDT"
+[1] "2024-08-29 09:49:36 EDT"
 Saving 7 x 7 in image
 Saving 7 x 7 in image
 Saving 7 x 7 in image
@@ -233,9 +233,9 @@ reducedDimNames(4): GLMPCA_approx tSNE_50 mnn tSNE_mnn_50
 mainExpName: NULL
 altExpNames(0):
 [1] "Reproducibility information:"
-[1] "2024-08-17 23:26:39 EDT"
+[1] "2024-08-29 09:52:22 EDT"
    user  system elapsed 
-392.364  11.024 408.599 
+331.578   9.900 348.208 
 ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.4.0 Patched (2024-05-22 r86590)
@@ -246,7 +246,7 @@ altExpNames(0):
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2024-08-17
+ date     2024-08-29
  pandoc   3.1.13 @ /jhpce/shared/community/core/conda_R/4.4/bin/pandoc
 
 ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -345,4 +345,4 @@ altExpNames(0):
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ********* Job Ends *********
-Sat Aug 17 11:26:39 PM EDT 2024
+Thu Aug 29 09:52:23 AM EDT 2024
