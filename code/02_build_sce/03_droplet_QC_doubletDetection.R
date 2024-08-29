@@ -37,7 +37,7 @@ lapply(e.out,function(x){
 map(e.out, ~ addmargins(table(Signif = .x$FDR <= 0.001, Limited = .x$Limited,useNA = "ifany")))
 
 #Pull knee lower values
-std_out <- readLines(here("code","02_build_sce","emptyDrops_dropletQC.err"))
+std_out <- readLines(here("code","02_build_sce","logs","02_emptyDrops.log"))
 knee_lowers <- as.numeric(lapply(strsplit(std_out[grep("knee_lower",std_out)],split="="),"[",2))
 names(knee_lowers) <- names(e.out)
 knee_lowers
