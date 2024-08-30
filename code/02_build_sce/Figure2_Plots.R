@@ -7,7 +7,7 @@ library(scater)
 library(here)
 
 #load sce object
-load(here("processed-data","02_build_sce","sce_celltype_082724.rda"),verbose = TRUE)
+load(here("processed-data","02_build_sce","sce_celltype.rda"),verbose = TRUE)
 
 sce
 
@@ -251,7 +251,3 @@ Sys.time()
 proc.time()
 options(width = 120)
 session_info()
-
-
-
-
