@@ -6,12 +6,12 @@ library(sessioninfo)
 library(scater)
 library(here)
 
-load(here("processed-data","02_build_sce","sce_celltype_082724.rda"),verbose = TRUE)
+load(here("processed-data","02_build_sce","sce_celltype.rda"),verbose = TRUE)
 
 sce
 
 #Load the cluster colors
-load(here("processed-data","cluster_cols_CellType_Final_082724.rda"),verbose = TRUE)
+load(here("processed-data","cluster_cols_CellType_Final.rda"),verbose = TRUE)
 
 ###Feature plots for SYT1,SNAP25, GAD1, GAD2, SLC17A6, SLC17A7, MOBP, GFAP
 #Make each plot with and without the figure legend.  
