@@ -1,5 +1,5 @@
 ********* Job Starts *********
-Sat Aug 17 08:40:28 PM EDT 2024
+Thu Aug 29 03:07:26 PM EDT 2024
 Loading conda_R/4.4
 
 Currently Loaded Modules:
@@ -124,8 +124,8 @@ The following objects are masked from ‘package:base’:
     intersect, setdiff, setequal, union
 
 [1] TRUE
-Read 10x data and create sce - 2024-08-17 20:40:36.826503
-RDone - 2024-08-17 20:41:30.385471
+Read 10x data and create sce - 2024-08-29 15:07:36.898605
+RDone - 2024-08-29 15:08:55.312137
 class: SingleCellExperiment 
 dim: 36601 4909214 
 metadata(1): Samples
@@ -141,7 +141,7 @@ mainExpName: NULL
 altExpNames(0):
 [1] TRUE
 [1] TRUE
-Printing raw sce object - 2024-08-17 20:42:13.42243
+Printing raw sce object - 2024-08-29 15:10:05.125536
 class: SingleCellExperiment 
 dim: 36601 4909214 
 metadata(1): Samples
@@ -157,9 +157,9 @@ reducedDimNames(0):
 mainExpName: NULL
 altExpNames(0):
 [1] "Reproducibility information:"
-[1] "2024-08-17 20:43:44 EDT"
+[1] "2024-08-29 15:11:58 EDT"
    user  system elapsed 
-189.721   3.943 194.567 
+251.195  14.629 271.600 
 ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.4.0 Patched (2024-05-22 r86590)
@@ -170,7 +170,7 @@ altExpNames(0):
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2024-08-17
+ date     2024-08-29
  pandoc   3.1.13 @ /jhpce/shared/community/core/conda_R/4.4/bin/pandoc
 
 ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -255,4 +255,4 @@ altExpNames(0):
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ********* Job Ends *********
-Sat Aug 17 08:43:44 PM EDT 2024
+Thu Aug 29 03:11:59 PM EDT 2024
