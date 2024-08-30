@@ -3,6 +3,7 @@
 
 library(SingleCellExperiment)
 library(DeconvoBuddies)
+library(sessioninfo)
 library(here)
 
 
