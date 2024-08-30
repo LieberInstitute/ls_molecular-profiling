@@ -11,7 +11,7 @@ library(scry)
 library(here)
 
 ## load QCed and cleaned object. 
-load(file = here("processed-data","02_build_sce","sce_clean_081724.rda"),verbose = TRUE)
+load(file = here("processed-data","02_build_sce","sce_clean.rda"),verbose = TRUE)
 
 dim(sce)
 
@@ -119,7 +119,7 @@ ggsave(dubscore_tSNE_uncorrected,
 #batch effect results in cluster coming from a single sample. 
 #Will need to run MNN to fix this. 
 #save uncorrected object. 
-save(sce_uncorrected,file = here("processed-data","sce_uncorrected_081624.rda"))
+save(sce_uncorrected,file = here("processed-data","02_build_sce","sce_uncorrected.rda"))
 
 #Run batch correction with mutual nearest neighbors. 
 message("Running mnn")
@@ -246,7 +246,7 @@ for(i in genes){
 #This cluster is the result of glutamatergic cells present in sample 1 only. 
 
 #Save the object
-save(sce,file = here("processed-data","02_build_sce","sce_postMNN_081724.rda"))
+save(sce,file = here("processed-data","02_build_sce","sce_postMNN.rda"))
 
 sce
 

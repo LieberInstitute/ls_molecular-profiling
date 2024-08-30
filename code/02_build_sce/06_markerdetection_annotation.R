@@ -10,7 +10,7 @@ library(scran)
 library(here)
 
 #load the clustered object
-load(here("processed-data","02_build_sce","sce_clustered_082024.rda"),verbose = TRUE)
+load(here("processed-data","02_build_sce","sce_clustered.rda"),verbose = TRUE)
 
 sce
 
@@ -41,7 +41,7 @@ sce$CellType.Final <- factor(sce$CellType.Final,
 cluster_cols <- Polychrome::createPalette(length(unique(sce$CellType.Final)),
                                           c("#D81B60", "#1E88E5","#FFC107","#009E73"))
 names(cluster_cols) <- unique(sce$CellType.Final)
-save(cluster_cols,file = here("processed-data","cluster_cols_CellType_Final_082724.rda"))
+save(cluster_cols,file = here("processed-data","cluster_cols_CellType_Final.rda"))
 
 annotated_tSNE <- plotReducedDim(object = sce,
                                  dimred = "tSNE_mnn_50",
@@ -54,7 +54,7 @@ ggsave(filename = here("plots","Dim_Red","tSNE_mnn_50_annotated_CellType_Final.p
 
 
 #Save the object post cell type annotation
-save(sce,file = here("processed-data","02_build_sce","sce_celltype_082724.rda"))
+save(sce,file = here("processed-data","02_build_sce","sce_celltype.rda"))
 
 ########Calculate modularity scores.
 set.seed(20)

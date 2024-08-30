@@ -85,7 +85,7 @@ sce
 
 #Save object. 
 save(sce,
-     file = here("processed-data","02_build_sce","sce_raw_081724.rda"))
+     file = here("processed-data","02_build_sce","sce_raw.rda"))
 
 #Empty droplets have not been removed. Will be the next step of the analysis. 
 

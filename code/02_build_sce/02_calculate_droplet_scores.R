@@ -14,7 +14,7 @@ library(tidyverse)
 here()
 
 #Load the sce object 
-load(here("processed-data","02_build_sce","sce_raw_081724.rda"),verbose = TRUE)
+load(here("processed-data","02_build_sce","sce_raw.rda"),verbose = TRUE)
 
 sce
 

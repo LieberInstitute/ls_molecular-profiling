@@ -74,7 +74,7 @@ droplet_barplot <- droplet_summary %>%
 ggsave(plot = droplet_barplot,filename = here("plots","droplet_barplot_per_sample.png"))
 
 #Load in the sce object
-load(here("processed-data","02_build_sce","sce_raw_081724.rda"),verbose = TRUE)
+load(here("processed-data","02_build_sce","sce_raw.rda"),verbose = TRUE)
 
 sce
 
@@ -93,7 +93,7 @@ sce <- sce[, which(e.out.all$FDR <= 0.001)]
 dim(sce)
 
 #Save object
-save(sce,file = here("processed-data","02_build_sce","sce_emptyDrops_removed_081724.rda"))
+save(sce,file = here("processed-data","02_build_sce","sce_emptyDrops_removed.rda"))
 
 ####Begin QC
 sce <- scuttle::addPerCellQC(sce,subsets = list(Mito=which(seqnames(sce) == "chrM")))
@@ -364,7 +364,7 @@ dbl_df %>%
 table(sce$discard_sample_specific, sce$doubletScore >= 5)
 
 #Save object
-save(sce,file = here("processed-data","02_build_sce","sce_emptyDrops_removed_withQC_081724.rda"))
+save(sce,file = here("processed-data","02_build_sce","sce_emptyDrops_removed_withQC.rda"))
 
 # #10/23/23
 # #load in the empty drops removed with QC object
@@ -389,7 +389,7 @@ dim(sce)
 sce
 
 ## save QCed and cleaned object. 
-save(sce,file=here("processed-data","02_build_sce","sce_clean_081724.rda"))
+save(sce,file=here("processed-data","02_build_sce","sce_clean.rda"))
 
 ## Reproducibility information
 print("Reproducibility information:")

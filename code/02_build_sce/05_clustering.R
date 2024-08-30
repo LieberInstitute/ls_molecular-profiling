@@ -11,7 +11,7 @@ library(scran)
 library(here)
 
 #Load the object 
-load(here("processed-data","02_build_sce","sce_postMNN_081724.rda"),verbose = TRUE)
+load(here("processed-data","02_build_sce","sce_postMNN.rda"),verbose = TRUE)
 
 sce
 
@@ -158,7 +158,7 @@ sce <- computeSumFactors(sce,cluster = sce$k_20_louvain_1,min.mean = 0.1)
 sce <- logNormCounts(sce)
 
 #save the object
-save(sce,file = here("processed-data","02_build_sce","sce_clustered_082024.rda"))
+save(sce,file = here("processed-data","02_build_sce","sce_clustered.rda"))
 
 #check doublet score per cluster. 
 #will move forward with k=20 louvain
