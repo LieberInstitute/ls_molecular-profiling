@@ -48,6 +48,9 @@ sce.ls
 
 stopifnot(identical(rownames(colData(sce.ls)),colnames(sce.ls)))
 
+#save the subsetted mouse object for later. 
+save(sce.ls,file = here("processed-data","02_build_sce","mouse_sce.rda"))
+
 #Run 1vALL DEG testing with DeconvoBuddies function as was done for human data. 
 markers_1vALL_mouse <- findMarkers_1vAll(sce.ls, 
                                          assay_name = "logcounts", 
