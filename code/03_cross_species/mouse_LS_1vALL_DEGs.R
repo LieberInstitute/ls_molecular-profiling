@@ -12,7 +12,7 @@ load(file = "/dcs04/lieber/marmaypag/pilotLS_LIBD1070/snRNAseq_mouse/processed_d
 
 sce.ls 
 
-stopifnot(identical(rownames(colData(sce)),colnames(sce)))
+stopifnot(identical(rownames(colData(sce.ls)),colnames(sce.ls)))
 
 #Need to remove drop.doublet, drop.likelyDoublet, drop.lowNTx, and Neuron.mixed from cell types
 #Keep only true cell types. 
@@ -46,7 +46,7 @@ sce.ls$cellType.final <- factor(sce.ls$cellType.final,
 
 sce.ls 
 
-stopifnot(identical(rownames(colData(sce)),colnames(sce)))
+stopifnot(identical(rownames(colData(sce.ls)),colnames(sce.ls)))
 
 #Run 1vALL DEG testing with DeconvoBuddies function as was done for human data. 
 markers_1vALL_mouse <- findMarkers_1vAll(sce.ls, 
