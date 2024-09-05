@@ -378,3 +378,69 @@ identical(rownames(mouse_logFC_mat),rownames(human_logFC_mat))
 
 identical(mouse_logFC_mat$JAX.geneID,human_logFC_mat$JAX.geneID)
 #[1] TRUE
+
+#Reorder the mouse matrix 
+mouse_logFC_mat <- mouse_logFC_mat[,c("LS_In.C","LS_In.D","LS_In.M","LS_In.N","LS_In.O","LS_In.P","LS_In.Q","LS_In.R",
+                                      "MS_In.J","MS_In.K","Sept_In.G","Sept_In.I","Str_In.A","Str_In.F","Str_In.H","Str_In.L",
+                                      "Thal_Ex.B","TNoS_Ex.A","TT.IG.SH_Ex.C","TT.IG.SH_Ex.E","TT.IG.SH_Ex.F","Chol_Ex.D","IoC_In.E",
+                                      "Astro","Ependymal","Micro","Oligo","OPC","OPC_COP","ChP","Endo","Mural","Neuroblast")]
+
+cor_t_all <- cor(human_logFC_mat[,1:25], mouse_logFC_mat)
+rownames(cor_t_all) <- paste0(rownames(cor_t_all),"_Human")
+colnames(cor_t_all) <- paste0(colnames(cor_t_all),"_Mouse")
+range(cor_t_all) 
+#[1] -0.4235199  0.6445771
+
+#Get top 100 genes for each human LS cluster. Top chosen by std.logFC. 
+human_top_100 <- mapply(human_logFC_mat[,1:25], FUN = function(t) {
+  o <- order(t, decreasing = TRUE)[1:100]
+})
+
+#Now top 100 for each mouse. 
+mouse_top_100 <- mapply(mouse_logFC_mat, FUN = function(t) {
+  o <- order(t, decreasing = TRUE)[1:100]
+})
+
+#get the unique identifiers for each species plus the shared. 
+human_unique <- unique(as.numeric(human_top_100))
+length(human_unique)
+#[1] 1708
+
+mouse_unique <- unique(as.numeric(mouse_top_100))
+length(mouse_unique)
+#[1] 1996
+
+#Now find intersection of the unique identifiers for each species identified in lines 404-410
+shared_identifiers <- intersect(rownames(human_logFC_mat)[human_unique], 
+                                rownames(mouse_logFC_mat)[mouse_unique])
+length(shared_identifiers)
+#[1] 917
+
+
+#Correlate with just the human identifiers. 
+cor_t_human_unique <- cor(human_logFC_mat[human_unique, 1:25],
+                          mouse_logFC_mat[human_unique,])
+rownames(cor_t_human_unique) <- paste0(rownames(cor_t_human_unique),"_Human")
+colnames(cor_t_human_unique) <- paste0(colnames(cor_t_human_unique),"_Mouse")
+range(cor_t_human_unique)
+#[1] -0.5074776  0.7729077
+
+#Correlate with just the mouse identifiers. 
+cor_t_mouse_unique <- cor(human_logFC_mat[mouse_unique, 1:25],
+                          mouse_logFC_mat[mouse_unique,])
+rownames(cor_t_mouse_unique) <- paste0(rownames(cor_t_mouse_unique),"_Human")
+colnames(cor_t_mouse_unique) <- paste0(colnames(cor_t_mouse_unique),"_Mouse")
+range(cor_t_mouse_unique)
+#[1] -0.4961936  0.7693381
+
+#Correlate with just the shared identifiers. 
+cor_t_shared <- cor(human_logFC_mat[shared_identifiers, 1:25],
+                    mouse_logFC_mat[shared_identifiers,])
+rownames(cor_t_shared) <- paste0(rownames(cor_t_shared),"_Human")
+colnames(cor_t_shared) <- paste0(colnames(cor_t_shared),"_Mouse")
+range(cor_t_shared)
+#[1] -0.5558170  0.8572425
+
+#Save all of the correlation matrices. 
+save(cor_t_all,cor_t_human_unique,cor_t_mouse_unique,cor_t_shared,
+     file = here("processed-data","correlation_matrices_conservation_analysis.rda"))
