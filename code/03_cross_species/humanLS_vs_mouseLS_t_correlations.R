@@ -111,3 +111,142 @@ save(markers_1vALL_mouse_list,
 sce_human_ls <- sce 
 sce_mouse_ls <- sce.ls
 rm(sce,sce.ls)
+
+
+#######
+
+#Do the objects contain any genes with no counts? 
+table(rowSums(assay(sce_human_ls, "counts"))==0)
+# FALSE  TRUE 
+# 33556  3045 
+
+table(rowSums(assay(sce_mouse_ls, "counts"))==0)
+# FALSE  TRUE 
+# 27751  4534 
+
+#Remove genes with all 0s from the human and mouse object. 
+sce_human_ls <- sce_human_ls[!rowSums(assay(sce_human_ls, "counts"))==0, ]
+sce_mouse_ls <- sce_mouse_ls[!rowSums(assay(sce_mouse_ls, "counts"))==0, ]
+
+#sanity check
+table(rowSums(assay(sce_human_ls, "counts"))==0)
+# FALSE 
+# 33556 
+
+table(rowSums(assay(sce_mouse_ls, "counts"))==0)
+# FALSE 
+# 27751 
+
+##Add entrez gene ids and jax ids to the human object
+#Entrez ids 
+hs.entrezIds <- mapIds(org.Hs.eg.db, 
+                       keys=rowData(sce_human_ls)$gene_id, 
+                       column="ENTREZID", 
+                       keytype="ENSEMBL")
+#'select()' returned 1:many mapping between keys and columns
+
+table(is.na(hs.entrezIds))
+# FALSE  TRUE 
+# 22855 10701 
+
+#Which genes do not have entrez ids
+withoutEntrez <- names(hs.entrezIds)[is.na(hs.entrezIds)]
+names(withoutEntrez) <- rowData(sce_human_ls)[rowData(sce_human_ls)$gene_id %in% withoutEntrez, ]$gene_name
+#Most of these are genes that start with AC. 
+
+#Add entrez ids to the object
+#Make sure they are in the same order. 
+identical(rowData(sce_human_ls)$gene_id,names(hs.entrezIds))
+#[1] TRUE
+
+rowData(sce_human_ls) <- cbind(rowData(sce_human_ls), hs.entrezIds)
+
+# JAX annotation info
+hom <-  read.delim("http://www.informatics.jax.org/downloads/reports/HOM_AllOrganism.rpt",
+                   as.is=TRUE)
+
+#Save dataframe with date. In case we need to use later and it gets updated. 
+write.table(x = hom,
+            file = here("processed-data","HOM_AllOrganism_JAX_090524.csv"),
+            sep = ",",col.names = TRUE,row.names = FALSE,quote = FALSE)
+
+#Subset for human 
+hom_hs <- hom[hom$Common.Organism.Name == "human", ]
+
+table(rowData(sce_human_ls)$hs.entrezIds %in% hom_hs$EntrezGene.ID)
+# FALSE  TRUE 
+# 16037 17519 
+
+#Add the IDs to the sce_human_ls object. 
+rowData(sce_human_ls)$JAX.geneID <- hom_hs$DB.Class.Key[match(rowData(sce_human_ls)$hs.entrezIds,
+                                                              hom_hs$EntrezGene.ID)]
+
+##Add entrez gene ids and jax ids to the mouse object
+#Entrez ids 
+mm.entrezIds <- mapIds(org.Mm.eg.db, 
+                       keys=rowData(sce_mouse_ls)$gene_id, 
+                       column="ENTREZID", 
+                       keytype="ENSEMBL")
+#'select()' returned 1:many mapping between keys and columns
+
+
+table(is.na(mm.entrezIds))
+# FALSE  TRUE 
+# 21522  6229
+
+#Which genes do not have entrez ids
+withoutEntrez_mouse <- names(mm.entrezIds)[is.na(mm.entrezIds)]
+names(withoutEntrez_mouse) <- rowData(sce_mouse_ls)[rowData(sce_mouse_ls)$gene_id %in% withoutEntrez_mouse, ]$gene_name
+#Many of these are non-coding RNAs or predicted genes. 
+
+#Add entrez ids to the object
+identical(rowData(sce_mouse_ls)$gene_id,names(mm.entrezIds))
+#[1] TRUE
+
+#Add the entrez gene ids to the rowData
+rowData(sce_mouse_ls) <- cbind(rowData(sce_mouse_ls), mm.entrezIds)
+
+#Subset for mouse
+hom_mm <- hom[hom$Common.Organism.Name == "mouse, laboratory", ]
+
+#How many entrez gene IDs are also in the jax lab database. 
+table(rowData(sce_mouse_ls)$mm.entrezIds %in% hom_mm$EntrezGene.ID)
+# FALSE  TRUE 
+# 8985 18766 
+
+#Add the IDs to the sce_human_ls object. 
+rowData(sce_mouse_ls)$JAX.geneID <- hom_mm$DB.Class.Key[match(rowData(sce_mouse_ls)$mm.entrezIds,
+                                                              hom_mm$EntrezGene.ID)]
+
+##Identify shared genes
+length(intersect(rowData(sce_human_ls)$JAX.geneID,
+                 rowData(sce_mouse_ls)$JAX.geneID)) 
+#[1] 16575
+
+shared_homologs <- intersect(rowData(sce_human_ls)$JAX.geneID,
+                             rowData(sce_mouse_ls)$JAX.geneID)
+shared_homologs <- shared_homologs[-1] #first is na
+
+length(shared_homologs) 
+#[1] 16574
+
+# Human not in mouse
+length(setdiff(rowData(sce_human_ls)$JAX.geneID,
+               rowData(sce_mouse_ls)$JAX.geneID)) 
+#[1] 445
+
+# Mouse not in human
+length(setdiff(rowData(sce_mouse_ls)$JAX.geneID,
+               rowData(sce_human_ls)$JAX.geneID)) 
+#[1] 2173
+
+# Subset for shared homologs
+sce_human_sub <- sce_human_ls[rowData(sce_human_ls)$JAX.geneID %in% shared_homologs, ]
+dim(sce_human_sub)
+#[1] 16999  9225
+
+sce_mouse_sub <- sce_mouse_ls[rowData(sce_mouse_ls)$JAX.geneID %in% shared_homologs, ]
+dim(sce_mouse_sub)
+#[1] 16588 21884
+
+
