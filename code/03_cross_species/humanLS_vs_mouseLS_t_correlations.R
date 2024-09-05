@@ -249,4 +249,73 @@ sce_mouse_sub <- sce_mouse_ls[rowData(sce_mouse_ls)$JAX.geneID %in% shared_homol
 dim(sce_mouse_sub)
 #[1] 16588 21884
 
+#Are any of the JAX IDs duplicated
+table(duplicated(rowData(sce_human_sub)$JAX.geneID))
+# FALSE  TRUE 
+# 16574   425 
 
+table(duplicated(rowData(sce_mouse_sub)$JAX.geneID))
+# FALSE  TRUE 
+# 16574    14 
+
+######Need to identify genes that are duplicated and keep the higher expressing. 
+###Mouse first. 
+m_dup_rows <- which(duplicated(rowData(sce_mouse_sub)$JAX.geneID))
+mouse_dups <- rowData(sce_mouse_sub)[m_dup_rows,"JAX.geneID"]
+mouse_genes_to_compare <- list()
+mouse_genes_to_keep <- character()
+for(i in 1:length(mouse_dups)){
+  print(i)
+  mouse_genes_to_compare[[i]] <- rownames(sce_mouse_sub)[rowData(sce_mouse_sub)$JAX.geneID == mouse_dups[i]]
+  rowmeans_dups <- rowMeans(assay(sce_mouse_sub[mouse_genes_to_compare[[i]], ], "logcounts"))
+  mouse_genes_to_keep[i] <- names(rowmeans_dups[order(rowmeans_dups, decreasing=TRUE)])[1]
+}
+
+#Get the genes that were not duplicated. 
+non_dups_mouse <- rownames(sce_mouse_sub)[!(rownames(sce_mouse_sub) %in% unlist(mouse_genes_to_compare))]
+
+# Finally combine and subset
+sce_mouse_sub <- sce_mouse_sub[c(non_dups_mouse, unique(mouse_genes_to_keep)), ]
+
+table(rowData(sce_mouse_sub)$JAX.geneID %in% shared_homologs)
+# TRUE 
+# 16574
+
+table(duplicated(rowData(sce_mouse_sub)$JAX.geneID))
+# FALSE 
+# 16574 
+
+###human
+h_dup_rows <- which(duplicated(rowData(sce_human_sub)$JAX.geneID))
+human_dups <- rowData(sce_human_sub)[h_dup_rows,"JAX.geneID"]
+human_genes_to_compare <- list()
+human_genes_to_keep <- character()
+for(i in 1:length(human_dups)){
+  print(i)
+  human_genes_to_compare[[i]] <- rownames(sce_human_sub)[rowData(sce_human_sub)$JAX.geneID == human_dups[i]]
+  rowmeans_dups <- rowMeans(assay(sce_human_sub[human_genes_to_compare[[i]], ], "logcounts"))
+  human_genes_to_keep[i] <- names(rowmeans_dups[order(rowmeans_dups, decreasing=TRUE)])[1]
+}
+
+#Get the genes that were not duplicated. 
+non_dups_human <- rownames(sce_human_sub)[!(rownames(sce_human_sub) %in% unlist(human_genes_to_compare))]
+
+# Finally combine and subset
+sce_human_sub <- sce_human_sub[c(non_dups_human, unique(human_genes_to_keep)), ]
+
+table(rowData(sce_human_sub)$JAX.geneID %in% shared_homologs)
+# TRUE 
+# 16574 
+
+table(duplicated(rowData(sce_human_sub)$JAX.geneID))
+# FALSE 
+# 16574 
+
+#Nothing is duplicated so can move forward. 
+## Match order
+sce_mouse_sub <- sce_mouse_sub[match(rowData(sce_human_sub)$JAX.geneID,
+                                     rowData(sce_mouse_sub)$JAX.geneID), ]
+
+#sanity_check
+identical(rowData(sce_mouse_sub)$JAX.geneID,rowData(sce_human_sub)$JAX.geneID)
+#[1] TRUE
