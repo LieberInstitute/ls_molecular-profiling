@@ -319,3 +319,62 @@ sce_mouse_sub <- sce_mouse_sub[match(rowData(sce_human_sub)$JAX.geneID,
 #sanity_check
 identical(rowData(sce_mouse_sub)$JAX.geneID,rowData(sce_human_sub)$JAX.geneID)
 #[1] TRUE
+
+##Now make a matrix for mouse and human that contains the std.logFC for all shared homologs. 
+#####MOUSE
+#Get all of the std.logFC values from the list of DEGs calculated above
+mouse_logFC_values <- lapply(markers_1vALL_mouse_list,function(x){
+  x[rowData(sce_mouse_sub)$gene_id,"std.logFC"]
+  })
+
+#Combine all of the logFC values to make a matrix
+mouse_logFC_mat <- do.call(cbind,mouse_logFC_values)
+dim(mouse_logFC_mat)
+#[1] 16574    33
+
+#Add the rownames which are the ensembl geneIDs. 
+rownames(mouse_logFC_mat) <- rowData(sce_mouse_sub)$gene_id
+
+#Add the JAX.GeneID
+#Make a column of ensembl gene IDs which are currently the rownames
+mouse_logFC_mat <- as.data.frame(mouse_logFC_mat)
+mouse_logFC_mat$gene_id <- rownames(mouse_logFC_mat)
+mouse_logFC_mat <- dplyr::left_join(x = mouse_logFC_mat,
+                                    y = as.data.frame(rowData(sce_mouse_sub)[,c("gene_id","JAX.geneID")]),
+                                    by = "gene_id")
+#Make the rownames the JAX gene ID
+rownames(mouse_logFC_mat) <- mouse_logFC_mat$JAX.geneID
+
+######HUMAN
+#Get all of the std.logFC values from the list of DEGs calculated above
+human_logFC_values <- lapply(markers_1vALL_list_human,function(x){
+  x[rowData(sce_human_sub)$gene_id,"std.logFC"]
+})
+
+#Combine all of the logFC values to make a matrix
+human_logFC_mat <- do.call(cbind,human_logFC_values)
+dim(human_logFC_mat)
+#[1] 16574    25
+
+#Add the rownames which are the ensembl geneIDs. 
+rownames(human_logFC_mat) <- rowData(sce_human_sub)$gene_id
+
+#Add the JAX.GeneID
+#Make a column of ensembl gene IDs which are currently the rownames
+human_logFC_mat <- as.data.frame(human_logFC_mat)
+human_logFC_mat$gene_id <- rownames(human_logFC_mat)
+human_logFC_mat <- dplyr::left_join(x = human_logFC_mat,
+                                    y = as.data.frame(rowData(sce_human_sub)[,c("gene_id","JAX.geneID")]),
+                                    by = "gene_id")
+rownames(human_logFC_mat) <- human_logFC_mat$JAX.geneID
+
+#Force order of the mouse matrix to be the same as the human matrix. 
+mouse_logFC_mat <- mouse_logFC_mat[match(human_logFC_mat$JAX.geneID,
+                                         mouse_logFC_mat$JAX.geneID),]
+
+#Sanity check that everything is in the same ordre. 
+identical(rownames(mouse_logFC_mat),rownames(human_logFC_mat))
+#[1] TRUE
+
+identical(mouse_logFC_mat$JAX.geneID,human_logFC_mat$JAX.geneID)
+#[1] TRUE
