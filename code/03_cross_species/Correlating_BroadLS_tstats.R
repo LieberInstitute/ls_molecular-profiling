@@ -172,7 +172,7 @@ all_LS_plot <- ggplot(data=all_DEGs_homol,aes(x = std.logFC_human,y = std.logFC_
   annotate("text",x = 3,y = -3.5, label = "Human Enriched\nMouse Depleted") +
   annotate("text",x = -3,y = 3.5,label = "Human Depleted\nMouse Enriched") +
   annotate("text",x = -3,y = -3.5,label = "Human Depleted\nMouse Depleted") 
-ggsave(filename = here("plots","Conservation","all_LS_homologs_tstat_correlation.pdf"),plot = all_LS_plot)
+ggsave(filename = here("plots","Conservation","all_LS_homologs_std.logFC_correlation.pdf"),plot = all_LS_plot)
 
 print("Reproducibility information:")
 Sys.time()
