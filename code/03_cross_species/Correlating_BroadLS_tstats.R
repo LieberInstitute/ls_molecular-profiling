@@ -104,3 +104,16 @@ dim(mouse_1vALL_homol)
 
 #Change rownames to JAX.geneID
 rownames(mouse_1vALL_homol) <- mouse_1vALL_homol$JAX.geneID 
+
+#Alter order of mouse DEGs to be that of human DEGs
+mouse_1vALL_homol <- mouse_1vALL_homol[match(human_1vALL_homol$JAX.geneID,
+                                             mouse_1vALL_homol$JAX.geneID),]
+
+#Sanity check to make sure the rownames are in the corret order
+identical(rownames(human_1vALL_homol),rownames(mouse_1vALL_homol))
+#[1] TRUE
+
+#Correlate the std.logFC 
+cor(human_1vALL_homol$std.logFC,
+    mouse_1vALL_homol$std.logFC)
+#[1] 0.5954178
