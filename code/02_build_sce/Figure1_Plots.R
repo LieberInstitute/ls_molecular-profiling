@@ -41,7 +41,7 @@ for(i in c("SYT1","SNAP25","GAD1","GAD2","SLC17A6","SLC17A7","MOBP","GFAP")){
     scale_color_gradientn(colours = c("lightgrey","orange","red")) +
     theme_void() 
   ggsave(x,filename = here("plots","Figure1_Plots","FeaturePlot_Legend",
-                           paste0(i,"_FeaturePlot_Legend.png")))
+                           paste0(i,"_FeaturePlot_Legend.pdf")))
 }
 
 
