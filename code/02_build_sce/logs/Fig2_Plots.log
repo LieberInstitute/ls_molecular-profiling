@@ -1,5 +1,5 @@
 ********* Job Starts *********
-Fri Aug 30 02:32:02 PM EDT 2024
+Sun Sep  8 04:11:20 PM EDT 2024
 Loading conda_R/4.4
 
 Currently Loaded Modules:
@@ -150,9 +150,9 @@ In asMethod(object) :
 null device 
           1 
 [1] "Reproducibility information:"
-[1] "2024-08-30 14:33:01 EDT"
+[1] "2024-09-08 16:11:54 EDT"
    user  system elapsed 
- 47.824   7.368  57.876 
+ 28.269   1.926  33.182 
 ─ Session info ───────────────────────────────────────────────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.4.0 Patched (2024-05-22 r86590)
@@ -163,7 +163,7 @@ null device
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       US/Eastern
- date     2024-08-30
+ date     2024-09-08
  pandoc   3.1.13 @ /jhpce/shared/community/core/conda_R/4.4/bin/pandoc
 
 ─ Packages ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -264,4 +264,4 @@ null device
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ********* Job Ends *********
-Fri Aug 30 02:33:02 PM EDT 2024
+Sun Sep  8 04:11:54 PM EDT 2024

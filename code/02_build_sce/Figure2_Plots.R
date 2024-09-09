@@ -84,7 +84,7 @@ ggsave(plot = oprm1,
 
 
 ##########Feature plots
-######Without axes 
+######Without legend
 for(i in c("FXYD6","TRPC4","OPRM1")){
   x <- plotReducedDim(sce,
                       dimred = "tSNE_mnn_50",
@@ -98,7 +98,7 @@ for(i in c("FXYD6","TRPC4","OPRM1")){
          height = 6, width = 6)
 }
 
-######With axes
+######With legend
 for(i in c("FXYD6","TRPC4","OPRM1")){
   x <- plotReducedDim(sce,
                       dimred = "tSNE_mnn_50",
@@ -107,7 +107,7 @@ for(i in c("FXYD6","TRPC4","OPRM1")){
     scale_color_gradientn(colours = c("lightgrey","orange","red")) +
     theme_void() 
   ggsave(x,filename = here("plots","Figure2_Plots","FeaturePlot_Legend",
-                           paste0(i,"_FeaturePlot_Legend.png")))
+                           paste0(i,"_FeaturePlot_Legend.pdf")))
 }
 
 ###################################################
