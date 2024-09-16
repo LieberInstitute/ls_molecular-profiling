@@ -1,252 +1,80 @@
-#cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling/
+#cd /dcs04/lieber/marmaypag/ls_molecular-profiling_LIBD1070/ls_molecular-profiling
+#module load conda_R/4.4
 
-###Make plots for supp figures. 
 library(SingleCellExperiment)
 library(sessioninfo)
-library(ggplot2)
 library(scater)
-library(scran)
 library(here)
 
+#load the object
+load(here("processed-data","02_build_sce","sce_celltype.rda"),verbose = TRUE)
 
+#Load the cluster colors
+load(here("processed-data","cluster_cols_CellType_Final.rda"),verbose = TRUE)
 
-#load the SingleCellExperiment object for human Lateral Septum
-load(here("processed-data","sce_with_CellType.rda"))
-
-
-sce
-# class: SingleCellExperiment 
-# dim: 33556 9225 
-# metadata(1): Samples
-# assays(3): counts binomial_deviance_residuals logcounts
-# rownames(33556): ENSG00000243485 ENSG00000238009 ... ENSG00000278817
-# ENSG00000277196
-# rowData names(7): source type ... gene_type binomial_deviance
-# colnames(9225): 1_AAACCCACAGCGTTGC-1 1_AAACCCACATGGCGCT-1 ...
-# 3_TTTGGTTTCTTCGACC-1 3_TTTGTTGTCCCGATCT-1
-# colData names(61): Sample Barcode ... CellType_k_20_louvain
-# CellType.Final
-# reducedDimNames(18): GLMPCA_approx UMAP_15 ... tSNE_mnn_25 tSNE_mnn_50
-# mainExpName: NULL
-# altExpNames(0):
-
-
-#Load colors
-load(here("processed-data","Final_CellTypes_colors.rda"),verbose = TRUE)
-
-
-#Make CellType.Final a factor
+#Reverse the levels because it is opposite order in the violin plot.
 sce$CellType.Final <- factor(x = sce$CellType.Final,
-                             levels = rev(c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
-                                            "MS_Inh_A","MS_Inh_E","MS_Inh_H",
-                                            "Sept_Inh_D","Sept_Inh_F",
-                                            "MS_Excit_A","Excit_A","Excit_B",
-                                            "Str_Drd1-MSN","Str_Drd1-Patch","Str_Drd1-Matrix","Str_Drd2-MSN",
-                                            "Astrocyte","Ependymal","Microglia",
-                                            "Mural","Oligo","Polydendrocyte")))
+                             levels = rev(levels(sce$CellType.Final)))
 
-#Violin plot for number of detected genes. 
-detected_Vln <- plotColData(object = sce,
-                            x = "detected",y = "CellType.Final",colour_by = "CellType.Final") +
-    scale_color_manual(values = cluster_cols) +
-    theme(legend.position = "none") +
-    labs(y = "Cell Type",x = "Number of Genes Detected")
+
+#Violin plots for # genes, log10(# reads), % mito, and doubletscore
+detected_Vln <-  plotColData(object = sce,
+                             y = "CellType.Final",
+                             x = "detected",
+                             colour_by = "CellType.Final") +
+  scale_color_manual(values = cluster_cols) +
+  theme(legend.position = "none") +
+  labs(x = "Cell Type",y = "Number of Genes Detected")
 
 ggsave(filename = here("plots","Plots_for_Supp","Detected_Features_Violin.pdf"),plot = detected_Vln)
 
 #Violin plot for number of total reads
 sum_Vln <- plotColData(object = sce,
-                       x = "sum",y = "CellType.Final",colour_by = "CellType.Final") +
-    scale_color_manual(values = cluster_cols) +
-    scale_y_log10() +
-    theme(legend.position = "none") +
-    labs(x = "Cell Type",y = "log10(Number of Reads)")
+                       x = "sum",
+                       y = "CellType.Final",
+                       colour_by = "CellType.Final") +
+  scale_color_manual(values = cluster_cols) +
+  scale_y_log10() +
+  theme(legend.position = "none") +
+  labs(x = "Cell Type",y = "log10(Number of Reads)")
 
 ggsave(filename = here("plots","Plots_for_Supp","Number_of_Reads_Violin.pdf"),plot = sum_Vln)
 
 #Violin plot for detected mitochondrial percentage
 mito_Vln <- plotColData(object = sce,
-                        x = "subsets_Mito_percent",y = "CellType.Final",colour_by = "CellType.Final") +
-    scale_color_manual(values = cluster_cols) +
-    theme(legend.position = "none") +
-    labs(x = "Cell Type",y = "% Mitochondria")
+                        x = "subsets_Mito_percent",
+                        y = "CellType.Final",
+                        colour_by = "CellType.Final") +
+  scale_color_manual(values = cluster_cols) +
+  theme(legend.position = "none") +
+  labs(x = "Cell Type",y = "% Mitochondria")
 
 ggsave(filename = here("plots","Plots_for_Supp","Percent_Mito_Violin.pdf"),plot = mito_Vln)
 
 #Violin plot for detected mitochondrial percentage
 doublet_Vln <- plotColData(object = sce,
-                           x = "doubletScore",y = "CellType.Final",colour_by = "CellType.Final") +
-    scale_color_manual(values = cluster_cols) +
-    theme(legend.position = "none") +
-    labs(x = "Cell Type",y = "doubletScore")
+                           x = "doubletScore",
+                           y = "CellType.Final",
+                           colour_by = "CellType.Final") +
+  scale_color_manual(values = cluster_cols) +
+  theme(legend.position = "none") +
+  labs(x = "Cell Type",y = "doubletScore")
 
 ggsave(filename = here("plots","Plots_for_Supp","doublet_score_Violin.pdf"),plot = doublet_Vln)
 
 
-#Make umaps where points are colored by donor. 
-Br8331 <- plotReducedDim(object = sce[,sce$Brain == "Br8331"],dimred = "tSNE_mnn_50",color_by = "Brain") +
-    scale_color_manual(values = "#1E88E5")
-Br8354 <- plotReducedDim(object = sce[,sce$Brain == "Br8354"],dimred = "tSNE_mnn_50",color_by = "Brain") +
-    scale_color_manual(values = "#D81B60")
-Br9103 <- plotReducedDim(object = sce[,sce$Brain == "Br8354"],dimred = "tSNE_mnn_50",color_by = "Brain") +
-    scale_color_manual(values = "#004D40")
-
-ggsave(filename = here("plots","Plots_for_Supp","8331_tSNE.pdf"),plot = Br8331)
-ggsave(filename = here("plots","Plots_for_Supp","8354_tSNE.pdf"),plot = Br8354)
-ggsave(filename = here("plots","Plots_for_Supp","9103_tSNE.pdf"),plot = Br9103)
-
-
-#Umap but color the points by the brain
+##Now make a tSNE and color by sample
 sample_cols <- c("#1E88E5","#D81B60","#004D40")
 names(sample_cols) <- unique(sce$Sample)
 sample_tSNE <- plotReducedDim(object = sce,dimred = "tSNE_mnn_50",color_by = "Sample") +
-    scale_color_manual(values = sample_cols)
+  scale_color_manual(values = sample_cols)
 ggsave(plot = sample_tSNE,filename = here("plots","Plots_for_Supp","Sample_tSNE.pdf"))
-
-
-#Now generate pairwise modularity scores for 
-#####Cluster modularity
-#Build the graph again. 
-#Used k=50 + walktrap clustering for celltype designations. 
-sce$CellType.Final <- factor(x = sce$CellType.Final,
-                             levels = c("LS_Inh_A","LS_Inh_B","LS_Inh_G","LS_Inh_I",
-                                        "MS_Inh_A","MS_Inh_E","MS_Inh_H",
-                                        "Sept_Inh_D","Sept_Inh_F",
-                                        "MS_Excit_A","Excit_A","Excit_B",
-                                        "Str_Drd1-MSN","Str_Drd1-Patch","Str_Drd1-Matrix","Str_Drd2-MSN",
-                                        "Astrocyte","Ependymal","Microglia",
-                                        "Mural","Oligo","Polydendrocyte"))
-
-snn_k_20 <- buildSNNGraph(sce, k = 20, use.dimred = "mnn",type="jaccard")
-
-k_20_modularity <- bluster::pairwiseModularity(graph = snn_k_20,
-                                               clusters = sce$CellType.Final,
-                                               as.ratio = TRUE)
-
-library(pheatmap)
-pdf(file = here("plots","k_20_pairwise_modularity_final_celltypes_010224.pdf"))
-pheatmap(log2(k_20_modularity+1), 
-         cluster_rows=FALSE, 
-         cluster_cols=FALSE,
-         display_numbers=TRUE, 
-         number_format="%.2f", 
-         fontsize_number=6.5,
-         main = "Modularity ratio for 22 graph-based clusters in human LS (n=3)",
-         color=colorRampPalette(c("white","orange","red"))(100))
-dev.off()
-
 
 print("Reproducibility information:")
 Sys.time()
 proc.time()
 options(width = 120)
 session_info()
-# [1] "Reproducibility information:"
-# [1] "2024-01-02 13:41:56 EST"
-# user   system  elapsed 
-# 63.272    4.520 7882.174 
-# ─ Session info ──────────────────────────────────────────────────────────
-# setting  value
-# version  R version 4.3.1 Patched (2023-07-19 r84711)
-# os       Rocky Linux 9.2 (Blue Onyx)
-# system   x86_64, linux-gnu
-# ui       X11
-# language (EN)
-# collate  en_US.UTF-8
-# ctype    en_US.UTF-8
-# tz       US/Eastern
-# date     2024-01-02
-# pandoc   3.1.3 @ /jhpce/shared/community/core/conda_R/4.3/bin/pandoc
-# 
-# ─ Packages ──────────────────────────────────────────────────────────────
-# package              * version   date (UTC) lib source
-# abind                  1.4-5     2016-07-21 [2] CRAN (R 4.3.1)
-# beachmat               2.16.0    2023-04-25 [2] Bioconductor
-# beeswarm               0.4.0     2021-06-01 [2] CRAN (R 4.3.1)
-# Biobase              * 2.60.0    2023-04-25 [2] Bioconductor
-# BiocGenerics         * 0.46.0    2023-04-25 [2] Bioconductor
-# BiocNeighbors          1.18.0    2023-04-25 [2] Bioconductor
-# BiocParallel           1.34.2    2023-05-22 [2] Bioconductor
-# BiocSingular           1.16.0    2023-04-25 [2] Bioconductor
-# bitops                 1.0-7     2021-04-24 [2] CRAN (R 4.3.1)
-# bluster                1.10.0    2023-04-25 [2] Bioconductor
-# cli                    3.6.1     2023-03-23 [2] CRAN (R 4.3.1)
-# cluster                2.1.4     2022-08-22 [3] CRAN (R 4.3.1)
-# codetools              0.2-19    2023-02-01 [3] CRAN (R 4.3.1)
-# colorout             * 1.3-0.1   2023-12-01 [1] Github (jalvesaq/colorout@deda341)
-# colorspace             2.1-0     2023-01-23 [2] CRAN (R 4.3.1)
-# cowplot                1.1.1     2020-12-30 [2] CRAN (R 4.3.1)
-# crayon                 1.5.2     2022-09-29 [2] CRAN (R 4.3.1)
-# DelayedArray           0.26.7    2023-07-28 [2] Bioconductor
-# DelayedMatrixStats     1.22.6    2023-08-28 [2] Bioconductor
-# dplyr                  1.1.3     2023-09-03 [2] CRAN (R 4.3.1)
-# dqrng                  0.3.1     2023-08-30 [2] CRAN (R 4.3.1)
-# edgeR                  3.42.4    2023-05-31 [2] Bioconductor
-# fansi                  1.0.4     2023-01-22 [2] CRAN (R 4.3.1)
-# farver                 2.1.1     2022-07-06 [2] CRAN (R 4.3.1)
-# generics               0.1.3     2022-07-05 [2] CRAN (R 4.3.1)
-# GenomeInfoDb         * 1.36.3    2023-09-07 [2] Bioconductor
-# GenomeInfoDbData       1.2.10    2023-07-20 [2] Bioconductor
-# GenomicRanges        * 1.52.0    2023-04-25 [2] Bioconductor
-# ggbeeswarm             0.7.2     2023-04-29 [2] CRAN (R 4.3.1)
-# ggplot2              * 3.4.3     2023-08-14 [2] CRAN (R 4.3.1)
-# ggrepel                0.9.3     2023-02-03 [2] CRAN (R 4.3.1)
-# glue                   1.6.2     2022-02-24 [2] CRAN (R 4.3.1)
-# gridExtra              2.3       2017-09-09 [2] CRAN (R 4.3.1)
-# gtable                 0.3.4     2023-08-21 [2] CRAN (R 4.3.1)
-# here                 * 1.0.1     2020-12-13 [2] CRAN (R 4.3.1)
-# igraph                 1.5.1     2023-08-10 [2] CRAN (R 4.3.1)
-# IRanges              * 2.34.1    2023-06-22 [2] Bioconductor
-# irlba                  2.3.5.1   2022-10-03 [2] CRAN (R 4.3.1)
-# labeling               0.4.3     2023-08-29 [2] CRAN (R 4.3.1)
-# lattice                0.21-8    2023-04-05 [3] CRAN (R 4.3.1)
-# lifecycle              1.0.3     2022-10-07 [2] CRAN (R 4.3.1)
-# limma                  3.56.2    2023-06-04 [2] Bioconductor
-# locfit                 1.5-9.8   2023-06-11 [2] CRAN (R 4.3.1)
-# magrittr               2.0.3     2022-03-30 [2] CRAN (R 4.3.1)
-# Matrix                 1.6-1.1   2023-09-18 [3] CRAN (R 4.3.1)
-# MatrixGenerics       * 1.12.3    2023-07-30 [2] Bioconductor
-# matrixStats          * 1.0.0     2023-06-02 [2] CRAN (R 4.3.1)
-# metapod                1.8.0     2023-04-25 [2] Bioconductor
-# munsell                0.5.0     2018-06-12 [2] CRAN (R 4.3.1)
-# pheatmap             * 1.0.12    2019-01-04 [2] CRAN (R 4.3.1)
-# pillar                 1.9.0     2023-03-22 [2] CRAN (R 4.3.1)
-# pkgconfig              2.0.3     2019-09-22 [2] CRAN (R 4.3.1)
-# R6                     2.5.1     2021-08-19 [2] CRAN (R 4.3.1)
-# ragg                   1.2.5     2023-01-12 [2] CRAN (R 4.3.1)
-# RColorBrewer           1.1-3     2022-04-03 [2] CRAN (R 4.3.1)
-# Rcpp                   1.0.11    2023-07-06 [2] CRAN (R 4.3.1)
-# RCurl                  1.98-1.12 2023-03-27 [2] CRAN (R 4.3.1)
-# rlang                  1.1.1     2023-04-28 [2] CRAN (R 4.3.1)
-# rprojroot              2.0.3     2022-04-02 [2] CRAN (R 4.3.1)
-# rsvd                   1.0.5     2021-04-16 [2] CRAN (R 4.3.1)
-# S4Arrays               1.0.6     2023-08-30 [2] Bioconductor
-# S4Vectors            * 0.38.1    2023-05-02 [2] Bioconductor
-# ScaledMatrix           1.8.1     2023-05-03 [2] Bioconductor
-# scales                 1.2.1     2022-08-20 [2] CRAN (R 4.3.1)
-# scater               * 1.28.0    2023-04-25 [2] Bioconductor
-# scran                * 1.28.2    2023-07-23 [2] Bioconductor
-# scuttle              * 1.10.2    2023-08-03 [2] Bioconductor
-# sessioninfo          * 1.2.2     2021-12-06 [2] CRAN (R 4.3.1)
-# SingleCellExperiment * 1.22.0    2023-04-25 [2] Bioconductor
-# sparseMatrixStats      1.12.2    2023-07-02 [2] Bioconductor
-# statmod                1.5.0     2023-01-06 [2] CRAN (R 4.3.1)
-# SummarizedExperiment * 1.30.2    2023-06-06 [2] Bioconductor
-# systemfonts            1.0.4     2022-02-11 [2] CRAN (R 4.3.1)
-# textshaping            0.3.6     2021-10-13 [2] CRAN (R 4.3.1)
-# tibble                 3.2.1     2023-03-20 [2] CRAN (R 4.3.1)
-# tidyselect             1.2.0     2022-10-10 [2] CRAN (R 4.3.1)
-# utf8                   1.2.3     2023-01-31 [2] CRAN (R 4.3.1)
-# vctrs                  0.6.3     2023-06-14 [2] CRAN (R 4.3.1)
-# vipor                  0.4.5     2017-03-22 [2] CRAN (R 4.3.1)
-# viridis                0.6.4     2023-07-22 [2] CRAN (R 4.3.1)
-# viridisLite            0.4.2     2023-05-02 [2] CRAN (R 4.3.1)
-# withr                  2.5.0     2022-03-03 [2] CRAN (R 4.3.1)
-# XVector                0.40.0    2023-04-25 [2] Bioconductor
-# zlibbioc               1.46.0    2023-04-25 [2] Bioconductor
-# 
-# [1] /users/rphillip/R/4.3
-# [2] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/site-library
-# [3] /jhpce/shared/community/core/conda_R/4.3/R/lib64/R/library
-# 
-# ─────────────────────────────────────────────────────────────────────────
+
+
+
