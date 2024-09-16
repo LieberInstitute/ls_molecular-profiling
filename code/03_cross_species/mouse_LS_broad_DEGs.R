@@ -4,6 +4,7 @@
 library(SingleCellExperiment)
 library(DeconvoBuddies)
 library(sessioninfo)
+library(scater)
 library(here)
 
 
@@ -43,7 +44,7 @@ names(LS_cols) <- c("LS","Other")
 #Make the tSNE
 LS_tSNE_mouse <- plotReducedDim(sce.ls,
                                 dimred      = "TSNE",
-                                colour_by   = "LS_vs_other",
+                                colour_by   = "Broad_LS",
                                 point_alpha = 0.3) +
     scale_color_manual(values = LS_cols)
 ggsave(filename = here("plots","Conservation","mouse_tSNE_LSvsother.pdf"),plot = LS_tSNE_mouse)
