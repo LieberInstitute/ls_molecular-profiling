@@ -6,7 +6,7 @@ library("scuttle")
 library("SpatialExperiment")
 
 #Load the object
-load("sce_celltype.rda", verbose = TRUE)
+load("sce_app.rda", verbose = TRUE)
 
 #Change the rownames frome ensembl id to gene_name
 rownames(sce) <-  uniquifyFeatureNames(rowData(sce)$gene_id, rowData(sce)$gene_name)
