@@ -14,7 +14,6 @@ load(here("processed-data","cluster_cols_CellType_Final.rda"),verbose = TRUE)
 # Loading objects:
 #   cluster_cols
 
-
 #Read in the map my cells output
 Map_Cells_Out_hi <- read.delim(file = here("processed-data",
                                            "MapMyCells_Output",
@@ -22,6 +21,7 @@ Map_Cells_Out_hi <- read.delim(file = here("processed-data",
                                            "h_ls_anndata_10xWholeMouseBrain(CCN20230722)_HierarchicalMapping_UTC_1726506607196.csv"),
                                comment.char = "#",
                                sep = ",")
+
 
 #Merge with celltype final information from the sce object
 hi_output <- merge(x = colData(sce)[,c("key","CellType.Final")],
@@ -32,8 +32,8 @@ hi_output <- merge(x = colData(sce)[,c("key","CellType.Final")],
 
 #Boxplot with x axis being the class that each human cell is assigned. 
 mouse_class <- ggplot(data = hi_output,aes(x = class_name,
-                            y = class_bootstrapping_probability,
-                            fill = class_name)) +
+                                           y = class_bootstrapping_probability,
+                                           fill = class_name)) +
   geom_boxplot() +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45,hjust = 1),
@@ -43,7 +43,10 @@ ggsave(filename = here("plots","Conservation","MapMyCells","Mouse_Class_Bootstra
        plot = mouse_class)
 
 #Boxplot with x axis being the class that each human cell is assigned. 
-human_class <- ggplot(data = hi_output,aes(x = CellType.Final, y = class_bootstrapping_probability,fill = CellType.Final)) +
+human_class <- ggplot(data = hi_output,
+                      aes(x = CellType.Final, 
+                          y = class_bootstrapping_probability,
+                          fill = CellType.Final)) +
   scale_fill_manual(values = cluster_cols) +
   geom_boxplot() +
   theme_bw() +
@@ -53,16 +56,45 @@ human_class <- ggplot(data = hi_output,aes(x = CellType.Final, y = class_bootstr
 ggsave(filename = here("plots","Conservation","MapMyCells","Human_Class_Bootstrap_Prob_Boxplot.png"),
        plot = human_class)
 
+#Boxplot with x axis being the subclass that each human cell is assigned. 
+human_subclass <- ggplot(data = hi_output,
+                      aes(x = CellType.Final, 
+                          y = subclass_bootstrapping_probability,
+                          fill = CellType.Final)) +
+  scale_fill_manual(values = cluster_cols) +
+  geom_boxplot() +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+
+ggsave(filename = here("plots","Conservation","MapMyCells","Human_SubClass_Bootstrap_Prob_Boxplot.png"),
+       plot = human_subclass)
+
+#Boxplot with x axis being the subclass that each human cell is assigned. 
+human_supertype <- ggplot(data = hi_output,
+                          aes(x = CellType.Final, 
+                              y = supertype_bootstrapping_probability,
+                              fill = CellType.Final)) +
+  scale_fill_manual(values = cluster_cols) +
+  geom_boxplot() +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+
+ggsave(filename = here("plots","Conservation","MapMyCells","Human_Supertype_Bootstrap_Prob_Boxplot.png"),
+       plot = human_supertype)
+
+
 print("Reproducibility information:")
 Sys.time()
 proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2024-09-17 17:33:30 EDT"
+# [1] "2024-09-18 09:28:37 EDT"
 # user  system elapsed 
-# 32.350   2.338  90.532
-# ─ Session info ────────────────────────────────────────────────────────────
+# 20.670   1.430 188.266 
+# ─ Session info ──────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.4.0 Patched (2024-05-22 r86590)
 # os       Rocky Linux 9.4 (Blue Onyx)
@@ -72,10 +104,10 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2024-09-17
+# date     2024-09-18
 # pandoc   3.1.13 @ /jhpce/shared/community/core/conda_R/4.4/bin/pandoc
 # 
-# ─ Packages ────────────────────────────────────────────────────────────────
+# ─ Packages ──────────────────────────────────────────────────────────────────────
 # package              * version date (UTC) lib source
 # abind                  1.4-5   2016-07-21 [2] CRAN (R 4.4.0)
 # Biobase              * 2.64.0  2024-04-30 [2] Bioconductor 3.19 (R 4.4.0)
@@ -134,7 +166,7 @@ session_info()
 # [2] /jhpce/shared/community/core/conda_R/4.4/R/lib64/R/site-library
 # [3] /jhpce/shared/community/core/conda_R/4.4/R/lib64/R/library
 # 
-# ───────────────────────────────────────────────────────────────────────────
-# 
-# 
-# 
+# ─────────────────────────────────────────────────────────────────────────────────
+
+
+
