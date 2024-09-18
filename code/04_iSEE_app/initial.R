@@ -4,7 +4,7 @@ initial <- list()
 # Settings for Reduced dimension plot 1
 ################################################################################
 
-initial[["ReducedDimensionPlot1"]] <- new("ReducedDimensionPlot", Type = "tSNE", XAxis = 1L, YAxis = 2L, 
+initial[["ReducedDimensionPlot1"]] <- new("ReducedDimensionPlot", Type = "tSNE_mnn_50", XAxis = 1L, YAxis = 2L, 
     FacetRowByColData = "Sample", FacetColumnByColData = "Sample", 
     ColorByColumnData = "CellType.Final", ColorByFeatureNameAssay = "logcounts", 
     ColorBySampleNameColor = "#FF0000", ShapeByColumnData = "Sample", 
@@ -33,7 +33,7 @@ initial[["ReducedDimensionPlot1"]] <- new("ReducedDimensionPlot", Type = "tSNE",
 # Settings for Reduced dimension plot 2
 ################################################################################
 
-initial[["ReducedDimensionPlot2"]] <- new("ReducedDimensionPlot", Type = "tSNE", XAxis = 1L, YAxis = 2L, 
+initial[["ReducedDimensionPlot2"]] <- new("ReducedDimensionPlot", Type = "tSNE_mnn_50", XAxis = 1L, YAxis = 2L, 
     FacetRowByColData = "Sample", FacetColumnByColData = "Sample", 
     ColorByColumnData = "Sample", ColorByFeatureNameAssay = "logcounts", 
     ColorBySampleNameColor = "#FF0000", ShapeByColumnData = "Sample", 
