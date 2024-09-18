@@ -14,6 +14,9 @@ rownames(sce) <-  uniquifyFeatureNames(rowData(sce)$gene_id, rowData(sce)$gene_n
 #Source
 source("initial.R", print.eval = TRUE)
 
+#Increase minimum number of colors to the # of clusters within CellType.Final
+sce <- registerAppOptions(sce, color.maxlevels = length(unique(sce$CellType.Final))
+
 #Deploy app
 iSEE(
   sce,
