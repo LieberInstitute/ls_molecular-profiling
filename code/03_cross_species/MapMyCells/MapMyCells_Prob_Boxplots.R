@@ -14,6 +14,7 @@ load(here("processed-data","cluster_cols_CellType_Final.rda"),verbose = TRUE)
 # Loading objects:
 #   cluster_cols
 
+
 #Read in the map my cells output
 Map_Cells_Out_hi <- read.delim(file = here("processed-data",
                                            "MapMyCells_Output",
@@ -42,7 +43,7 @@ mouse_class <- ggplot(data = hi_output,aes(x = class_name,
 ggsave(filename = here("plots","Conservation","MapMyCells","Mouse_Class_Bootstrap_Prob_Boxplot.png"),
        plot = mouse_class)
 
-#Boxplot with x axis being the class that each human cell is assigned. 
+#Class
 human_class <- ggplot(data = hi_output,
                       aes(x = CellType.Final, 
                           y = class_bootstrapping_probability,
@@ -56,11 +57,11 @@ human_class <- ggplot(data = hi_output,
 ggsave(filename = here("plots","Conservation","MapMyCells","Human_Class_Bootstrap_Prob_Boxplot.png"),
        plot = human_class)
 
-#Boxplot with x axis being the subclass that each human cell is assigned. 
+#subclass
 human_subclass <- ggplot(data = hi_output,
-                      aes(x = CellType.Final, 
-                          y = subclass_bootstrapping_probability,
-                          fill = CellType.Final)) +
+                         aes(x = CellType.Final, 
+                             y = subclass_bootstrapping_probability,
+                             fill = CellType.Final)) +
   scale_fill_manual(values = cluster_cols) +
   geom_boxplot() +
   theme_bw() +
@@ -70,7 +71,7 @@ human_subclass <- ggplot(data = hi_output,
 ggsave(filename = here("plots","Conservation","MapMyCells","Human_SubClass_Bootstrap_Prob_Boxplot.png"),
        plot = human_subclass)
 
-#Boxplot with x axis being the subclass that each human cell is assigned. 
+#superytype
 human_supertype <- ggplot(data = hi_output,
                           aes(x = CellType.Final, 
                               y = supertype_bootstrapping_probability,
@@ -85,15 +86,30 @@ ggsave(filename = here("plots","Conservation","MapMyCells","Human_Supertype_Boot
        plot = human_supertype)
 
 
+#cluster
+human_cluster <- ggplot(data = hi_output,
+                        aes(x = CellType.Final, 
+                            y = cluster_bootstrapping_probability,
+                            fill = CellType.Final)) +
+  scale_fill_manual(values = cluster_cols) +
+  geom_boxplot() +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+
+ggsave(filename = here("plots","Conservation","MapMyCells","Human_Cluster_Bootstrap_Prob_Boxplot.png"),
+       plot = human_cluster)
+
+
 print("Reproducibility information:")
 Sys.time()
 proc.time()
 options(width = 120)
 session_info()
 # [1] "Reproducibility information:"
-# [1] "2024-09-18 09:28:37 EDT"
+# [1] "2024-09-19 17:04:25 EDT"
 # user  system elapsed 
-# 20.670   1.430 188.266 
+# 27.295   1.538 105.087 
 # ─ Session info ──────────────────────────────────────────────────────────────────
 # setting  value
 # version  R version 4.4.0 Patched (2024-05-22 r86590)
@@ -104,7 +120,7 @@ session_info()
 # collate  en_US.UTF-8
 # ctype    en_US.UTF-8
 # tz       US/Eastern
-# date     2024-09-18
+# date     2024-09-19
 # pandoc   3.1.13 @ /jhpce/shared/community/core/conda_R/4.4/bin/pandoc
 # 
 # ─ Packages ──────────────────────────────────────────────────────────────────────
@@ -167,6 +183,7 @@ session_info()
 # [3] /jhpce/shared/community/core/conda_R/4.4/R/lib64/R/library
 # 
 # ─────────────────────────────────────────────────────────────────────────────────
+# 
 
 
 
