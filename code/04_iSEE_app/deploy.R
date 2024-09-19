@@ -4,7 +4,7 @@ library("rsconnect")
 
 options(repos = BiocManager::repositories())
 rsconnect::deployApp(
-    appFiles = c("app.R", "sce_clean.rda", "initial.R"),
+    appFiles = c("app.R", "sce_app.rda", "initial.R"),
     appName = "LS_snRNAseq",
     account = "libd",
     server = "shinyapps.io"
