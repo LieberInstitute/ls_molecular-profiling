@@ -40,7 +40,7 @@ Below is the citation in [`BibTeX`](http://www.bibtex.org/) format.
       publisher={Cold Spring Harbor Laboratory Preprints}
       }
 
-Contact
+## Contact
 We value public questions, as they allow other users to learn from the answers. If you have any questions, please ask them at LieberInstitute/ls_molecular-profiling/issues  and refrain from emailing us. Thank you again for your interest in our work!
 
 ## Internal
