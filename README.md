@@ -11,8 +11,8 @@ We highly value open data sharing and believe that doing so accelerates
 science.
 
 
-[`sce object (jhpce#ls_molecular-profiling_sce)`](https://research.libd.org/globus/)
-[`SRA Submission`](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1093410)
+- [`sce object (jhpce#ls_molecular-profiling_sce)`](https://research.libd.org/globus/)
+- [`SRA Submission`](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1093410)
 
 ## Interactive Websites
 All of these interactive websites are powered by open source software,
