@@ -13,5 +13,9 @@ processed-data/02_build_sce/droplet_scores/
 magma.log
 processed-data/MapMyCells_Output/
 plots/Conservation/Shuffled_cells_cor_plots/
+plots/Expression_plots/post_k_20_louvain_clustering/
 processed-data/h_ls_anndata.h5ad
 processed-data/02_build_sce/*
+processed-data/Supp_Table_2.csv
+processed-data/CellType_by_Sample.csv
+processed-data/globus/
