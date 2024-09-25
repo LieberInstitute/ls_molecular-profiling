@@ -22,7 +22,7 @@ levels(sce$CellType.Final)
 # [13] "Str_DRD1_MSN_A" "Str_DRD1_MSN_B" "Str_DRD1_Patch" "Str_DRD2_MSN"  
 # [17] "MS_Excit_A"     "Excit_A"        "Excit_B"        "Oligo"         
 # [21] "OPC"            "Astrocyte"      "Ependymal"      "Microglia"     
-# [25] "Mural"  
+# [25] "Mural" 
 
 #create a dataframe to add to the coldata
 Origin_df <- data.frame(CellType = levels(sce$CellType.Final),
@@ -36,7 +36,7 @@ Origin_df <- data.frame(CellType = levels(sce$CellType.Final),
                                       )
                         )
 Origin_df
-#          CellType       Origin
+CellType       Origin
 # 1        LS_Inh_A           LS
 # 2        LS_Inh_B           LS
 # 3        LS_Inh_C           LS
@@ -63,16 +63,16 @@ Origin_df
 # 24      Microglia Non-Neuronal
 # 25          Mural Non-Neuronal
 
+
 #Create a colData column that is the broad region where the cells originate
 sce$Origin <- Origin_df$Origin[match(sce$CellType.Final,Origin_df$CellType)]
 
 table(sce$Origin)
-#   LS           MS Non-Neuronal       Septal          Str           TT 
+# LS           MS Non-Neuronal       Septal          Str           TT 
 # 1680          784         3837          798         1763          363 
 
 #Create a vector of colors 
-#LS,MS,Sept
-origin_cols <- c("#1E88E5","#D81B60","#FFC107","#004D40","#000000","#B3B3B3")
+origin_cols <- c("deeppink2","#FFC107","red1","grey70","#000000","springgreen4")
 
 #name the colors
 names(origin_cols) <- c("LS","MS","Str","Septal","TT","Non-Neuronal")  
@@ -155,7 +155,4 @@ sessionInfo()
 # [65] textshaping_0.4.0         sparseMatrixStats_1.16.0 
 # [67] rprojroot_2.0.4           lattice_0.22-6           
 # [69] Rcpp_1.0.13               gridExtra_2.3            
-# [71] SparseArray_1.4.8         pkgconfig_2.0.3      
-#   
-#   
-#   
+# [71] SparseArray_1.4.8         pkgconfig_2.0.3    
